@@ -1,0 +1,40 @@
+{
+  "lesson": 11,
+  "level": "A1",
+  "title": "At the Doctor",
+  "description": "Paul talks about visiting the doctor when he feels sick.",
+  "speaker": "Paul",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Paul.",
+    "Today, I want to talk about the doctor.",
+    "Sometimes, I feel sick.",
+    "I go to the doctor.",
+    "I sit in the waiting room.",
+    "The doctor calls my name.",
+    "The doctor asks, \"What is the problem?\"",
+    "I say, \"I have a headache.\"",
+    "The doctor gives me medicine.",
+    "He tells me to rest.",
+    "I feel better after a few days.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "Why does Paul go to the doctor?",
+      "options": ["He feels sick", "He is late", "He is tired of work"],
+      "answer": "He feels sick"
+    },
+    {
+      "q": "What problem does Paul have?",
+      "options": ["A headache", "A toothache", "A cold"],
+      "answer": "A headache"
+    },
+    {
+      "q": "What does the doctor tell Paul to do?",
+      "options": ["Exercise", "Rest", "Travel"],
+      "answer": "Rest"
+    }
+  ]
+}

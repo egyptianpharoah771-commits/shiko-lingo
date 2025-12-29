@@ -1,0 +1,92 @@
+{
+  "lesson": 2,
+  "level": "B1",
+  "title": "A Difficult Decision",
+  "description": "Laura talks about a difficult decision to move for a new job and its impact on her life.",
+  "speaker": "Laura",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Laura.",
+    "Last year, I faced a difficult decision that changed my daily life.",
+    "I was offered a new job in another city, but it meant leaving my family and friends behind.",
+    "At first, I was excited about the opportunity because it promised better experience and growth.",
+    "However, I also felt worried because I had never lived far from home before.",
+    "I spent several days thinking carefully and talking with people I trusted.",
+    "In the end, I decided to accept the job and move to the new city.",
+    "The first few months were challenging, and I often felt lonely.",
+    "Over time, I made new friends and became more independent.",
+    "Now, I believe that making this difficult decision helped me grow and understand myself better."
+  ],
+  "questions": [
+    {
+      "question": "What decision did Laura have to make?",
+      "options": [
+        "Whether to change her friends",
+        "Whether to accept a new job in another city",
+        "Whether to stay at home",
+        "Whether to study abroad"
+      ],
+      "correctAnswer": "Whether to accept a new job in another city"
+    },
+    {
+      "question": "Why was Laura excited at first?",
+      "options": [
+        "Because she wanted to travel",
+        "Because the job offered growth and experience",
+        "Because her family encouraged her",
+        "Because the city was small"
+      ],
+      "correctAnswer": "Because the job offered growth and experience"
+    },
+    {
+      "question": "What made Laura feel worried?",
+      "options": [
+        "The cost of living",
+        "Leaving her family and friends",
+        "Learning a new language",
+        "Finding a house"
+      ],
+      "correctAnswer": "Leaving her family and friends"
+    },
+    {
+      "question": "Who did Laura talk to before making the decision?",
+      "options": [
+        "Her manager only",
+        "Strangers",
+        "People she trusted",
+        "Her new colleagues"
+      ],
+      "correctAnswer": "People she trusted"
+    },
+    {
+      "question": "How did Laura feel during the first months?",
+      "options": [
+        "Very confident",
+        "Bored",
+        "Challenged and lonely",
+        "Relaxed"
+      ],
+      "correctAnswer": "Challenged and lonely"
+    },
+    {
+      "question": "What happened over time?",
+      "options": [
+        "She returned home",
+        "She made new friends and became independent",
+        "She changed her job again",
+        "Nothing changed"
+      ],
+      "correctAnswer": "She made new friends and became independent"
+    },
+    {
+      "question": "What lesson did Laura learn?",
+      "options": [
+        "Avoid big changes",
+        "Decisions should be easy",
+        "Difficult decisions can lead to growth",
+        "Family is not important"
+      ],
+      "correctAnswer": "Difficult decisions can lead to growth"
+    }
+  ]
+}

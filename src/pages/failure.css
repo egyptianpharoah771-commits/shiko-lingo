@@ -1,0 +1,45 @@
+.fail-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;
+  background: #ffecec;
+  font-family: "Segoe UI";
+}
+
+.fail-card {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 4px 25px rgba(255, 0, 0, 0.15);
+}
+
+.fail-card h1 {
+  color: #cc0033;
+  margin-bottom: 15px;
+  font-size: 32px;
+}
+
+.fail-card p {
+  font-size: 17px;
+  margin-bottom: 25px;
+  color: #444;
+}
+
+.fail-btn {
+  display: inline-block;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 17px;
+  transition: 0.2s;
+  font-weight: 600;
+}
+
+.fail-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(255, 50, 50, 0.3);
+}

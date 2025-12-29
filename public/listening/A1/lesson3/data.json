@@ -1,0 +1,41 @@
+{
+  "lesson": 3,
+  "level": "A1",
+  "title": "My Job",
+  "description": "Emma talks about her job and daily work routine.",
+  "speaker": "Emma",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Emma.",
+    "Today, I want to talk about my job.",
+    "I work in a small office.",
+    "I am a receptionist.",
+    "Every day, I arrive at work at nine o’clock.",
+    "I answer phone calls and talk to people.",
+    "I help customers and write emails.",
+    "I like my job very much.",
+    "In the afternoon, I take a short break.",
+    "I drink coffee and relax.",
+    "At five o’clock, I finish work and go home.",
+    "My job is simple, but I enjoy it.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "What is Emma’s job?",
+      "options": ["Teacher", "Receptionist", "Nurse"],
+      "answer": "Receptionist"
+    },
+    {
+      "q": "What time does Emma arrive at work?",
+      "options": ["At eight", "At nine", "At ten"],
+      "answer": "At nine"
+    },
+    {
+      "q": "What does Emma do in the afternoon?",
+      "options": ["She goes home", "She takes a break", "She meets friends"],
+      "answer": "She takes a break"
+    }
+  ]
+}

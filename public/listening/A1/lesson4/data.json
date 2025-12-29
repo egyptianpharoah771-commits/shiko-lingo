@@ -1,0 +1,41 @@
+{
+  "lesson": 4,
+  "level": "A1",
+  "title": "My Family",
+  "description": "Lisa talks about her family members.",
+  "speaker": "Lisa",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Lisa.",
+    "Today, I want to talk about my family.",
+    "I have a small family.",
+    "There are four people in my family.",
+    "I have a father and a mother.",
+    "My father works in a company.",
+    "My mother stays at home.",
+    "I have one brother.",
+    "He is a student.",
+    "We live in a small house.",
+    "We eat together every day.",
+    "I love my family very much.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "How many people are in Lisa’s family?",
+      "options": ["Three", "Four", "Five"],
+      "answer": "Four"
+    },
+    {
+      "q": "What does Lisa’s father do?",
+      "options": ["He is a teacher", "He works in a company", "He is a student"],
+      "answer": "He works in a company"
+    },
+    {
+      "q": "Who is a student?",
+      "options": ["Her father", "Her brother", "Her mother"],
+      "answer": "Her brother"
+    }
+  ]
+}

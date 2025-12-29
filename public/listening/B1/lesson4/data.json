@@ -1,0 +1,92 @@
+{
+  "lesson": 4,
+  "level": "B1",
+  "title": "Changing Old Habits",
+  "description": "Sarah talks about changing a bad habit and how it affected her daily life.",
+  "speaker": "Sarah",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Sarah.",
+    "For many years, I had a habit of staying up late and sleeping very little.",
+    "At first, I did not see this as a problem because I was able to finish my daily tasks.",
+    "Over time, however, I started to feel tired and less focused during the day.",
+    "My work performance dropped, and I often felt stressed for no clear reason.",
+    "After talking with a friend, I decided to change this habit.",
+    "I began going to bed earlier and created a simple evening routine to help me relax.",
+    "The first weeks were difficult, but slowly my energy improved.",
+    "Now, I feel healthier, more focused, and more productive at work.",
+    "This experience taught me how small changes can make a big difference."
+  ],
+  "questions": [
+    {
+      "question": "What habit did Sarah have for many years?",
+      "options": [
+        "Waking up early",
+        "Staying up late",
+        "Exercising every day",
+        "Eating late"
+      ],
+      "correctAnswer": "Staying up late"
+    },
+    {
+      "question": "Why did Sarah think the habit was not a problem at first?",
+      "options": [
+        "She felt energetic",
+        "She could finish her tasks",
+        "Her friends liked it",
+        "She enjoyed it"
+      ],
+      "correctAnswer": "She could finish her tasks"
+    },
+    {
+      "question": "What problems did Sarah start to notice over time?",
+      "options": [
+        "She became bored",
+        "She felt tired and less focused",
+        "She had more free time",
+        "She slept too much"
+      ],
+      "correctAnswer": "She felt tired and less focused"
+    },
+    {
+      "question": "Who helped Sarah decide to change her habit?",
+      "options": [
+        "Her manager",
+        "Her family",
+        "A friend",
+        "A doctor"
+      ],
+      "correctAnswer": "A friend"
+    },
+    {
+      "question": "What did Sarah change in her routine?",
+      "options": [
+        "She worked less",
+        "She went to bed earlier",
+        "She changed her job",
+        "She traveled more"
+      ],
+      "correctAnswer": "She went to bed earlier"
+    },
+    {
+      "question": "How did Sarah feel after some time?",
+      "options": [
+        "More tired",
+        "Healthier and more focused",
+        "Angry",
+        "Unmotivated"
+      ],
+      "correctAnswer": "Healthier and more focused"
+    },
+    {
+      "question": "What lesson did Sarah learn?",
+      "options": [
+        "Habits are hard to change",
+        "Big changes are always better",
+        "Small changes can make a big difference",
+        "Sleep is not important"
+      ],
+      "correctAnswer": "Small changes can make a big difference"
+    }
+  ]
+}

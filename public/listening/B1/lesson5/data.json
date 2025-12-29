@@ -1,0 +1,93 @@
+{
+  "lesson": 5,
+  "level": "B1",
+  "title": "Speaking in Front of Others",
+  "description": "Ahmed talks about overcoming his fear of public speaking and gaining confidence.",
+  "speaker": "Ahmed",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Ahmed.",
+    "For a long time, I was afraid of speaking in front of other people.",
+    "Even simple presentations made me feel nervous and uncomfortable.",
+    "Last year, my team asked me to present our work at a small meeting.",
+    "At first, I wanted to avoid the situation, but I knew it was an important opportunity.",
+    "I decided to prepare carefully and practice several times at home.",
+    "On the day of the presentation, my voice was not very strong, but I continued speaking.",
+    "As I moved forward, I felt more relaxed and confident.",
+    "After the meeting, my colleagues gave me positive feedback.",
+    "Since then, I have tried to speak more in meetings and challenge my fear.",
+    "This experience taught me that confidence grows with practice."
+  ],
+  "questions": [
+    {
+      "question": "What was Ahmed afraid of for a long time?",
+      "options": [
+        "Meeting new people",
+        "Speaking in front of others",
+        "Working in a team",
+        "Writing reports"
+      ],
+      "correctAnswer": "Speaking in front of others"
+    },
+    {
+      "question": "Why was the presentation important?",
+      "options": [
+        "It was for a big audience",
+        "It affected his salary",
+        "It was an opportunity to grow",
+        "It was easy"
+      ],
+      "correctAnswer": "It was an opportunity to grow"
+    },
+    {
+      "question": "How did Ahmed prepare for the presentation?",
+      "options": [
+        "He ignored it",
+        "He practiced several times",
+        "He asked someone else to do it",
+        "He arrived late"
+      ],
+      "correctAnswer": "He practiced several times"
+    },
+    {
+      "question": "How did Ahmed feel at the beginning of the presentation?",
+      "options": [
+        "Very confident",
+        "Calm",
+        "Nervous",
+        "Excited"
+      ],
+      "correctAnswer": "Nervous"
+    },
+    {
+      "question": "What changed as Ahmed continued speaking?",
+      "options": [
+        "He stopped",
+        "He forgot his words",
+        "He became more relaxed",
+        "He left the room"
+      ],
+      "correctAnswer": "He became more relaxed"
+    },
+    {
+      "question": "What feedback did Ahmed receive after the meeting?",
+      "options": [
+        "Negative comments",
+        "No feedback",
+        "Positive feedback",
+        "Advice to stop speaking"
+      ],
+      "correctAnswer": "Positive feedback"
+    },
+    {
+      "question": "What lesson did Ahmed learn?",
+      "options": [
+        "Fear should be avoided",
+        "Speaking is not important",
+        "Confidence grows with practice",
+        "Meetings are stressful"
+      ],
+      "correctAnswer": "Confidence grows with practice"
+    }
+  ]
+}

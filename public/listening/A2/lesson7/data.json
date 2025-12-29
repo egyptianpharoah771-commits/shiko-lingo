@@ -1,0 +1,92 @@
+{
+  "lesson": 7,
+  "level": "A2",
+  "title": "A Late Morning",
+  "description": "Alex talks about a difficult morning and how he plans to avoid the problem in the future.",
+  "speaker": "Alex",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Alex.",
+    "Yesterday morning did not start very well for me.",
+    "I woke up late because my alarm did not ring on time.",
+    "When I looked at the clock, I realized I was already late for work.",
+    "I got dressed quickly and skipped breakfast to save time.",
+    "On my way to the office, there was a lot of traffic, which made me feel more stressed.",
+    "When I finally arrived, my manager asked me why I was late.",
+    "I explained the situation and apologized for the delay.",
+    "Luckily, he understood and told me to be more careful next time.",
+    "From now on, I am going to set two alarms to avoid this problem again."
+  ],
+  "questions": [
+    {
+      "question": "Why did Alex wake up late?",
+      "options": [
+        "He went to bed late",
+        "His alarm did not ring on time",
+        "He was sick",
+        "It was a holiday"
+      ],
+      "correctAnswer": "His alarm did not ring on time"
+    },
+    {
+      "question": "What did Alex do to save time in the morning?",
+      "options": [
+        "He skipped breakfast",
+        "He took a taxi",
+        "He called his manager",
+        "He stayed at home"
+      ],
+      "correctAnswer": "He skipped breakfast"
+    },
+    {
+      "question": "How did Alex feel during the traffic?",
+      "options": [
+        "Relaxed",
+        "Excited",
+        "Stressed",
+        "Happy"
+      ],
+      "correctAnswer": "Stressed"
+    },
+    {
+      "question": "Who asked Alex why he was late?",
+      "options": [
+        "His colleague",
+        "His manager",
+        "His friend",
+        "A client"
+      ],
+      "correctAnswer": "His manager"
+    },
+    {
+      "question": "What did Alex do when he arrived at work?",
+      "options": [
+        "He ignored the problem",
+        "He explained and apologized",
+        "He left early",
+        "He argued"
+      ],
+      "correctAnswer": "He explained and apologized"
+    },
+    {
+      "question": "How did the manager react?",
+      "options": [
+        "He was angry",
+        "He did not listen",
+        "He understood the situation",
+        "He sent Alex home"
+      ],
+      "correctAnswer": "He understood the situation"
+    },
+    {
+      "question": "What will Alex do in the future?",
+      "options": [
+        "Wake up later",
+        "Change his job",
+        "Set two alarms",
+        "Skip work"
+      ],
+      "correctAnswer": "Set two alarms"
+    }
+  ]
+}

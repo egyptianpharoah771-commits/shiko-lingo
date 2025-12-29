@@ -1,0 +1,11 @@
+{
+  "level": "A1",
+  "lessons": [
+    {
+      "id": "lesson1",
+      "lesson": 1,
+      "title": "Greetings – Meeting for the First Time",
+      "description": "A simple conversation between Sarah and Julian meeting for the first time."
+    }
+  ]
+}

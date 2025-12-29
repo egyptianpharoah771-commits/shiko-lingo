@@ -1,0 +1,92 @@
+{
+  "lesson": 3,
+  "level": "B1",
+  "title": "Learning from a Mistake",
+  "description": "Daniel talks about a mistake at work and what he learned from it.",
+  "speaker": "Daniel",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Daniel.",
+    "A few months ago, I made a mistake at work that taught me an important lesson.",
+    "I was responsible for organizing a small presentation for my team.",
+    "Because I was busy, I did not prepare well and assumed everything would go smoothly.",
+    "On the day of the presentation, I forgot to bring some important documents.",
+    "As a result, the meeting was delayed, and I felt embarrassed in front of my colleagues.",
+    "After the meeting, my manager spoke to me and explained what I could do better next time.",
+    "Instead of getting angry, I listened carefully and took his advice seriously.",
+    "Since then, I have become more organized and always prepare in advance.",
+    "This experience helped me understand the value of responsibility and preparation."
+  ],
+  "questions": [
+    {
+      "question": "What mistake did Daniel make?",
+      "options": [
+        "He arrived late",
+        "He forgot important documents",
+        "He cancelled the meeting",
+        "He argued with his manager"
+      ],
+      "correctAnswer": "He forgot important documents"
+    },
+    {
+      "question": "Why did Daniel not prepare well?",
+      "options": [
+        "He was sick",
+        "He was busy",
+        "He was new",
+        "He was tired"
+      ],
+      "correctAnswer": "He was busy"
+    },
+    {
+      "question": "How did Daniel feel during the meeting?",
+      "options": [
+        "Confident",
+        "Relaxed",
+        "Embarrassed",
+        "Excited"
+      ],
+      "correctAnswer": "Embarrassed"
+    },
+    {
+      "question": "What did Daniel’s manager do after the meeting?",
+      "options": [
+        "Ignored the mistake",
+        "Got angry",
+        "Explained how to improve",
+        "Cancelled future meetings"
+      ],
+      "correctAnswer": "Explained how to improve"
+    },
+    {
+      "question": "How did Daniel react to his manager’s feedback?",
+      "options": [
+        "He got angry",
+        "He ignored it",
+        "He listened and accepted it",
+        "He quit his job"
+      ],
+      "correctAnswer": "He listened and accepted it"
+    },
+    {
+      "question": "What change did Daniel make after this experience?",
+      "options": [
+        "He avoided presentations",
+        "He became more organized",
+        "He changed his job",
+        "He worked less"
+      ],
+      "correctAnswer": "He became more organized"
+    },
+    {
+      "question": "What is the main lesson of the story?",
+      "options": [
+        "Mistakes should be hidden",
+        "Responsibility and preparation are important",
+        "Work is stressful",
+        "Meetings are unnecessary"
+      ],
+      "correctAnswer": "Responsibility and preparation are important"
+    }
+  ]
+}

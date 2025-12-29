@@ -1,0 +1,39 @@
+{
+  "lesson": 13,
+  "level": "A1",
+  "title": "My House",
+  "description": "John talks about his house and the rooms inside it.",
+  "speaker": "John",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is John.",
+    "Today, I want to talk about my house.",
+    "I live in a small house.",
+    "My house is clean and nice.",
+    "There are two bedrooms in my house.",
+    "There is a kitchen and a living room.",
+    "I like the living room.",
+    "I watch TV and relax there.",
+    "My house is comfortable.",
+    "I feel happy at home.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "What kind of house does John live in?",
+      "options": ["A big house", "A small house", "An old house"],
+      "answer": "A small house"
+    },
+    {
+      "q": "Which room does John like?",
+      "options": ["The kitchen", "The living room", "The bedroom"],
+      "answer": "The living room"
+    },
+    {
+      "q": "How does John feel at home?",
+      "options": ["Happy", "Sad", "Angry"],
+      "answer": "Happy"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "lesson": 11,
+  "level": "A2",
+  "title": "A Busy Day of Shopping",
+  "description": "Sophie talks about a busy shopping day and what she learned from it.",
+  "speaker": "Sophie",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Sophie.",
+    "Last Saturday, I had a very busy day of shopping in the city.",
+    "I needed to buy clothes, food, and a gift for my friend’s birthday.",
+    "In the morning, I visited several stores and compared prices carefully.",
+    "After that, I went to the supermarket and bought everything on my list.",
+    "In the afternoon, I felt tired because the shops were crowded and noisy.",
+    "At one store, I waited a long time to pay, which made me a little impatient.",
+    "When I finally returned home, I felt relieved and satisfied.",
+    "Next time, I am going to shop earlier in the day to avoid crowds."
+  ],
+  "questions": [
+    {
+      "question": "Why did Sophie go shopping?",
+      "options": [
+        "To relax",
+        "To buy clothes, food, and a gift",
+        "To meet friends",
+        "To look for a job"
+      ],
+      "correctAnswer": "To buy clothes, food, and a gift"
+    },
+    {
+      "question": "What did Sophie do in the morning?",
+      "options": [
+        "She stayed at home",
+        "She visited several stores and compared prices",
+        "She went to work",
+        "She met her friend"
+      ],
+      "correctAnswer": "She visited several stores and compared prices"
+    },
+    {
+      "question": "Where did Sophie buy food?",
+      "options": [
+        "At a restaurant",
+        "At a supermarket",
+        "At a market",
+        "At home"
+      ],
+      "correctAnswer": "At a supermarket"
+    },
+    {
+      "question": "How did Sophie feel in the afternoon?",
+      "options": [
+        "Relaxed",
+        "Tired",
+        "Excited",
+        "Bored"
+      ],
+      "correctAnswer": "Tired"
+    },
+    {
+      "question": "What made Sophie impatient?",
+      "options": [
+        "The prices",
+        "The noise",
+        "Waiting a long time to pay",
+        "The weather"
+      ],
+      "correctAnswer": "Waiting a long time to pay"
+    },
+    {
+      "question": "How did Sophie feel when she returned home?",
+      "options": [
+        "Angry",
+        "Relieved and satisfied",
+        "Worried",
+        "Confused"
+      ],
+      "correctAnswer": "Relieved and satisfied"
+    },
+    {
+      "question": "What will Sophie do next time?",
+      "options": [
+        "Shop later at night",
+        "Shop earlier in the day",
+        "Stop shopping",
+        "Go with friends"
+      ],
+      "correctAnswer": "Shop earlier in the day"
+    }
+  ]
+}

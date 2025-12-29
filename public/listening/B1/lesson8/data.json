@@ -1,0 +1,92 @@
+{
+  "lesson": 8,
+  "level": "B1",
+  "title": "Sharing an Honest Opinion",
+  "description": "Kevin talks about sharing his opinion at work and the impact it had.",
+  "speaker": "Kevin",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Kevin.",
+    "A few months ago, I was part of a group working on a new idea at work.",
+    "Everyone seemed excited, but I had some concerns about the plan.",
+    "At first, I stayed quiet because I did not want to cause problems or disagree with others.",
+    "However, as the discussion continued, I realized that my opinion could be helpful.",
+    "When it was my turn to speak, I calmly explained my concerns and suggested a few improvements.",
+    "Some people were surprised, but they listened carefully.",
+    "After the meeting, several colleagues thanked me for being honest.",
+    "The final plan was improved, and I felt more confident sharing my ideas in the future.",
+    "This experience taught me that respectful communication can lead to better results."
+  ],
+  "questions": [
+    {
+      "question": "Why did Kevin stay quiet at first?",
+      "options": [
+        "He did not care about the idea",
+        "He did not want to disagree with others",
+        "He did not understand the plan",
+        "He was late to the meeting"
+      ],
+      "correctAnswer": "He did not want to disagree with others"
+    },
+    {
+      "question": "What made Kevin decide to speak?",
+      "options": [
+        "His manager asked him",
+        "He realized his opinion could help",
+        "Others stopped talking",
+        "The meeting was ending"
+      ],
+      "correctAnswer": "He realized his opinion could help"
+    },
+    {
+      "question": "How did Kevin share his opinion?",
+      "options": [
+        "Angrily",
+        "Without preparation",
+        "Calmly and respectfully",
+        "By sending an email"
+      ],
+      "correctAnswer": "Calmly and respectfully"
+    },
+    {
+      "question": "How did people react during the meeting?",
+      "options": [
+        "They ignored him",
+        "They were angry",
+        "They listened carefully",
+        "They left the room"
+      ],
+      "correctAnswer": "They listened carefully"
+    },
+    {
+      "question": "What happened after the meeting?",
+      "options": [
+        "Kevin was criticized",
+        "The plan was cancelled",
+        "Colleagues thanked Kevin",
+        "Nothing changed"
+      ],
+      "correctAnswer": "Colleagues thanked Kevin"
+    },
+    {
+      "question": "How did Kevin feel afterward?",
+      "options": [
+        "More confident",
+        "More nervous",
+        "Embarrassed",
+        "Disappointed"
+      ],
+      "correctAnswer": "More confident"
+    },
+    {
+      "question": "What lesson did Kevin learn?",
+      "options": [
+        "Opinions should be hidden",
+        "Respectful communication improves results",
+        "Meetings are useless",
+        "Only managers should speak"
+      ],
+      "correctAnswer": "Respectful communication improves results"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "lesson": 10,
+  "level": "A2",
+  "title": "A New Hobby",
+  "description": "Oliver talks about starting a new hobby and his plan to improve his skills.",
+  "speaker": "Oliver",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Oliver.",
+    "A few weeks ago, I decided to start a new hobby in my free time.",
+    "I wanted something relaxing after long days at work.",
+    "I chose photography because I enjoy walking and noticing small details.",
+    "Last weekend, I went to a park near my house and took many photos.",
+    "At first, some pictures were not very good, but I kept practicing.",
+    "Over time, I started to understand how to use the camera better.",
+    "Now, I feel more confident and enjoy this hobby a lot.",
+    "Next month, I am going to take a short course to improve my skills."
+  ],
+  "questions": [
+    {
+      "question": "Why did Oliver want a new hobby?",
+      "options": [
+        "To make more money",
+        "To relax after work",
+        "To meet new people",
+        "To travel"
+      ],
+      "correctAnswer": "To relax after work"
+    },
+    {
+      "question": "Which hobby did Oliver choose?",
+      "options": [
+        "Painting",
+        "Photography",
+        "Cooking",
+        "Cycling"
+      ],
+      "correctAnswer": "Photography"
+    },
+    {
+      "question": "Where did Oliver take photos last weekend?",
+      "options": [
+        "At work",
+        "At home",
+        "In a park near his house",
+        "In a studio"
+      ],
+      "correctAnswer": "In a park near his house"
+    },
+    {
+      "question": "How were the photos at first?",
+      "options": [
+        "Very good",
+        "Perfect",
+        "Not very good",
+        "Professional"
+      ],
+      "correctAnswer": "Not very good"
+    },
+    {
+      "question": "What did Oliver do when the photos were not good?",
+      "options": [
+        "He stopped",
+        "He deleted them",
+        "He kept practicing",
+        "He bought a new camera"
+      ],
+      "correctAnswer": "He kept practicing"
+    },
+    {
+      "question": "How does Oliver feel now?",
+      "options": [
+        "Confident",
+        "Bored",
+        "Angry",
+        "Worried"
+      ],
+      "correctAnswer": "Confident"
+    },
+    {
+      "question": "What is Oliver going to do next month?",
+      "options": [
+        "Start a new job",
+        "Stop the hobby",
+        "Take a short course",
+        "Buy a new camera"
+      ],
+      "correctAnswer": "Take a short course"
+    }
+  ]
+}
