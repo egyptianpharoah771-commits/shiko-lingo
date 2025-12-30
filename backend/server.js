@@ -19,10 +19,6 @@ const openai = new OpenAI({
 /* ======================
    AI Packages & Limits
 ====================== */
-/*
-  FREE → 3 requests / day
-  PRO  → unlimited
-*/
 const AI_LIMITS = {
   FREE: 3,
   PRO: Infinity,
@@ -30,22 +26,13 @@ const AI_LIMITS = {
 
 /* ======================
    In-memory Usage Store
-   (TEMP – later DB)
 ====================== */
-// usage[userId_date] = count
 const aiUsage = {};
 
 const todayKey = () =>
   new Date().toISOString().slice(0, 10);
 
-/* ======================
-   Helpers
-====================== */
-function checkAndConsumeAI({
-  userId,
-  packageName,
-}) {
-  // PRO → unlimited
+function checkAndConsumeAI({ userId, packageName }) {
   if (packageName === "PRO") {
     return { allowed: true };
   }
@@ -54,10 +41,7 @@ function checkAndConsumeAI({
   aiUsage[key] = aiUsage[key] || 0;
 
   if (aiUsage[key] >= AI_LIMITS.FREE) {
-    return {
-      allowed: false,
-      remaining: 0,
-    };
+    return { allowed: false, remaining: 0 };
   }
 
   aiUsage[key] += 1;
@@ -89,28 +73,19 @@ app.post("/api/ai/tutor", async (req, res) => {
     score,
     total,
     bullets,
-
-    // 🔑 Identity (Phase 3)
     userId = "guest",
     packageName = "FREE",
   } = req.body;
 
-  /* ===== Validate ===== */
-  if (
-    !studentText &&
-    !text &&
-    typeof score === "undefined"
-  ) {
+  if (!studentText && !text && typeof score === "undefined") {
     return res.status(400).json({
       status: "ERROR",
       error: "NO_INPUT_PROVIDED",
     });
   }
 
-  const pkg =
-    packageName === "PRO" ? "PRO" : "FREE";
+  const pkg = packageName === "PRO" ? "PRO" : "FREE";
 
-  /* ===== Usage Limit ===== */
   const usage = checkAndConsumeAI({
     userId,
     packageName: pkg,
@@ -121,14 +96,13 @@ app.post("/api/ai/tutor", async (req, res) => {
       status: "LIMIT",
       error: "AI_LIMIT_REACHED",
       message:
-        "You’ve reached your daily AI limit. Upgrade to PRO for unlimited access.",
+        "You’ve reached your daily AI limit. Upgrade to PRO.",
       package: pkg,
     });
   }
 
-  /* ===== Build Prompt ===== */
   const systemPrompt =
-    "You are a friendly English tutor. Give simple, clear, and helpful feedback. Correct mistakes gently and suggest improvements.";
+    "You are a friendly English tutor. Give simple, clear, and helpful feedback.";
 
   const userPrompt = `
 Skill: ${skill || ""}
@@ -149,14 +123,8 @@ ${score || ""}/${total || ""}
 
 Guidelines:
 ${(bullets || []).join(", ")}
-
-Give feedback:
-- Correct mistakes
-- Suggest improvements
-- Keep it simple
 `;
 
-  /* ===== OpenAI Call ===== */
   try {
     const completion =
       await openai.chat.completions.create({
@@ -168,19 +136,87 @@ Give feedback:
         max_tokens: 300,
       });
 
-    return res.json({
+    res.json({
       status: "SUCCESS",
-      message:
-        completion.choices[0].message.content,
+      message: completion.choices[0].message.content,
       remaining: usage.remaining,
       package: pkg,
     });
-  } catch (error) {
-    console.error("AI ERROR:", error);
-    return res.status(500).json({
+  } catch (err) {
+    console.error("AI ERROR:", err);
+    res.status(500).json({
       status: "ERROR",
       error: "AI_SERVICE_ERROR",
-      message: "AI service failed.",
+    });
+  }
+});
+
+/* ======================================================
+   Pi Network – Server Payments (FINAL CHECKLIST STEP)
+====================================================== */
+
+const PI_API_BASE = "https://api.minepi.com";
+
+const PI_HEADERS = {
+  Authorization: `Key ${process.env.PI_API_KEY}`,
+  "Content-Type": "application/json",
+};
+
+/* ===== Approve Payment ===== */
+app.post("/api/pi/approve", async (req, res) => {
+  const { paymentId } = req.body;
+
+  if (!paymentId) {
+    return res.status(400).json({
+      error: "PAYMENT_ID_REQUIRED",
+    });
+  }
+
+  try {
+    const response = await fetch(
+      `${PI_API_BASE}/v2/payments/${paymentId}/approve`,
+      {
+        method: "POST",
+        headers: PI_HEADERS,
+      }
+    );
+
+    const data = await response.json();
+    res.json({ status: "APPROVED", data });
+  } catch (err) {
+    console.error("PI APPROVE ERROR:", err);
+    res.status(500).json({
+      error: "PI_APPROVE_FAILED",
+    });
+  }
+});
+
+/* ===== Complete Payment ===== */
+app.post("/api/pi/complete", async (req, res) => {
+  const { paymentId, txid } = req.body;
+
+  if (!paymentId || !txid) {
+    return res.status(400).json({
+      error: "PAYMENT_ID_AND_TXID_REQUIRED",
+    });
+  }
+
+  try {
+    const response = await fetch(
+      `${PI_API_BASE}/v2/payments/${paymentId}/complete`,
+      {
+        method: "POST",
+        headers: PI_HEADERS,
+        body: JSON.stringify({ txid }),
+      }
+    );
+
+    const data = await response.json();
+    res.json({ status: "COMPLETED", data });
+  } catch (err) {
+    console.error("PI COMPLETE ERROR:", err);
+    res.status(500).json({
+      error: "PI_COMPLETE_FAILED",
     });
   }
 });

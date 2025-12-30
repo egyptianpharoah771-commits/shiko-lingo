@@ -13,7 +13,9 @@ export default function PI() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [user, setUser] = useState(null);
 
   /* ===== Check existing Pi login ===== */
@@ -35,22 +37,92 @@ export default function PI() {
     setError("");
 
     try {
-      const scopes = ["username"]; // ✅ minimal & compliant
+      const scopes = ["username"];
 
       const auth = await window.Pi.authenticate(scopes, () => {});
       const piUser = auth.user;
 
-      // ✅ Store Pi user centrally
       setPiUser(piUser);
       setUser(piUser);
 
-      // 👉 Go to dashboard
       navigate("/dashboard");
     } catch (err) {
       console.error("Pi Login Error:", err);
       setError("Login cancelled or failed.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  /* ===== Test Pi Payment ===== */
+  const handleTestPayment = async () => {
+    if (!window.Pi) {
+      setError("Pi Browser required.");
+      return;
+    }
+
+    setPaying(true);
+    setError("");
+    setMessage("");
+
+    try {
+      await window.Pi.createPayment(
+        {
+          amount: 0.01,
+          memo: "Shiko Lingo Test Payment",
+          metadata: { purpose: "pi_checklist_test" },
+        },
+        {
+          onReadyForServerApproval: async (paymentId) => {
+            console.log("Approve:", paymentId);
+
+            await fetch(
+              "http://localhost:5000/api/pi/approve",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ paymentId }),
+              }
+            );
+          },
+
+          onReadyForServerCompletion: async (
+            paymentId,
+            txid
+          ) => {
+            console.log("Complete:", paymentId, txid);
+
+            await fetch(
+              "http://localhost:5000/api/pi/complete",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ paymentId, txid }),
+              }
+            );
+
+            setMessage("✅ Payment completed successfully!");
+          },
+
+          onCancel: () => {
+            setError("Payment cancelled.");
+          },
+
+          onError: (err) => {
+            console.error("Pi Payment Error:", err);
+            setError("Payment failed.");
+          },
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      setError("Payment failed.");
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -62,7 +134,8 @@ export default function PI() {
 
       <h1 className="pi-title">Shiko Lingo — Pi Network</h1>
       <p className="pi-desc">
-        Sign in with your Pi account to personalize your learning experience.
+        Sign in with your Pi account to personalize your
+        learning experience.
       </p>
 
       <div className="pi-box">
@@ -70,7 +143,8 @@ export default function PI() {
 
         {user ? (
           <div className="pi-success">
-            ✅ Logged in as <strong>{user.username}</strong>
+            ✅ Logged in as{" "}
+            <strong>{user.username}</strong>
           </div>
         ) : (
           <button
@@ -82,6 +156,29 @@ export default function PI() {
           </button>
         )}
 
+        {user && (
+          <>
+            <hr style={{ margin: "20px 0" }} />
+
+            <h2 className="pi-section-title">
+              💰 Test Pi Payment
+            </h2>
+
+            <button
+              className="pi-button"
+              onClick={handleTestPayment}
+              disabled={paying}
+            >
+              {paying
+                ? "Processing…"
+                : "Test Pi Payment"}
+            </button>
+          </>
+        )}
+
+        {message && (
+          <p style={{ color: "green" }}>{message}</p>
+        )}
         {error && <p className="pi-error">{error}</p>}
       </div>
     </div>
