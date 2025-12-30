@@ -42,6 +42,15 @@ export default function PI() {
       const auth = await window.Pi.authenticate(scopes, () => {});
       const piUser = auth.user;
 
+      // ✅ REQUIRED: server-side auth verification
+      await fetch("/api/pi?action=auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accessToken: auth.accessToken,
+        }),
+      });
+
       setPiUser(piUser);
       setUser(piUser);
 
@@ -76,16 +85,13 @@ export default function PI() {
           onReadyForServerApproval: async (paymentId) => {
             console.log("Approve:", paymentId);
 
-            await fetch(
-              "http://localhost:5000/api/pi/approve",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ paymentId }),
-              }
-            );
+            await fetch("/api/pi?action=approve", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ paymentId }),
+            });
           },
 
           onReadyForServerCompletion: async (
@@ -94,16 +100,13 @@ export default function PI() {
           ) => {
             console.log("Complete:", paymentId, txid);
 
-            await fetch(
-              "http://localhost:5000/api/pi/complete",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ paymentId, txid }),
-              }
-            );
+            await fetch("/api/pi?action=complete", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ paymentId, txid }),
+            });
 
             setMessage("✅ Payment completed successfully!");
           },
