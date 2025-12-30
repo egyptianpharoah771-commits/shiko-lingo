@@ -66,6 +66,23 @@ function App() {
   /* ===== Admin unread feedback ===== */
   const [unreadCount, setUnreadCount] = useState(0);
 
+  /* ======================
+     🔑 Pi SDK INIT (ONCE – GLOBAL)
+  ====================== */
+  useEffect(() => {
+    if (window.Pi) {
+      window.Pi.init({
+        version: "2.0",
+        sandbox: false, // production
+      });
+      console.log("✅ Pi SDK initialized (App root)");
+    } else {
+      console.warn(
+        "⚠️ Pi SDK not found. Open app in Pi Browser."
+      );
+    }
+  }, []);
+
   /* ===== One-time legacy storage migration ===== */
   useEffect(() => {
     migrateLegacyStorage();
@@ -96,30 +113,6 @@ function App() {
       );
   }, []);
 
-  /* ======================
-     🔥 TEST PI PAYMENT (CHECKLIST ONLY)
-  ====================== */
-  const handleTestPiPayment = async () => {
-    if (!window.Pi) {
-      alert("Pi SDK not found. Open app in Pi Browser.");
-      return;
-    }
-
-    try {
-      const payment = await window.Pi.createPayment({
-        amount: 0.01, // 👈 Testnet amount (any small value)
-        memo: "Pi checklist test transaction",
-        metadata: { purpose: "checklist-test" },
-      });
-
-      console.log("Payment created:", payment);
-      alert("Payment flow started. Complete it in Pi Browser.");
-    } catch (err) {
-      console.error(err);
-      alert("Payment cancelled or failed.");
-    }
-  };
-
   return (
     <Router>
       {/* 🌍 Global Floating Feedback */}
@@ -138,22 +131,6 @@ function App() {
           </strong>
 
           <div style={{ display: "flex", gap: 10 }}>
-            {/* 🧪 Test Pi Payment Button */}
-            <button
-              onClick={handleTestPiPayment}
-              style={{
-                background: "#111",
-                color: "#fff",
-                border: "none",
-                borderRadius: 6,
-                padding: "6px 12px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-            >
-              🧪 Test Pi Payment
-            </button>
-
             {/* 🔔 Admin Feedback */}
             <Link
               to="/admin/feedback"
