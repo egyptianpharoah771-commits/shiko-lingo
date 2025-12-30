@@ -63,7 +63,7 @@ export default function PI() {
     }
   };
 
-  /* ===== Test Pi Payment ===== */
+  /* ===== Test Pi Payment (SIMPLE & CLEAN) ===== */
   const handleTestPayment = async () => {
     if (!window.Pi) {
       setError("Pi Browser required.");
@@ -77,9 +77,8 @@ export default function PI() {
     try {
       await window.Pi.createPayment(
         {
-          amount: 0.01,
+          amount: 0.1, // ✅ simplified test amount
           memo: "Shiko Lingo Test Payment",
-          metadata: { purpose: "pi_checklist_test" },
         },
         {
           onReadyForServerApproval: async (paymentId) => {
