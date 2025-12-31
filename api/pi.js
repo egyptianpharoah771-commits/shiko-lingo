@@ -1,7 +1,9 @@
 export default async function handler(req, res) {
-  const { method, query } = req;
+  const { method, query, body } = req;
 
-  // Enable CORS (important for Pi iframe)
+  /* =========================
+     CORS (Pi Browser iframe)
+  ========================= */
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Methods",
@@ -26,22 +28,58 @@ export default async function handler(req, res) {
 
   /* =========================
      AUTH VERIFY (LOGIN)
+     REQUIRED BY PI CHECKLIST
   ========================= */
   if (method === "POST" && query.action === "auth") {
-    // Pi just needs the server hit
-    return res.status(200).json({ success: true });
+    const { accessToken } = body;
+
+    if (!accessToken) {
+      return res.status(400).json({
+        error: "ACCESS_TOKEN_REQUIRED",
+      });
+    }
+
+    try {
+      const meRes = await fetch(
+        "https://api.minepi.com/v2/me",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!meRes.ok) {
+        return res.status(401).json({
+          error: "INVALID_ACCESS_TOKEN",
+        });
+      }
+
+      const user = await meRes.json();
+      console.log("✅ PI AUTH VERIFIED:", user);
+
+      return res.status(200).json({
+        success: true,
+        user,
+      });
+    } catch (err) {
+      console.error("PI AUTH ERROR:", err);
+      return res.status(500).json({
+        error: "PI_AUTH_FAILED",
+      });
+    }
   }
 
   /* =========================
      APPROVE PAYMENT
   ========================= */
   if (method === "POST" && query.action === "approve") {
-    const { paymentId } = req.body;
+    const { paymentId } = body;
 
     if (!paymentId) {
-      return res
-        .status(400)
-        .json({ error: "PAYMENT_ID_REQUIRED" });
+      return res.status(400).json({
+        error: "PAYMENT_ID_REQUIRED",
+      });
     }
 
     try {
@@ -56,14 +94,14 @@ export default async function handler(req, res) {
       );
 
       const data = await piRes.json();
-      console.log("PI APPROVE:", data);
+      console.log("✅ PI APPROVE:", data);
 
       return res.status(200).json(data);
     } catch (err) {
-      console.error("APPROVE ERROR:", err);
-      return res
-        .status(500)
-        .json({ error: "PI_APPROVE_FAILED" });
+      console.error("PI APPROVE ERROR:", err);
+      return res.status(500).json({
+        error: "PI_APPROVE_FAILED",
+      });
     }
   }
 
@@ -71,7 +109,7 @@ export default async function handler(req, res) {
      COMPLETE PAYMENT
   ========================= */
   if (method === "POST" && query.action === "complete") {
-    const { paymentId, txid } = req.body;
+    const { paymentId, txid } = body;
 
     if (!paymentId || !txid) {
       return res.status(400).json({
@@ -93,16 +131,18 @@ export default async function handler(req, res) {
       );
 
       const data = await piRes.json();
-      console.log("PI COMPLETE:", data);
+      console.log("✅ PI COMPLETE:", data);
 
       return res.status(200).json(data);
     } catch (err) {
-      console.error("COMPLETE ERROR:", err);
-      return res
-        .status(500)
-        .json({ error: "PI_COMPLETE_FAILED" });
+      console.error("PI COMPLETE ERROR:", err);
+      return res.status(500).json({
+        error: "PI_COMPLETE_FAILED",
+      });
     }
   }
 
-  return res.status(404).json({ error: "NOT_FOUND" });
+  return res.status(404).json({
+    error: "NOT_FOUND",
+  });
 }
