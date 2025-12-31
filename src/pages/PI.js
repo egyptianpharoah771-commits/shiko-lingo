@@ -26,7 +26,7 @@ export default function PI() {
     }
   }, []);
 
-  /* ===== Login with Pi ===== */
+  /* ===== Login with Pi (WITH PAYMENTS SCOPE) ===== */
   const handleLogin = async () => {
     if (!window.Pi) {
       setError("Please open this app using Pi Browser.");
@@ -37,19 +37,19 @@ export default function PI() {
     setError("");
 
     try {
-      const scopes = ["username"];
+      const scopes = ["username", "payments"]; // ✅ REQUIRED
 
-      const auth = await window.Pi.authenticate(scopes, () => {});
+      const auth = await window.Pi.authenticate(
+        scopes,
+        (payment) => {
+          console.warn(
+            "⚠️ Incomplete payment found:",
+            payment
+          );
+        }
+      );
+
       const piUser = auth.user;
-
-      // ✅ REQUIRED: server-side auth verification
-      await fetch("/api/pi?action=auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          accessToken: auth.accessToken,
-        }),
-      });
 
       setPiUser(piUser);
       setUser(piUser);
@@ -63,8 +63,8 @@ export default function PI() {
     }
   };
 
-  /* ===== Test Pi Payment (SIMPLE & CLEAN) ===== */
-  const handleTestPayment = async () => {
+  /* ===== Test Pi Payment (CHECKLIST FLOW) ===== */
+  const handleTestPayment = () => {
     if (!window.Pi) {
       setError("Pi Browser required.");
       return;
@@ -75,14 +75,15 @@ export default function PI() {
     setMessage("");
 
     try {
-      await window.Pi.createPayment(
+      window.Pi.createPayment(
         {
-          amount: 0.1, // ✅ simplified test amount
+          amount: 0.1, // ✅ Testnet amount
           memo: "Shiko Lingo Test Payment",
         },
         {
+          /* ===== Phase 1: Server Approval ===== */
           onReadyForServerApproval: async (paymentId) => {
-            console.log("Approve:", paymentId);
+            console.log("✅ Ready for approval:", paymentId);
 
             await fetch("/api/pi?action=approve", {
               method: "POST",
@@ -93,11 +94,16 @@ export default function PI() {
             });
           },
 
+          /* ===== Phase 3: Server Completion ===== */
           onReadyForServerCompletion: async (
             paymentId,
             txid
           ) => {
-            console.log("Complete:", paymentId, txid);
+            console.log(
+              "✅ Ready for completion:",
+              paymentId,
+              txid
+            );
 
             await fetch("/api/pi?action=complete", {
               method: "POST",
@@ -108,22 +114,32 @@ export default function PI() {
             });
 
             setMessage("✅ Payment completed successfully!");
+            setPaying(false);
           },
 
-          onCancel: () => {
+          onCancel: (paymentId) => {
+            console.warn(
+              "❌ Payment cancelled:",
+              paymentId
+            );
             setError("Payment cancelled.");
+            setPaying(false);
           },
 
-          onError: (err) => {
-            console.error("Pi Payment Error:", err);
+          onError: (err, payment) => {
+            console.error(
+              "❌ Pi Payment Error:",
+              err,
+              payment
+            );
             setError("Payment failed.");
+            setPaying(false);
           },
         }
       );
     } catch (err) {
       console.error(err);
       setError("Payment failed.");
-    } finally {
       setPaying(false);
     }
   };

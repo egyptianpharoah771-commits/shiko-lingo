@@ -2,19 +2,9 @@
  * Pi Payments Integration
  * -----------------------
  * Handles Pi SDK payment flow only.
- *
- * Principles:
- * - Talks to Pi SDK directly
- * - Does NOT touch LocalStorage
- * - Does NOT know about UI or Adapters
- * - Returns clean results to flows
  */
 
-export async function createPiPayment({
-  amount,
-  memo,
-  metadata = {},
-}) {
+export function createPiPayment({ amount, memo }) {
   if (!window.Pi) {
     throw new Error("Pi SDK not available");
   }
@@ -23,37 +13,50 @@ export async function createPiPayment({
     throw new Error("Invalid payment amount");
   }
 
-  try {
-    const payment = await window.Pi.createPayment(
-      {
-        amount,
-        memo,
-        metadata,
+  // ❗ createPayment is NOT async
+  window.Pi.createPayment(
+    {
+      amount,
+      memo,
+    },
+    {
+      // ✅ STEP 1 — Server Approval
+      async onReadyForServerApproval(paymentId) {
+        console.log("✅ Ready for approval:", paymentId);
+
+        await fetch("/api/pi?action=approve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId }),
+        });
       },
-      {
-        onReadyForServerApproval(paymentId) {
-          // Step 1: Server approval (later)
-          console.log("Ready for approval:", paymentId);
-        },
 
-        onReadyForServerCompletion(paymentId, txid) {
-          // Step 2: Server completion (later)
-          console.log("Ready for completion:", paymentId, txid);
-        },
+      // ✅ STEP 2 — Server Completion
+      async onReadyForServerCompletion(paymentId, txid) {
+        console.log(
+          "✅ Ready for completion:",
+          paymentId,
+          txid
+        );
 
-        onCancel(paymentId) {
-          console.warn("Payment cancelled:", paymentId);
-        },
+        await fetch("/api/pi?action=complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId, txid }),
+        });
+      },
 
-        onError(error, payment) {
-          console.error("Payment error:", error, payment);
-        },
-      }
-    );
+      onCancel(paymentId) {
+        console.warn("❌ Payment cancelled:", paymentId);
+      },
 
-    return payment;
-  } catch (err) {
-    console.error("Pi payment failed", err);
-    throw err;
-  }
+      onError(error, payment) {
+        console.error(
+          "❌ Pi payment error:",
+          error,
+          payment
+        );
+      },
+    }
+  );
 }

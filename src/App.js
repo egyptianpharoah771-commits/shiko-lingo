@@ -68,14 +68,15 @@ function App() {
 
   /* ======================
      🔑 Pi SDK INIT (ONCE – GLOBAL)
+     ✅ SANDBOX MODE (TESTNET)
   ====================== */
   useEffect(() => {
     if (window.Pi) {
       window.Pi.init({
         version: "2.0",
-        sandbox: false, // production
+        sandbox: true, // ✅ REQUIRED for Testnet & Checklist
       });
-      console.log("✅ Pi SDK initialized (App root)");
+      console.log("✅ Pi SDK initialized (Sandbox mode)");
     } else {
       console.warn(
         "⚠️ Pi SDK not found. Open app in Pi Browser."
