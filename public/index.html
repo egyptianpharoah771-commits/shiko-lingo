@@ -11,7 +11,10 @@
       name="description"
       content="Shiko Lingo is an AI-powered English learning app with listening, speaking, reading, writing, and smart AI tutor feedback."
     />
-    <meta name="keywords" content="Shiko Lingo, Learn English, AI English, English with AI, Language Learning App" />
+    <meta
+      name="keywords"
+      content="Shiko Lingo, Learn English, AI English, English with AI, Language Learning App"
+    />
     <meta name="author" content="Shiko Lingo" />
 
     <!-- Mobile & PWA -->
@@ -22,8 +25,18 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Pi Network SDK (MUST load before React) -->
+    <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+    <!-- Pi SDK Init (Production) -->
+    <script>
+      if (window.Pi) {
+        Pi.init({
+          version: "2.0",
+          sandbox: false
+        });
+      }
+    </script>
   </head>
 
   <body>

@@ -26,7 +26,10 @@ export default function PI() {
     }
   }, []);
 
-  /* ===== Login with Pi (WITH PAYMENTS SCOPE) ===== */
+  /* ==================================================
+     Login with Pi (WITH PAYMENTS SCOPE)
+     + SERVER AUTH VERIFY (CHECKLIST REQUIRED)
+  ================================================== */
   const handleLogin = async () => {
     if (!window.Pi) {
       setError("Please open this app using Pi Browser.");
@@ -37,7 +40,7 @@ export default function PI() {
     setError("");
 
     try {
-      const scopes = ["username", "payments"]; // ✅ REQUIRED
+      const scopes = ["username", "payments"];
 
       const auth = await window.Pi.authenticate(
         scopes,
@@ -48,6 +51,17 @@ export default function PI() {
           );
         }
       );
+
+      /* 🔐 VERIFY ACCESS TOKEN WITH BACKEND */
+      await fetch("/api/pi?action=auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accessToken: auth.accessToken,
+        }),
+      });
 
       const piUser = auth.user;
 
@@ -63,8 +77,10 @@ export default function PI() {
     }
   };
 
-  /* ===== Test Pi Payment (CHECKLIST FLOW) ===== */
-  const handleTestPayment = () => {
+  /* ==================================================
+     Test Pi Payment (FINAL CHECKLIST STEP)
+  ================================================== */
+  const handleTestPayment = async () => {
     if (!window.Pi) {
       setError("Pi Browser required.");
       return;
@@ -77,7 +93,7 @@ export default function PI() {
     try {
       window.Pi.createPayment(
         {
-          amount: 0.1, // ✅ Testnet amount
+          amount: 0.1,
           memo: "Shiko Lingo Test Payment",
         },
         {
@@ -147,13 +163,19 @@ export default function PI() {
   return (
     <div className="pi-container">
       <div className="logo-wrap">
-        <img src={piLogo} alt="Pi Logo" className="pi-logo" />
+        <img
+          src={piLogo}
+          alt="Pi Logo"
+          className="pi-logo"
+        />
       </div>
 
-      <h1 className="pi-title">Shiko Lingo — Pi Network</h1>
+      <h1 className="pi-title">
+        Shiko Lingo — Pi Network
+      </h1>
       <p className="pi-desc">
-        Sign in with your Pi account to personalize your
-        learning experience.
+        Sign in with your Pi account to personalize
+        your learning experience.
       </p>
 
       <div className="pi-box">
@@ -170,7 +192,9 @@ export default function PI() {
             onClick={handleLogin}
             disabled={loading}
           >
-            {loading ? "Connecting…" : "Login with Pi"}
+            {loading
+              ? "Connecting…"
+              : "Login with Pi"}
           </button>
         )}
 
@@ -195,9 +219,13 @@ export default function PI() {
         )}
 
         {message && (
-          <p style={{ color: "green" }}>{message}</p>
+          <p style={{ color: "green" }}>
+            {message}
+          </p>
         )}
-        {error && <p className="pi-error">{error}</p>}
+        {error && (
+          <p className="pi-error">{error}</p>
+        )}
       </div>
     </div>
   );

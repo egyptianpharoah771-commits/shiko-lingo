@@ -2,6 +2,7 @@
  * Pi Payments Integration
  * -----------------------
  * Handles Pi SDK payment flow only.
+ * Checklist-compliant & Production-ready
  */
 
 export function createPiPayment({ amount, memo }) {
@@ -13,50 +14,96 @@ export function createPiPayment({ amount, memo }) {
     throw new Error("Invalid payment amount");
   }
 
-  // ❗ createPayment is NOT async
-  window.Pi.createPayment(
-    {
-      amount,
-      memo,
-    },
-    {
-      // ✅ STEP 1 — Server Approval
-      async onReadyForServerApproval(paymentId) {
-        console.log("✅ Ready for approval:", paymentId);
-
-        await fetch("/api/pi?action=approve", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paymentId }),
-        });
+  try {
+    // ❗ Pi.createPayment is NOT async by design
+    window.Pi.createPayment(
+      {
+        amount,
+        memo,
       },
+      {
+        /* =========================
+           STEP 1 — Server Approval
+        ========================= */
+        onReadyForServerApproval: async (paymentId) => {
+          console.log("✅ Ready for approval:", paymentId);
 
-      // ✅ STEP 2 — Server Completion
-      async onReadyForServerCompletion(paymentId, txid) {
-        console.log(
-          "✅ Ready for completion:",
+          const res = await fetch(
+            "/api/pi?action=approve",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ paymentId }),
+            }
+          );
+
+          if (!res.ok) {
+            const err = await res.text();
+            throw new Error(
+              "Server approval failed: " + err
+            );
+          }
+        },
+
+        /* =========================
+           STEP 2 — Server Completion
+        ========================= */
+        onReadyForServerCompletion: async (
           paymentId,
           txid
-        );
+        ) => {
+          console.log(
+            "✅ Ready for completion:",
+            paymentId,
+            txid
+          );
 
-        await fetch("/api/pi?action=complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paymentId, txid }),
-        });
-      },
+          const res = await fetch(
+            "/api/pi?action=complete",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ paymentId, txid }),
+            }
+          );
 
-      onCancel(paymentId) {
-        console.warn("❌ Payment cancelled:", paymentId);
-      },
+          if (!res.ok) {
+            const err = await res.text();
+            throw new Error(
+              "Server completion failed: " + err
+            );
+          }
 
-      onError(error, payment) {
-        console.error(
-          "❌ Pi payment error:",
-          error,
-          payment
-        );
-      },
-    }
-  );
+          console.log(
+            "🏁 Pi payment flow completed successfully"
+          );
+        },
+
+        /* =========================
+           User Actions / Errors
+        ========================= */
+        onCancel: (paymentId) => {
+          console.warn(
+            "❌ Payment cancelled:",
+            paymentId
+          );
+        },
+
+        onError: (error, payment) => {
+          console.error(
+            "❌ Pi payment error:",
+            error,
+            payment
+          );
+        },
+      }
+    );
+  } catch (err) {
+    console.error("❌ createPiPayment failed:", err);
+    throw err;
+  }
 }
