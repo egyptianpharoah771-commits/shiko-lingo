@@ -1,26 +1,37 @@
 export default async function handler(req, res) {
-  const { method, query, body } = req;
-
   /* =========================
      CORS (Pi Browser iframe)
   ========================= */
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS"
+  );
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
   );
 
-  if (method === "OPTIONS") {
+  if (req.method === "OPTIONS") {
     return res.status(200).end();
+  }
+
+  /* =========================
+     BASIC HEALTH CHECK
+     GET /api/pi
+  ========================= */
+  if (req.method === "GET" && !req.query.action) {
+    return res.status(200).json({
+      ok: true,
+      service: "pi-backend",
+      env: process.env.PI_API_KEY ? "ready" : "missing_api_key",
+    });
   }
 
   /* =========================
      ENV
   ========================= */
   const PI_API_KEY = process.env.PI_API_KEY;
-
-  // ✅ TESTNET ONLY (Checklist)
   const PI_API_URL = "https://api-testnet.minepi.com/v2";
 
   if (!PI_API_KEY) {
@@ -30,13 +41,16 @@ export default async function handler(req, res) {
     });
   }
 
-  console.log("🔥 PI API HIT:", query.action);
+  const { method, query, body } = req;
+
+  console.log("🔥 PI API HIT:", method, query.action);
 
   /* =========================
      AUTH VERIFY
+     POST /api/pi?action=auth
   ========================= */
   if (method === "POST" && query.action === "auth") {
-    const { accessToken } = body;
+    const { accessToken } = body || {};
 
     if (!accessToken) {
       return res.status(400).json({
@@ -73,9 +87,10 @@ export default async function handler(req, res) {
 
   /* =========================
      APPROVE PAYMENT
+     POST /api/pi?action=approve
   ========================= */
   if (method === "POST" && query.action === "approve") {
-    const { paymentId } = body;
+    const { paymentId } = body || {};
 
     if (!paymentId) {
       return res.status(400).json({
@@ -113,9 +128,10 @@ export default async function handler(req, res) {
 
   /* =========================
      COMPLETE PAYMENT
+     POST /api/pi?action=complete
   ========================= */
   if (method === "POST" && query.action === "complete") {
-    const { paymentId, txid } = body;
+    const { paymentId, txid } = body || {};
 
     if (!paymentId || !txid) {
       return res.status(400).json({
@@ -152,7 +168,17 @@ export default async function handler(req, res) {
     }
   }
 
+  /* =========================
+     FALLBACK
+  ========================= */
   return res.status(404).json({
     error: "NOT_FOUND",
   });
 }
+
+/* 
+=====================================================
+ VERCEL FRESH DEPLOY MARKER
+ (do not remove – used to force new deployment)
+=====================================================
+*/
