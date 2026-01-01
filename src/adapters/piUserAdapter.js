@@ -14,10 +14,11 @@ const STORAGE_KEY = "pi_user";
 
 /**
  * Persist authenticated Pi user
+ * ✅ متوافق مع Pi SDK (user.uid)
  */
-export function setPiUser({ pi_uid, username }) {
-  if (!pi_uid || typeof pi_uid !== "string") {
-    throw new Error("Invalid pi_uid");
+export function setPiUser({ uid, username }) {
+  if (!uid || typeof uid !== "string") {
+    throw new Error("Invalid uid");
   }
 
   if (!username || typeof username !== "string") {
@@ -25,7 +26,7 @@ export function setPiUser({ pi_uid, username }) {
   }
 
   const userContract = {
-    pi_uid,
+    uid,
     username,
     isAuthenticated: true,
     authenticatedAt: Date.now(),

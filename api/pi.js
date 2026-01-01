@@ -5,10 +5,7 @@ export default async function handler(req, res) {
      CORS (Pi Browser iframe)
   ========================= */
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "POST, OPTIONS"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
@@ -18,17 +15,25 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  /* =========================
+     ENV
+  ========================= */
   const PI_API_KEY = process.env.PI_API_KEY;
 
+  // ✅ TESTNET ONLY (Checklist)
+  const PI_API_URL = "https://api-testnet.minepi.com/v2";
+
   if (!PI_API_KEY) {
+    console.error("❌ PI_API_KEY_NOT_SET");
     return res.status(500).json({
       error: "PI_API_KEY_NOT_SET",
     });
   }
 
+  console.log("🔥 PI API HIT:", query.action);
+
   /* =========================
-     AUTH VERIFY (LOGIN)
-     REQUIRED BY PI CHECKLIST
+     AUTH VERIFY
   ========================= */
   if (method === "POST" && query.action === "auth") {
     const { accessToken } = body;
@@ -40,14 +45,11 @@ export default async function handler(req, res) {
     }
 
     try {
-      const meRes = await fetch(
-        "https://api.minepi.com/v2/me",
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const meRes = await fetch(`${PI_API_URL}/me`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
       if (!meRes.ok) {
         return res.status(401).json({
@@ -56,14 +58,13 @@ export default async function handler(req, res) {
       }
 
       const user = await meRes.json();
-      console.log("✅ PI AUTH VERIFIED:", user);
 
       return res.status(200).json({
         success: true,
         user,
       });
     } catch (err) {
-      console.error("PI AUTH ERROR:", err);
+      console.error("❌ AUTH FAILED:", err);
       return res.status(500).json({
         error: "PI_AUTH_FAILED",
       });
@@ -84,21 +85,26 @@ export default async function handler(req, res) {
 
     try {
       const piRes = await fetch(
-        `https://api.minepi.com/v2/payments/${paymentId}/approve`,
+        `${PI_API_URL}/payments/${paymentId}/approve`,
         {
           method: "POST",
           headers: {
             Authorization: `Key ${PI_API_KEY}`,
+            "Content-Type": "application/json",
           },
         }
       );
 
       const data = await piRes.json();
-      console.log("✅ PI APPROVE:", data);
+
+      if (!piRes.ok) {
+        console.error("❌ APPROVE FAILED:", data);
+        return res.status(piRes.status).json(data);
+      }
 
       return res.status(200).json(data);
     } catch (err) {
-      console.error("PI APPROVE ERROR:", err);
+      console.error("❌ APPROVE FAILED:", err);
       return res.status(500).json({
         error: "PI_APPROVE_FAILED",
       });
@@ -119,7 +125,7 @@ export default async function handler(req, res) {
 
     try {
       const piRes = await fetch(
-        `https://api.minepi.com/v2/payments/${paymentId}/complete`,
+        `${PI_API_URL}/payments/${paymentId}/complete`,
         {
           method: "POST",
           headers: {
@@ -131,11 +137,15 @@ export default async function handler(req, res) {
       );
 
       const data = await piRes.json();
-      console.log("✅ PI COMPLETE:", data);
+
+      if (!piRes.ok) {
+        console.error("❌ COMPLETE FAILED:", data);
+        return res.status(piRes.status).json(data);
+      }
 
       return res.status(200).json(data);
     } catch (err) {
-      console.error("PI COMPLETE ERROR:", err);
+      console.error("❌ COMPLETE FAILED:", err);
       return res.status(500).json({
         error: "PI_COMPLETE_FAILED",
       });

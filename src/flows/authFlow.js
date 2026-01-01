@@ -27,12 +27,16 @@ export async function startPiLogin() {
 
   // 1. Authenticate via Pi SDK
   const piUser = await authenticateWithPi();
+  // piUser = { uid, username }
 
   // 2. Save Pi user contract
-  const storedUser = setPiUser(piUser);
+  const storedUser = setPiUser({
+    uid: piUser.uid,
+    username: piUser.username,
+  });
 
   // 3. Migrate guest progress (if any)
-  migrateGuestProgressToPiUser(storedUser.pi_uid);
+  migrateGuestProgressToPiUser(storedUser.uid);
 
   return storedUser;
 }

@@ -10,20 +10,24 @@ import {
   SUBSCRIPTION_PLANS,
 } from "../adapters/subscriptionAdapter";
 
+/**
+ * Start subscription payment via Pi
+ */
 export async function startSubscriptionPayment({
-  pi_uid,
+  uid,   // ✅ توحيد الاسم مع PiUser (uid)
   plan,
 }) {
   let amount = 0;
   let expiresAt = null;
 
   if (plan === SUBSCRIPTION_PLANS.MONTHLY) {
-    amount = 1; // مثال: 1 Pi
-    expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+    amount = 1; // 1 Pi (Testnet / Example)
+    expiresAt =
+      Date.now() + 30 * 24 * 60 * 60 * 1000;
   }
 
   if (plan === SUBSCRIPTION_PLANS.LIFETIME) {
-    amount = 10; // مثال
+    amount = 10; // Example
     expiresAt = null;
   }
 
@@ -31,15 +35,15 @@ export async function startSubscriptionPayment({
     throw new Error("Invalid subscription plan");
   }
 
-  await createPiPayment({
+  // 🔑 Trigger Pi Payment
+  createPiPayment({
     amount,
     memo: `Shiko Lingo - ${plan} subscription`,
-    metadata: { plan },
   });
 
-  // Temporary success (until backend exists)
+  // ✅ Local activation (until backend subscription verification exists)
   return setUserSubscription({
-    pi_uid,
+    pi_uid: uid,
     plan,
     expiresAt,
   });

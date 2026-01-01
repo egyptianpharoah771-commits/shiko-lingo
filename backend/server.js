@@ -24,10 +24,14 @@ app.get("/", (req, res) => {
 });
 
 /* ======================================================
-   Pi Network – Payments (CHECKLIST CRITICAL)
+   Pi Network – Payments (CHECKLIST / TESTNET)
 ====================================================== */
 
-const PI_API_BASE = "https://api.minepi.com";
+/**
+ * ✅ IMPORTANT
+ * Testnet base URL (Checklist)
+ */
+const PI_API_BASE = "https://api-testnet.minepi.com";
 
 function piHeaders() {
   return {
@@ -58,19 +62,21 @@ app.post("/api/pi/approve", async (req, res) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("PI APPROVE FAILED:", data);
+      console.error("❌ PI APPROVE FAILED:", data);
       return res.status(response.status).json({
         error: "PI_APPROVE_FAILED",
         details: data,
       });
     }
 
+    console.log("✅ PI APPROVED:", paymentId);
+
     return res.status(200).json({
       status: "APPROVED",
       paymentId,
     });
   } catch (err) {
-    console.error("PI APPROVE ERROR:", err);
+    console.error("❌ PI APPROVE ERROR:", err);
     return res.status(500).json({
       error: "PI_APPROVE_EXCEPTION",
     });
@@ -100,12 +106,14 @@ app.post("/api/pi/complete", async (req, res) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("PI COMPLETE FAILED:", data);
+      console.error("❌ PI COMPLETE FAILED:", data);
       return res.status(response.status).json({
         error: "PI_COMPLETE_FAILED",
         details: data,
       });
     }
+
+    console.log("✅ PI COMPLETED:", paymentId, txid);
 
     return res.status(200).json({
       status: "COMPLETED",
@@ -113,7 +121,7 @@ app.post("/api/pi/complete", async (req, res) => {
       txid,
     });
   } catch (err) {
-    console.error("PI COMPLETE ERROR:", err);
+    console.error("❌ PI COMPLETE ERROR:", err);
     return res.status(500).json({
       error: "PI_COMPLETE_EXCEPTION",
     });
@@ -121,7 +129,7 @@ app.post("/api/pi/complete", async (req, res) => {
 });
 
 /* ======================
-   Start Server
+   Start Server (LOCAL ONLY)
 ====================== */
 const PORT = 5000;
 app.listen(PORT, () => {

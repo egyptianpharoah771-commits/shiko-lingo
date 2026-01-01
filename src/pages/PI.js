@@ -52,7 +52,7 @@ export default function PI() {
         }
       );
 
-      /* 🔐 VERIFY ACCESS TOKEN WITH BACKEND */
+      // 🔐 VERIFY ACCESS TOKEN WITH BACKEND (CHECKLIST)
       await fetch("/api/pi?action=auth", {
         method: "POST",
         headers: {
@@ -63,10 +63,14 @@ export default function PI() {
         }),
       });
 
-      const piUser = auth.user;
+      // ✅ NORMALIZE USER CONTRACT
+      const piUserContract = {
+        pi_uid: auth.user.uid,
+        username: auth.user.username,
+      };
 
-      setPiUser(piUser);
-      setUser(piUser);
+      const storedUser = setPiUser(piUserContract);
+      setUser(storedUser);
 
       navigate("/dashboard");
     } catch (err) {
@@ -80,7 +84,7 @@ export default function PI() {
   /* ==================================================
      Test Pi Payment (FINAL CHECKLIST STEP)
   ================================================== */
-  const handleTestPayment = async () => {
+  const handleTestPayment = () => {
     if (!window.Pi) {
       setError("Pi Browser required.");
       return;
@@ -110,7 +114,7 @@ export default function PI() {
             });
           },
 
-          /* ===== Phase 3: Server Completion ===== */
+          /* ===== Phase 2: Server Completion ===== */
           onReadyForServerCompletion: async (
             paymentId,
             txid
@@ -129,7 +133,9 @@ export default function PI() {
               body: JSON.stringify({ paymentId, txid }),
             });
 
-            setMessage("✅ Payment completed successfully!");
+            setMessage(
+              "✅ Payment completed successfully!"
+            );
             setPaying(false);
           },
 

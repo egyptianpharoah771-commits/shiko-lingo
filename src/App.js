@@ -67,19 +67,21 @@ function App() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   /* ======================
-     🔑 Pi SDK INIT (ONCE – GLOBAL)
-     ✅ SANDBOX MODE (TESTNET)
+     🔑 Pi SDK INIT (PRODUCTION)
+     ❌ NO SANDBOX
+     ✅ Pi Browser ONLY
   ====================== */
   useEffect(() => {
-    if (window.Pi) {
+    if (window.Pi && !window.__PI_INITIALIZED__) {
       window.Pi.init({
         version: "2.0",
-        sandbox: true, // ✅ REQUIRED for Testnet & Checklist
       });
-      console.log("✅ Pi SDK initialized (Sandbox mode)");
-    } else {
+
+      window.__PI_INITIALIZED__ = true;
+      console.log("✅ Pi SDK initialized (Production mode)");
+    } else if (!window.Pi) {
       console.warn(
-        "⚠️ Pi SDK not found. Open app in Pi Browser."
+        "⚠️ Pi SDK not found. Please open the app in Pi Browser."
       );
     }
   }, []);

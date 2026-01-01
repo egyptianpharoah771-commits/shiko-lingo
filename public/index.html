@@ -28,12 +28,12 @@
     <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-    <!-- Pi SDK Init (Production) -->
+    <!-- Pi SDK Init (TESTNET / CHECKLIST) -->
     <script>
       if (window.Pi) {
-        Pi.init({
+        window.Pi.init({
           version: "2.0",
-          sandbox: false
+          sandbox: true
         });
       }
     </script>
@@ -45,7 +45,5 @@
     </noscript>
 
     <div id="root"></div>
-
-    <!-- React bundle injected automatically -->
   </body>
 </html>
