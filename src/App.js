@@ -65,6 +65,12 @@ import GrammarUnits from "./grammar/GrammarUnits";
 import GrammarUnitPage from "./grammar/GrammarUnitPage";
 
 /* ======================
+   Legal Pages
+====================== */
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+
+/* ======================
    Entry Page
 ====================== */
 function Entry() {
@@ -81,55 +87,44 @@ function Entry() {
       <h1>Shiko Lingo</h1>
       <p>Learn English the smart way</p>
 
-      <button
-        style={primaryBtn}
-        onClick={() => navigate("/dashboard")}
-      >
+      <button style={primaryBtn} onClick={() => navigate("/dashboard")}>
         🚀 Enter App
       </button>
 
-      <button
-        style={secondaryBtn}
-        onClick={() => navigate("/pi")}
-      >
+      <button style={secondaryBtn} onClick={() => navigate("/pi")}>
         🔐 Continue with Pi
       </button>
     </div>
   );
 }
 
+/* ======================
+   App Layout
+====================== */
 function AppLayout({ children }) {
   const location = useLocation();
   const hideLayout = location.pathname === "/";
 
   const [unreadCount, setUnreadCount] = useState(0);
 
-  /* 🔹 Storage migration (safe) */
   useEffect(() => {
     migrateLegacyStorage();
   }, []);
 
-  /* 🔹 Load unread feedback count */
   useEffect(() => {
     const loadUnread = () => {
       const stored =
-        JSON.parse(
-          localStorage.getItem(STORAGE_KEYS.FEEDBACKS)
-        ) || [];
-
-      setUnreadCount(
-        stored.filter((f) => !f.isRead).length
-      );
+        JSON.parse(localStorage.getItem(STORAGE_KEYS.FEEDBACKS)) || [];
+      setUnreadCount(stored.filter((f) => !f.isRead).length);
     };
 
     loadUnread();
     window.addEventListener("storage", loadUnread);
-    return () =>
-      window.removeEventListener("storage", loadUnread);
+    return () => window.removeEventListener("storage", loadUnread);
   }, []);
 
   return (
-    <>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {!hideLayout && <FeedbackButton />}
 
       {!hideLayout && (
@@ -141,18 +136,14 @@ function AppLayout({ children }) {
                 alt="Shiko Lingo"
                 style={{ width: 42, height: 42 }}
               />
-              <strong style={{ fontSize: 20 }}>
-                Shiko Lingo
-              </strong>
+              <strong style={{ fontSize: 20 }}>Shiko Lingo</strong>
             </div>
 
             <Link to="/admin/feedback">
               <div style={feedbackBadgeStyle}>
                 🔔 Feedback
                 {unreadCount > 0 && (
-                  <span style={badgeCountStyle}>
-                    {unreadCount}
-                  </span>
+                  <span style={badgeCountStyle}>{unreadCount}</span>
                 )}
               </div>
             </Link>
@@ -173,11 +164,23 @@ function AppLayout({ children }) {
         </>
       )}
 
-      <div style={{ padding: 20 }}>{children}</div>
-    </>
+      {/* Main Content */}
+      <div style={{ padding: 20, flex: 1 }}>{children}</div>
+
+      {/* Footer */}
+      {!hideLayout && (
+        <footer style={footerStyle}>
+          <Link to="/privacy">Privacy Policy</Link> |{" "}
+          <Link to="/terms">Terms & Conditions</Link>
+        </footer>
+      )}
+    </div>
   );
 }
 
+/* ======================
+   App
+====================== */
 function App() {
   return (
     <Router>
@@ -197,23 +200,17 @@ function App() {
           />
 
           <Route path="/listening" element={<ListeningHome />} />
+          <Route path="/listening/:level" element={<ListeningLevel />} />
           <Route
             path="/listening/:level/:lessonId"
             element={<Listening />}
           />
-          <Route
-            path="/listening/:level"
-            element={<ListeningLevel />}
-          />
 
           <Route path="/reading" element={<ReadingHome />} />
+          <Route path="/reading/:level" element={<ReadingLevel />} />
           <Route
             path="/reading/:level/:lessonId"
             element={<ReadingLesson />}
-          />
-          <Route
-            path="/reading/:level"
-            element={<ReadingLevel />}
           />
 
           <Route path="/speaking" element={<SpeakingHome />} />
@@ -225,14 +222,15 @@ function App() {
             path="/speaking/:level/:lessonId"
             element={<SpeakingLesson />}
           />
-          <Route
-            path="/speaking/:level"
-            element={<SpeakingLevel />}
-          />
+          <Route path="/speaking/:level" element={<SpeakingLevel />} />
 
           <Route path="/writing" element={<Writing />} />
           <Route path="/upgrade" element={<Upgrade />} />
           <Route path="/pi" element={<PI />} />
+
+          {/* Legal */}
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
 
           <Route
             path="/admin/feedback"
@@ -296,6 +294,13 @@ const badgeCountStyle = {
   borderRadius: 12,
   padding: "2px 8px",
   fontSize: 12,
+};
+
+const footerStyle = {
+  textAlign: "center",
+  padding: 20,
+  fontSize: 14,
+  opacity: 0.7,
 };
 
 const entryStyle = {
