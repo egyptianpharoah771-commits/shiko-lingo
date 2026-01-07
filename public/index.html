@@ -3,10 +3,14 @@
   <head>
     <meta charset="utf-8" />
 
-    <!-- App Identity -->
+    <!-- ======================
+         App Identity
+    ======================= -->
     <title>Shiko Lingo – Learn English with AI</title>
 
-    <!-- SEO & Social -->
+    <!-- ======================
+         SEO & Social
+    ======================= -->
     <meta
       name="description"
       content="Shiko Lingo is an AI-powered English learning app with listening, speaking, reading, writing, and smart AI tutor feedback."
@@ -17,7 +21,9 @@
     />
     <meta name="author" content="Shiko Lingo" />
 
-    <!-- Mobile & PWA -->
+    <!-- ======================
+         Mobile & PWA
+    ======================= -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#6C4EFF" />
 
@@ -25,28 +31,42 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Pi Network SDK -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <!-- ======================
+         Pi Network SDK
+         (Must be loaded BEFORE React)
+    ======================= -->
+    <script
+      src="https://sdk.minepi.com/pi-sdk.js"
+      crossorigin="anonymous"
+    ></script>
 
-    <!-- Pi SDK Init (Auto Sandbox / Production) -->
+    <!-- ======================
+         Pi SDK Init (SAFE MODE)
+         ✔ Sandbox ONLY
+         ✔ Prevent double init
+         ✔ Checklist-safe
+    ======================= -->
     <script>
-      if (window.Pi) {
-        const isSandbox =
-          window.location.hostname.includes("localhost") ||
-          window.location.hostname.includes("trycloudflare.com");
+      (function () {
+        if (!window.Pi) {
+          console.error("❌ Pi SDK not loaded");
+          return;
+        }
 
+        if (window.__PI_SDK_INITIALIZED__) {
+          console.warn("⚠️ Pi SDK already initialized");
+          return;
+        }
+
+        // 🔐 Checklist & Review phase → SANDBOX ONLY
         window.Pi.init({
           version: "2.0",
-          sandbox: isSandbox
+          sandbox: true,
         });
 
-        console.log(
-          "🚀 Pi SDK Initialized | Sandbox:",
-          isSandbox
-        );
-      } else {
-        console.error("❌ Pi SDK not loaded");
-      }
+        window.__PI_SDK_INITIALIZED__ = true;
+        console.log("✅ Pi SDK initialized (SANDBOX mode)");
+      })();
     </script>
   </head>
 
@@ -55,6 +75,16 @@
       You need to enable JavaScript to run Shiko Lingo.
     </noscript>
 
+    <!-- React mounts هنا -->
     <div id="root"></div>
+
+    <!--
+      ❌ IMPORTANT:
+      Static footer with <a href="/privacy"> was REMOVED
+      because it breaks SPA routing on Vercel.
+
+      ✔ Legal links are rendered safely inside React
+      using <Link /> from react-router-dom.
+    -->
   </body>
 </html>
