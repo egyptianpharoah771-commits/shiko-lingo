@@ -4,11 +4,17 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
+/* 🐞 Mobile Debug Console */
+import VConsole from "vconsole";
+
 /*
-  ⚠️ ملاحظة مهمة:
-  - لا نعمل Pi.init هنا
-  - التهيئة موجودة مرة واحدة فقط داخل App.js
+  ⚠️ ملاحظة:
+  - التفعيل ده مؤقت للتشخيص فقط
+  - هنشيله بعد ما نطلع الـ error
 */
+
+// فعّل vConsole دايمًا
+new VConsole();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -17,5 +23,4 @@ root.render(
   </React.StrictMode>
 );
 
-// Performance measuring (optional)
 reportWebVitals();

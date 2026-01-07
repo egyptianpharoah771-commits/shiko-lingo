@@ -1,8 +1,12 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 import { markLessonCompleted } from "../utils/progressStorage";
+import {
+  getLessonFolder,
+  isLastLesson,
+} from "../utils/lessonUtils";
 
 // 🔐 Feature Gating + Identity
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
@@ -87,14 +91,23 @@ const WRITING_CONTENT = {
 function WritingLesson() {
   const { level, lessonId } = useParams();
 
-  /* ===== Feature gating + identity ===== */
+  /* ===== Normalize lessonId ===== */
+  const normalizedLessonId = lessonId?.includes("lesson")
+    ? lessonId
+    : lessonId?.split("-").pop();
+
+  const lessonNumber = Number(
+    normalizedLessonId?.replace("lesson", "")
+  );
+
+  /* ===== Hooks FIRST ===== */
   const { canAccess, userId, packageName } =
     useFeatureAccess({
       skill: "Writing",
       level,
     });
 
-  const answerKey = `writing-answer-${level}-${lessonId}`;
+  const answerKey = `writing-answer-${level}-lesson${lessonNumber}`;
 
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -103,7 +116,17 @@ function WritingLesson() {
   const [aiStatus, setAiStatus] = useState("IDLE");
   const [aiMessage, setAiMessage] = useState("");
 
-  /* ===== Load / Reset ===== */
+  const lessonData =
+    WRITING_CONTENT[level]?.[normalizedLessonId];
+
+  const content = lessonData?.content;
+  const questions = lessonData?.questions || [];
+
+  const lastLesson = isLastLesson(
+    getLessonFolder(level, "writing"),
+    lessonNumber
+  );
+
   useEffect(() => {
     if (!canAccess) return;
 
@@ -115,19 +138,15 @@ function WritingLesson() {
     setAiMessage("");
   }, [answerKey, canAccess]);
 
-  /* ===== Lock ===== */
+  /* ===== Guards ===== */
   if (!canAccess) {
     return <LockedFeature title="Writing Lesson" />;
   }
-
-  const lessonData =
-    WRITING_CONTENT[level]?.[lessonId];
 
   if (!lessonData) {
     return <p>Lesson not found.</p>;
   }
 
-  const { content, questions } = lessonData;
   const hasAnswer = answer.trim().length > 0;
 
   /* ===== Submit ===== */
@@ -138,7 +157,7 @@ function WritingLesson() {
 
     markLessonCompleted(
       STORAGE_KEYS.WRITING_COMPLETED,
-      `${level}-${lessonId}`
+      `${level}-lesson${lessonNumber}`
     );
 
     setSubmitted(true);
@@ -170,9 +189,7 @@ function WritingLesson() {
       setAiMessage(result.message);
     } else {
       setAiStatus("ERROR");
-      setAiMessage(
-        "Something went wrong. Please try again."
-      );
+      setAiMessage("AI error. Please try again.");
     }
   };
 
@@ -202,7 +219,6 @@ function WritingLesson() {
         style={{ width: "100%", padding: "10px" }}
       />
 
-      {/* 🤖 AI Tutor */}
       <button
         onClick={handleAskAI}
         disabled={!hasAnswer}
@@ -220,7 +236,6 @@ function WritingLesson() {
         🤖 Ask AI Tutor
       </button>
 
-      {/* ✅ Submit */}
       <button
         onClick={handleSubmit}
         disabled={submitted || !hasAnswer}
@@ -234,17 +249,23 @@ function WritingLesson() {
       </button>
 
       {submitted && (
-        <>
-          <p style={{ color: "green" }}>
-            ✅ Writing saved
-          </p>
-          <Link to={`/writing/${level}`}>
-            <button>Back to lessons</button>
-          </Link>
-        </>
+        <div style={{ marginTop: "20px" }}>
+          {lastLesson ? (
+            <Link to={`/writing/${level}`}>
+              Back to {level} lessons
+            </Link>
+          ) : (
+            <Link
+              to={`/writing/${level}/lesson${
+                lessonNumber + 1
+              }`}
+            >
+              ▶️ Next Lesson
+            </Link>
+          )}
+        </div>
       )}
 
-      {/* 🧠 AI Modal */}
       <AIResponseModal
         open={aiOpen}
         onClose={() => setAiOpen(false)}

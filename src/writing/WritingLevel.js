@@ -2,6 +2,8 @@ import { Link, useParams } from "react-router-dom";
 import { useMemo } from "react";
 import FeedbackBox from "../components/FeedbackBox";
 
+import STORAGE_KEYS from "../utils/storageKeys";
+
 // 🔐 Feature Gating
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
 import LockedFeature from "../components/LockedFeature";
@@ -54,30 +56,16 @@ const LESSONS_BY_LEVEL = {
 function WritingLevel() {
   const { level } = useParams();
 
-  /* ======================
-     Feature Access
-  ====================== */
+  /* ===== Hooks FIRST ===== */
   const {
     canAccess,
     userId,
     packageName,
   } = useFeatureAccess({
-    skill: "writing", // ✅ lowercase & unified
+    skill: "Writing", // ✅ unified
     level,
   });
 
-  /* 🔒 Early safe return */
-  if (!canAccess) {
-    return (
-      <LockedFeature
-        title={`Writing Level ${level}`}
-      />
-    );
-  }
-
-  /* ======================
-     Lessons Setup
-  ====================== */
   const lessonCount =
     LESSONS_BY_LEVEL[level] || 0;
 
@@ -90,15 +78,26 @@ function WritingLevel() {
     return (
       JSON.parse(
         localStorage.getItem(
-          "completedWritingLessons"
+          STORAGE_KEYS.WRITING_COMPLETED
         )
       ) || []
     );
   }, []);
 
-  /* ======================
-     Progress Calculation
-  ====================== */
+  /* ===== Guards AFTER hooks ===== */
+  if (!canAccess) {
+    return (
+      <LockedFeature
+        title={`Writing Level ${level}`}
+      />
+    );
+  }
+
+  if (!LESSONS_BY_LEVEL[level]) {
+    return <p>Invalid level.</p>;
+  }
+
+  /* ===== Progress ===== */
   const completedCount = lessons.filter(
     (lesson) =>
       completed.includes(`${level}-${lesson}`)
@@ -108,26 +107,21 @@ function WritingLevel() {
     lessonCount > 0 &&
     completedCount === lessonCount;
 
-  /* ======================
-     Lesson Unlock Logic
-  ====================== */
+  /* ===== Lesson Unlock ===== */
   const isLessonUnlocked = (index) => {
     if (index === 0) return true;
     const prevKey = `${level}-lesson${index}`;
     return completed.includes(prevKey);
   };
 
-  /* ======================
-     AI Tutor (Unified)
-  ====================== */
+  /* ===== AI Tutor (Level intro) ===== */
   const askAI = async () => {
     const res = await askAITutor({
-      skill: "writing",
+      skill: "Writing",
       level,
       lessonTitle: `Writing Level ${level}`,
       prompt: `
 You are an English writing tutor.
-
 Explain what the student will learn in Writing level ${level}.
 Use simple English suitable for ${level}.
 Give 3 short writing tips.

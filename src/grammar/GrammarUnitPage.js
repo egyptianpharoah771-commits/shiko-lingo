@@ -1,31 +1,32 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+
+import STORAGE_KEYS from "../utils/storageKeys";
+
+// Feature Gating
+import { useFeatureAccess } from "../hooks/useFeatureAccess";
+import LockedFeature from "../components/LockedFeature";
 
 // ===== A1 Units =====
 import a1Content1 from "./A1/unit1/content";
 import a1Questions1 from "./A1/unit1/questions";
-
 import a1Content2 from "./A1/unit2/content";
 import a1Questions2 from "./A1/unit2/questions";
 
 // ===== A2 Units =====
 import a2Content1 from "./A2/unit1/content";
 import a2Questions1 from "./A2/unit1/questions";
-
 import a2Content2 from "./A2/unit2/content";
 import a2Questions2 from "./A2/unit2/questions";
 
 // ===== B1 Units =====
 import b1Content1 from "./B1/unit1/content";
 import b1Questions1 from "./B1/unit1/questions";
-
 import b1Content2 from "./B1/unit2/content";
 import b1Questions2 from "./B1/unit2/questions";
-
 import b1Content3 from "./B1/unit3/content";
 import b1Questions3 from "./B1/unit3/questions";
 
-// ===== Grammar Map (CORE ARCHITECTURE) =====
 const GRAMMAR_MAP = {
   A1: {
     unit1: { content: a1Content1, questions: a1Questions1 },
@@ -45,68 +46,80 @@ const GRAMMAR_MAP = {
 function GrammarUnitPage() {
   const { level, unit } = useParams();
 
-  // ===== State =====
-  const [answers, setAnswers] = useState({});
-  const [score, setScore] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
+  const { canAccess } = useFeatureAccess({
+    skill: "Grammar",
+    level,
+  });
 
-  // ===== Resolve content =====
   const grammarUnit = GRAMMAR_MAP[level]?.[unit];
   const content = grammarUnit?.content;
   const questions = grammarUnit?.questions || [];
 
-  // ===== Dynamic pass score (70%) =====
-  const PASS_SCORE = Math.ceil(questions.length * 0.7);
+  const [answers, setAnswers] = useState({});
+  const [score, setScore] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
 
-  // ===== Progress =====
-  const storageKey = "completedGrammarUnits";
+  const storageKey = STORAGE_KEYS.GRAMMAR_COMPLETED;
   const completedUnits =
     JSON.parse(localStorage.getItem(storageKey)) || [];
 
   const unitKey = `${level}-${unit}`;
   const isCompleted = completedUnits.includes(unitKey);
 
-  // ===== Reset on unit change =====
+  const PASS_SCORE = Math.ceil(questions.length * 0.7);
+
   useEffect(() => {
     setAnswers({});
     setScore(null);
     setSubmitted(false);
   }, [level, unit]);
 
-  // ===== Guards =====
-  if (!content || !questions.length) {
-    return <p>❌ Unit not found</p>;
+  if (!canAccess) {
+    return <LockedFeature title="Grammar Unit" />;
   }
 
-  // ===== Handlers =====
+  if (!content || !questions.length) {
+    return <p>Unit not found</p>;
+  }
+
+  const allAnswered =
+    Object.keys(answers).length === questions.length;
+
+  const passed =
+    score !== null && score >= PASS_SCORE;
+
   const handleAnswer = (qId, option) => {
     if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: option }));
+    setAnswers((prev) => ({
+      ...prev,
+      [qId]: option,
+    }));
   };
 
-  const calculateScore = () => {
+  const handleSubmit = () => {
+    if (!allAnswered || submitted) return;
+
     let correct = 0;
     questions.forEach((q) => {
       if (answers[q.id] === q.answer) correct++;
     });
+
     setScore(correct);
     setSubmitted(true);
   };
 
-  const finishUnit = () => {
-    if (!isCompleted) {
-      const updated = [...completedUnits, unitKey];
-      localStorage.setItem(storageKey, JSON.stringify(updated));
-      alert("🎉 Unit completed successfully!");
-    }
+  const handleFinishUnit = () => {
+    if (!passed || isCompleted) return;
+
+    const updated = [...completedUnits, unitKey];
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify(updated)
+    );
   };
 
-  const allAnswered =
-    Object.keys(answers).length === questions.length;
-  const passed = score !== null && score >= PASS_SCORE;
-
   return (
-    <div>
+    <div style={{ maxWidth: "800px", margin: "0 auto" }}>
       <h2>{content.title}</h2>
       <p>{content.explanation}</p>
 
@@ -131,67 +144,27 @@ function GrammarUnitPage() {
         const isCorrect = userAnswer === q.answer;
 
         return (
-          <div
-            key={q.id}
-            style={{
-              marginBottom: "15px",
-              padding: "10px",
-              borderRadius: "8px",
-              border: submitted
-                ? isCorrect
-                  ? "2px solid #28a745"
-                  : "2px solid #dc3545"
-                : "1px solid #ddd",
-              backgroundColor: submitted
-                ? isCorrect
-                  ? "#eaffea"
-                  : "#ffecec"
-                : "#fff",
-            }}
-          >
-            <p>{q.question}</p>
-
+          <div key={q.id}>
+            <strong>{q.question}</strong>
             {q.options.map((opt) => (
               <button
                 key={opt}
                 onClick={() => handleAnswer(q.id, opt)}
                 disabled={submitted}
-                style={{
-                  marginRight: "6px",
-                  marginTop: "5px",
-                  padding: "6px 10px",
-                  borderRadius: "6px",
-                  border: "none",
-                  cursor: submitted ? "default" : "pointer",
-                  backgroundColor:
-                    userAnswer === opt
-                      ? "#cce5ff"
-                      : "#eee",
-                }}
               >
                 {opt}
               </button>
             ))}
-
             {submitted && (
-              <p
-                style={{
-                  marginTop: "6px",
-                  fontWeight: "bold",
-                  color: isCorrect ? "green" : "red",
-                }}
-              >
-                {isCorrect ? "✅ Correct" : "❌ Wrong"}
-              </p>
+              <p>{isCorrect ? "Correct" : "Wrong"}</p>
             )}
           </div>
         );
       })}
 
-      {/* ===== Actions ===== */}
       {!submitted && (
         <button
-          onClick={calculateScore}
+          onClick={handleSubmit}
           disabled={!allAnswered}
         >
           Check Answers
@@ -199,19 +172,23 @@ function GrammarUnitPage() {
       )}
 
       {submitted && (
-        <p style={{ fontWeight: "bold", marginTop: "10px" }}>
-          Your score: {score} / {questions.length}{" "}
-          {passed ? "✅ Passed" : "❌ Try again"}
+        <p>
+          Score: {score} / {questions.length}
         </p>
       )}
 
       <button
-        onClick={finishUnit}
+        onClick={handleFinishUnit}
         disabled={!passed || isCompleted}
-        style={{ marginTop: "10px" }}
       >
-        {isCompleted ? "✅ Completed" : "Finish Unit"}
+        Finish Unit
       </button>
+
+      <div>
+        <Link to={`/grammar/${level}`}>
+          Back to Grammar {level}
+        </Link>
+      </div>
     </div>
   );
 }

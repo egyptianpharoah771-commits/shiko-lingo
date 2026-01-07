@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 import { markLessonCompleted } from "../utils/progressStorage";
+import {
+  getLessonFolder,
+  isLastLesson,
+} from "../utils/lessonUtils";
 
 // 🔐 Feature Gating + Identity
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
@@ -15,11 +19,21 @@ import AIResponseModal from "../components/AIResponseModal";
 function ReadingLesson() {
   const { level, lessonId } = useParams();
 
+  /* ===== Normalize lessonId ===== */
+  const normalizedLessonId = lessonId?.includes("lesson")
+    ? lessonId
+    : lessonId?.split("-").pop(); // A1-lesson1 → lesson1
+
+  const lessonNumber = Number(
+    normalizedLessonId?.replace("lesson", "")
+  );
+
   /* ===== Feature access + identity ===== */
-  const { canAccess, userId, packageName } = useFeatureAccess({
-    skill: "Reading",
-    level,
-  });
+  const { canAccess, userId, packageName } =
+    useFeatureAccess({
+      skill: "Reading",
+      level,
+    });
 
   /* ===== State ===== */
   const [answers, setAnswers] = useState({});
@@ -30,10 +44,7 @@ function ReadingLesson() {
   const [aiStatus, setAiStatus] = useState("IDLE");
   const [aiMessage, setAiMessage] = useState("");
 
-  /* ===== Lesson number ===== */
-  const lessonNumber = Number(lessonId?.replace("lesson", ""));
-
-  /* ===== Load content dynamically ===== */
+  /* ===== Load lesson content ===== */
   let content = null;
   let questions = [];
 
@@ -95,6 +106,11 @@ function ReadingLesson() {
     (q) => Array.isArray(q.options)
   ).length;
 
+  const lastLesson = isLastLesson(
+    getLessonFolder(level, "reading"),
+    lessonNumber
+  );
+
   /* ===== Submit ===== */
   const handleSubmit = () => {
     if (submitted || !hasAnyAnswer) return;
@@ -115,7 +131,7 @@ function ReadingLesson() {
 
     markLessonCompleted(
       STORAGE_KEYS.READING_COMPLETED,
-      `${level}-${lessonId}`
+      `${level}-lesson${lessonNumber}`
     );
   };
 
@@ -147,14 +163,18 @@ function ReadingLesson() {
       setAiMessage(result.message);
     } else {
       setAiStatus("ERROR");
-      setAiMessage("AI Tutor error. Please try again.");
+      setAiMessage(
+        "AI Tutor error. Please try again."
+      );
     }
   };
 
   return (
     <div style={{ maxWidth: "700px", margin: "0 auto" }}>
       <h2>{content.title}</h2>
-      {content.description && <p>{content.description}</p>}
+      {content.description && (
+        <p>{content.description}</p>
+      )}
 
       {/* 🤖 AI Tutor */}
       <button
@@ -167,9 +187,9 @@ function ReadingLesson() {
           border: "none",
           backgroundColor: "#111",
           color: "white",
-          cursor: "pointer",
           fontWeight: "bold",
           opacity: hasAnyAnswer ? 1 : 0.6,
+          cursor: "pointer",
         }}
       >
         🤖 Ask AI Tutor
@@ -217,7 +237,8 @@ function ReadingLesson() {
                 let bg = "#fff";
                 if (submitted) {
                   if (isCorrect) bg = "#d4edda";
-                  else if (isSelected) bg = "#f8d7da";
+                  else if (isSelected)
+                    bg = "#f8d7da";
                 } else if (isSelected) {
                   bg = "#e5e9ff";
                 }
@@ -246,7 +267,9 @@ function ReadingLesson() {
                         }
                       />{" "}
                       {opt}
-                      {submitted && isCorrect && " ✔️"}
+                      {submitted &&
+                        isCorrect &&
+                        " ✔️"}
                     </label>
                   </div>
                 );
@@ -254,8 +277,8 @@ function ReadingLesson() {
             ) : (
               <textarea
                 rows={3}
-                placeholder="Write your answer here..."
                 disabled={submitted}
+                placeholder="Write your answer here..."
                 value={answers[i] || ""}
                 onChange={(e) =>
                   setAnswers({
@@ -296,13 +319,24 @@ function ReadingLesson() {
               fontWeight: "bold",
             }}
           >
-            🎉 You scored {score} out of {autoGradedCount}
+            🎉 You scored {score} out of{" "}
+            {autoGradedCount}
           </div>
 
           <div style={{ marginTop: "20px" }}>
-            <Link to={`/reading/${level}`}>
-              Back to {level} lessons
-            </Link>
+            {lastLesson ? (
+              <Link to={`/reading/${level}`}>
+                Back to {level} lessons
+              </Link>
+            ) : (
+              <Link
+                to={`/reading/${level}/lesson${
+                  lessonNumber + 1
+                }`}
+              >
+                ▶️ Next Lesson
+              </Link>
+            )}
           </div>
         </>
       )}

@@ -3,6 +3,8 @@ import {
   Routes,
   Route,
   Link,
+  useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -62,36 +64,52 @@ import GrammarLevels from "./grammar/GrammarLevels";
 import GrammarUnits from "./grammar/GrammarUnits";
 import GrammarUnitPage from "./grammar/GrammarUnitPage";
 
-function App() {
-  /* ===== Admin unread feedback ===== */
+/* ======================
+   Entry Page
+====================== */
+function Entry() {
+  const navigate = useNavigate();
+
+  return (
+    <div style={entryStyle}>
+      <img
+        src="/shiko-logo.png"
+        alt="Shiko Lingo"
+        style={{ width: 120, marginBottom: 20 }}
+      />
+
+      <h1>Shiko Lingo</h1>
+      <p>Learn English the smart way</p>
+
+      <button
+        style={primaryBtn}
+        onClick={() => navigate("/dashboard")}
+      >
+        🚀 Enter App
+      </button>
+
+      <button
+        style={secondaryBtn}
+        onClick={() => navigate("/pi")}
+      >
+        🔐 Continue with Pi
+      </button>
+    </div>
+  );
+}
+
+function AppLayout({ children }) {
+  const location = useLocation();
+  const hideLayout = location.pathname === "/";
+
   const [unreadCount, setUnreadCount] = useState(0);
 
-  /* ======================
-     🔑 Pi SDK INIT (PRODUCTION)
-     ❌ NO SANDBOX
-     ✅ Pi Browser ONLY
-  ====================== */
-  useEffect(() => {
-    if (window.Pi && !window.__PI_INITIALIZED__) {
-      window.Pi.init({
-        version: "2.0",
-      });
-
-      window.__PI_INITIALIZED__ = true;
-      console.log("✅ Pi SDK initialized (Production mode)");
-    } else if (!window.Pi) {
-      console.warn(
-        "⚠️ Pi SDK not found. Please open the app in Pi Browser."
-      );
-    }
-  }, []);
-
-  /* ===== One-time legacy storage migration ===== */
+  /* 🔹 Storage migration (safe) */
   useEffect(() => {
     migrateLegacyStorage();
   }, []);
 
-  /* ===== Load unread feedback count ===== */
+  /* 🔹 Load unread feedback count */
   useEffect(() => {
     const loadUnread = () => {
       const stored =
@@ -99,46 +117,36 @@ function App() {
           localStorage.getItem(STORAGE_KEYS.FEEDBACKS)
         ) || [];
 
-      const unread = stored.filter(
-        (f) => !f.isRead
-      ).length;
-
-      setUnreadCount(unread);
+      setUnreadCount(
+        stored.filter((f) => !f.isRead).length
+      );
     };
 
     loadUnread();
     window.addEventListener("storage", loadUnread);
-
     return () =>
-      window.removeEventListener(
-        "storage",
-        loadUnread
-      );
+      window.removeEventListener("storage", loadUnread);
   }, []);
 
   return (
-    <Router>
-      {/* 🌍 Global Floating Feedback */}
-      <FeedbackButton />
+    <>
+      {!hideLayout && <FeedbackButton />}
 
-      <div
-        style={{
-          padding: 20,
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        {/* ================= Header ================= */}
-        <header style={headerStyle}>
-          <strong style={{ fontSize: 20 }}>
-            🌐 Shiko Lingo
-          </strong>
+      {!hideLayout && (
+        <>
+          <header style={headerStyle}>
+            <div style={{ display: "flex", gap: 12 }}>
+              <img
+                src="/shiko-logo.png"
+                alt="Shiko Lingo"
+                style={{ width: 42, height: 42 }}
+              />
+              <strong style={{ fontSize: 20 }}>
+                Shiko Lingo
+              </strong>
+            </div>
 
-          <div style={{ display: "flex", gap: 10 }}>
-            {/* 🔔 Admin Feedback */}
-            <Link
-              to="/admin/feedback"
-              style={{ textDecoration: "none" }}
-            >
+            <Link to="/admin/feedback">
               <div style={feedbackBadgeStyle}>
                 🔔 Feedback
                 {unreadCount > 0 && (
@@ -148,42 +156,41 @@ function App() {
                 )}
               </div>
             </Link>
-          </div>
-        </header>
+          </header>
 
-        {/* ================= Navigation ================= */}
-        <nav style={navStyle}>
-          <NavButton to="/dashboard" label="Dashboard" />
-          <NavButton to="/level-test" label="Level Test" />
-          <NavButton
-            to="/placement-test"
-            label="Placement Test"
-          />
-          <NavButton to="/grammar" label="Grammar" />
-          <NavButton to="/listening" label="Listening" />
-          <NavButton to="/reading" label="Reading" />
-          <NavButton to="/speaking" label="Speaking" />
-          <NavButton to="/writing" label="Writing" />
-          <NavButton to="/upgrade" label="Upgrade" />
-          <NavButton to="/pi" label="Pi" />
-        </nav>
+          <nav style={navStyle}>
+            <NavButton to="/dashboard" label="Dashboard" />
+            <NavButton to="/level-test" label="Level Test" />
+            <NavButton to="/placement-test" label="Placement Test" />
+            <NavButton to="/grammar" label="Grammar" />
+            <NavButton to="/listening" label="Listening" />
+            <NavButton to="/reading" label="Reading" />
+            <NavButton to="/speaking" label="Speaking" />
+            <NavButton to="/writing" label="Writing" />
+            <NavButton to="/upgrade" label="Upgrade" />
+            <NavButton to="/pi" label="Pi" />
+          </nav>
+        </>
+      )}
 
-        {/* ================= Routes ================= */}
+      <div style={{ padding: 20 }}>{children}</div>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppLayout>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Entry />} />
 
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/level-test" element={<LevelTest />} />
-          <Route
-            path="/placement-test"
-            element={<PlacementTest />}
-          />
+          <Route path="/placement-test" element={<PlacementTest />} />
 
           <Route path="/grammar" element={<GrammarLevels />} />
-          <Route
-            path="/grammar/:level"
-            element={<GrammarUnits />}
-          />
+          <Route path="/grammar/:level" element={<GrammarUnits />} />
           <Route
             path="/grammar/:level/:unit"
             element={<GrammarUnitPage />}
@@ -191,22 +198,22 @@ function App() {
 
           <Route path="/listening" element={<ListeningHome />} />
           <Route
-            path="/listening/:level"
-            element={<ListeningLevel />}
-          />
-          <Route
             path="/listening/:level/:lessonId"
             element={<Listening />}
+          />
+          <Route
+            path="/listening/:level"
+            element={<ListeningLevel />}
           />
 
           <Route path="/reading" element={<ReadingHome />} />
           <Route
-            path="/reading/:level"
-            element={<ReadingLevel />}
-          />
-          <Route
             path="/reading/:level/:lessonId"
             element={<ReadingLesson />}
+          />
+          <Route
+            path="/reading/:level"
+            element={<ReadingLevel />}
           />
 
           <Route path="/speaking" element={<SpeakingHome />} />
@@ -215,12 +222,12 @@ function App() {
             element={<SpeakingLessonB1 />}
           />
           <Route
-            path="/speaking/:level"
-            element={<SpeakingLevel />}
-          />
-          <Route
             path="/speaking/:level/:lessonId"
             element={<SpeakingLesson />}
+          />
+          <Route
+            path="/speaking/:level"
+            element={<SpeakingLevel />}
           />
 
           <Route path="/writing" element={<Writing />} />
@@ -236,12 +243,12 @@ function App() {
             }
           />
         </Routes>
-      </div>
+      </AppLayout>
     </Router>
   );
 }
 
-/* ================= Nav Button ================= */
+/* ================= Helpers ================= */
 function NavButton({ to, label }) {
   return (
     <Link to={to}>
@@ -259,22 +266,19 @@ const headerStyle = {
   color: "white",
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
-  flexWrap: "wrap",
-  gap: 10,
 };
 
 const navStyle = {
-  marginBottom: 20,
   display: "flex",
   gap: 10,
   flexWrap: "wrap",
+  marginBottom: 20,
 };
 
 const buttonStyle = {
   padding: "8px 12px",
-  border: "none",
   borderRadius: 6,
+  border: "none",
   cursor: "pointer",
   backgroundColor: "#e5e9ff",
   fontWeight: "bold",
@@ -284,11 +288,7 @@ const feedbackBadgeStyle = {
   background: "rgba(255,255,255,0.15)",
   padding: "6px 12px",
   borderRadius: 20,
-  color: "white",
   fontWeight: "bold",
-  display: "flex",
-  alignItems: "center",
-  gap: 6,
 };
 
 const badgeCountStyle = {
@@ -296,6 +296,27 @@ const badgeCountStyle = {
   borderRadius: 12,
   padding: "2px 8px",
   fontSize: 12,
+};
+
+const entryStyle = {
+  minHeight: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  textAlign: "center",
+};
+
+const primaryBtn = {
+  padding: "12px 24px",
+  marginTop: 20,
+  fontSize: 16,
+  fontWeight: "bold",
+};
+
+const secondaryBtn = {
+  padding: "10px 20px",
+  marginTop: 10,
 };
 
 export default App;

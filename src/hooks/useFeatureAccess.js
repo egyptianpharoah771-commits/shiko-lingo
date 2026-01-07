@@ -4,7 +4,7 @@
  * Centralized access logic
  * - Uses unified User Identity
  * - Handles FREE / PRO access
- * - Ready for Pi subscriptions later
+ * - Explicit AI permission flag
  */
 
 import {
@@ -36,9 +36,9 @@ export function useFeatureAccess({ skill, level }) {
 
     return {
       canAccess: allowed,
+      canUseAI: allowed,          // ✅ صريح
       requiresUpgrade: !allowed,
 
-      // 🔑 Identity for backend / AI
       userId,
       packageName: "FREE",
     };
@@ -50,9 +50,9 @@ export function useFeatureAccess({ skill, level }) {
   if (userPackage === "PRO") {
     return {
       canAccess: true,
+      canUseAI: true,             // ✅ المهم
       requiresUpgrade: false,
 
-      // 🔑 Identity for backend / AI
       userId,
       packageName: "PRO",
     };
@@ -65,9 +65,9 @@ export function useFeatureAccess({ skill, level }) {
 
   return {
     canAccess: allowed,
+    canUseAI: allowed,            // ✅ واضح
     requiresUpgrade: !allowed,
 
-    // 🔑 Identity for backend / AI
     userId,
     packageName: "FREE",
   };

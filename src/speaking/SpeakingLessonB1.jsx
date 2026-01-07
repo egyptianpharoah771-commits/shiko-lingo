@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 import { markLessonCompleted } from "../utils/progressStorage";
+import {
+  getLessonFolder,
+  isLastLesson,
+} from "../utils/lessonUtils";
 
 // 🔐 Feature Gating + Identity
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
@@ -29,7 +33,8 @@ const B1_PROMPTS = {
   },
   lesson2: {
     title: "Technology in Daily Life",
-    prompt: "How has technology changed your daily life?",
+    prompt:
+      "How has technology changed your daily life?",
     bullets: [
       "Technology you use every day",
       "One positive effect",
@@ -42,33 +47,51 @@ const B1_PROMPTS = {
 function SpeakingLessonB1() {
   const { lessonId } = useParams();
 
-  /* ===== Feature gating + identity ===== */
+  /* ===== Normalize lessonId ===== */
+  const normalizedLessonId = lessonId?.includes(
+    "lesson"
+  )
+    ? lessonId
+    : lessonId?.split("-").pop(); // B1-lesson1 → lesson1
+
+  const lessonNumber = Number(
+    normalizedLessonId?.replace("lesson", "")
+  );
+
+  /* ===== Feature access ===== */
   const { canAccess, userId, packageName } =
     useFeatureAccess({
       skill: "Speaking",
       level: "B1",
     });
 
-  const audioKey = `speaking-b1-audio-${lessonId}`;
+  const audioKey = `speaking-answer-B1-lesson${lessonNumber}`;
 
+  /* ===== Refs ===== */
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
   const streamRef = useRef(null);
 
-  const [isRecording, setIsRecording] = useState(false);
+  /* ===== State ===== */
+  const [isRecording, setIsRecording] =
+    useState(false);
   const [audioURL, setAudioURL] = useState(null);
   const [recordingReady, setRecordingReady] =
     useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
+  const [submitted, setSubmitted] =
+    useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [error, setError] = useState("");
 
   const [aiOpen, setAiOpen] = useState(false);
-  const [aiStatus, setAiStatus] = useState("IDLE");
-  const [aiMessage, setAiMessage] = useState("");
+  const [aiStatus, setAiStatus] =
+    useState("IDLE");
+  const [aiMessage, setAiMessage] =
+    useState("");
 
-  const lesson = B1_PROMPTS[lessonId];
+  const lesson =
+    B1_PROMPTS[normalizedLessonId];
 
   /* ===== Reset on lesson change ===== */
   useEffect(() => {
@@ -81,9 +104,9 @@ function SpeakingLessonB1() {
     setError("");
     setAiStatus("IDLE");
     setAiMessage("");
-  }, [lessonId, canAccess]);
+  }, [normalizedLessonId, canAccess]);
 
-  /* ===== Cleanup on unmount ===== */
+  /* ===== Cleanup ===== */
   useEffect(() => {
     return () => {
       if (timerRef.current)
@@ -101,7 +124,8 @@ function SpeakingLessonB1() {
   useEffect(() => {
     if (!canAccess) return;
 
-    const saved = localStorage.getItem(audioKey);
+    const saved =
+      localStorage.getItem(audioKey);
     if (saved) {
       setAudioURL(saved);
       setRecordingReady(true);
@@ -119,6 +143,11 @@ function SpeakingLessonB1() {
   if (!lesson) {
     return <p>Lesson not found.</p>;
   }
+
+  const lastLesson = isLastLesson(
+    getLessonFolder("B1", "speaking"),
+    lessonNumber
+  );
 
   /* ===== Start Recording ===== */
   const startRecording = async () => {
@@ -140,17 +169,21 @@ function SpeakingLessonB1() {
 
     try {
       const stream =
-        await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
+        await navigator.mediaDevices.getUserMedia(
+          { audio: true }
+        );
       streamRef.current = stream;
 
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(
+        stream
+      );
       mediaRecorderRef.current = recorder;
 
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0)
-          audioChunksRef.current.push(e.data);
+          audioChunksRef.current.push(
+            e.data
+          );
       };
 
       recorder.onstop = () => {
@@ -158,7 +191,8 @@ function SpeakingLessonB1() {
           audioChunksRef.current,
           { type: "audio/webm" }
         );
-        const url = URL.createObjectURL(blob);
+        const url =
+          URL.createObjectURL(blob);
         setAudioURL(url);
         setRecordingReady(true);
         stream
@@ -173,7 +207,9 @@ function SpeakingLessonB1() {
         setSeconds((s) => {
           if (s + 1 >= MAX_SECONDS) {
             recorder.stop();
-            clearInterval(timerRef.current);
+            clearInterval(
+              timerRef.current
+            );
             setIsRecording(false);
             return s;
           }
@@ -198,13 +234,14 @@ function SpeakingLessonB1() {
 
   /* ===== Submit ===== */
   const handleSubmit = () => {
-    if (submitted || !recordingReady) return;
+    if (submitted || !recordingReady)
+      return;
 
     localStorage.setItem(audioKey, audioURL);
 
     markLessonCompleted(
       STORAGE_KEYS.SPEAKING_COMPLETED,
-      `B1-${lessonId}`
+      `B1-lesson${lessonNumber}`
     );
 
     setSubmitted(true);
@@ -242,7 +279,9 @@ function SpeakingLessonB1() {
 
   return (
     <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-      <h2>🎤 Speaking B1 – {lesson.title}</h2>
+      <h2>
+        🎤 Speaking B1 – {lesson.title}
+      </h2>
       <p>{lesson.prompt}</p>
 
       <ul>
@@ -271,7 +310,9 @@ function SpeakingLessonB1() {
       )}
 
       {error && (
-        <p style={{ color: "red" }}>{error}</p>
+        <p style={{ color: "red" }}>
+          {error}
+        </p>
       )}
 
       {audioURL && (
@@ -290,27 +331,39 @@ function SpeakingLessonB1() {
       </button>
 
       {submitted && (
-        <button
-          onClick={handleAskAI}
-          style={{
-            marginTop: "12px",
-            background: "#111",
-            color: "#fff",
-            padding: "8px 14px",
-            borderRadius: "8px",
-            border: "none",
-            fontWeight: "bold",
-          }}
-        >
-          🤖 Ask AI Tutor
-        </button>
-      )}
+        <>
+          <button
+            onClick={handleAskAI}
+            style={{
+              marginTop: "12px",
+              background: "#111",
+              color: "#fff",
+              padding: "8px 14px",
+              borderRadius: "8px",
+              border: "none",
+              fontWeight: "bold",
+            }}
+          >
+            🤖 Ask AI Tutor
+          </button>
 
-      <Link to="/speaking/B1">
-        <button style={{ marginTop: "20px" }}>
-          Back to B1 Lessons
-        </button>
-      </Link>
+          <div style={{ marginTop: "20px" }}>
+            {lastLesson ? (
+              <Link to="/speaking/B1">
+                Back to B1 lessons
+              </Link>
+            ) : (
+              <Link
+                to={`/speaking/B1/lesson${
+                  lessonNumber + 1
+                }`}
+              >
+                ▶️ Next Lesson
+              </Link>
+            )}
+          </div>
+        </>
+      )}
 
       <AIResponseModal
         open={aiOpen}

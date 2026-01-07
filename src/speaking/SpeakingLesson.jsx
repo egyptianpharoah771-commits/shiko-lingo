@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 import { markLessonCompleted } from "../utils/progressStorage";
+import {
+  getLessonFolder,
+  isLastLesson,
+} from "../utils/lessonUtils";
 
 // 🔐 Feature Gating + Identity
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
@@ -28,15 +32,13 @@ import A2Lesson4 from "./A2/lesson4/content";
 import A2Lesson5 from "./A2/lesson5/content";
 import A2Lesson6 from "./A2/lesson6/content";
 
-// ===== Import Questions =====
-// A1
+// ===== Questions =====
 import A1Q1 from "./A1/lesson1/questions";
 import A1Q2 from "./A1/lesson2/questions";
 import A1Q3 from "./A1/lesson3/questions";
 import A1Q4 from "./A1/lesson4/questions";
 import A1Q5 from "./A1/lesson5/questions";
 
-// A2
 import A2Q1 from "./A2/lesson1/questions";
 import A2Q2 from "./A2/lesson2/questions";
 import A2Q3 from "./A2/lesson3/questions";
@@ -66,13 +68,23 @@ const SPEAKING_CONTENT = {
 function SpeakingLesson() {
   const { level, lessonId } = useParams();
 
-  /* ===== Feature gating + identity ===== */
-  const { canAccess, userId, packageName } = useFeatureAccess({
-    skill: "Speaking",
-    level,
-  });
+  /* ===== Normalize lessonId ===== */
+  const normalizedLessonId = lessonId?.includes("lesson")
+    ? lessonId
+    : lessonId?.split("-").pop(); // A1-lesson1 → lesson1
 
-  const answerKey = `speaking-answer-${level}-${lessonId}`;
+  const lessonNumber = Number(
+    normalizedLessonId?.replace("lesson", "")
+  );
+
+  /* ===== Feature access ===== */
+  const { canAccess, userId, packageName } =
+    useFeatureAccess({
+      skill: "Speaking",
+      level,
+    });
+
+  const answerKey = `speaking-answer-${level}-lesson${lessonNumber}`;
 
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -81,7 +93,7 @@ function SpeakingLesson() {
   const [aiStatus, setAiStatus] = useState("IDLE");
   const [aiMessage, setAiMessage] = useState("");
 
-  /* ===== Load / Reset ===== */
+  /* ===== Reset on change ===== */
   useEffect(() => {
     if (!canAccess) return;
 
@@ -109,13 +121,20 @@ function SpeakingLesson() {
     );
   }
 
-  const lessonData = SPEAKING_CONTENT[level]?.[lessonId];
+  const lessonData =
+    SPEAKING_CONTENT[level]?.[normalizedLessonId];
+
   if (!lessonData) {
     return <p>Lesson not found.</p>;
   }
 
   const { content, questions } = lessonData;
   const hasAnswer = answer.trim().length > 0;
+
+  const lastLesson = isLastLesson(
+    getLessonFolder(level, "speaking"),
+    lessonNumber
+  );
 
   /* ===== Submit ===== */
   const handleSubmit = () => {
@@ -125,7 +144,7 @@ function SpeakingLesson() {
 
     markLessonCompleted(
       STORAGE_KEYS.SPEAKING_COMPLETED,
-      `${level}-${lessonId}`
+      `${level}-lesson${lessonNumber}`
     );
 
     setSubmitted(true);
@@ -157,7 +176,9 @@ function SpeakingLesson() {
       setAiMessage(result.message);
     } else {
       setAiStatus("ERROR");
-      setAiMessage("Something went wrong. Please try again.");
+      setAiMessage(
+        "Something went wrong. Please try again."
+      );
     }
   };
 
@@ -166,7 +187,9 @@ function SpeakingLesson() {
       <h2>{content.title}</h2>
 
       {content.prompt && (
-        <p style={{ fontWeight: "bold" }}>{content.prompt}</p>
+        <p style={{ fontWeight: "bold" }}>
+          {content.prompt}
+        </p>
       )}
 
       {Array.isArray(content.tips) && (
@@ -196,7 +219,9 @@ function SpeakingLesson() {
           backgroundColor: "#111",
           color: "white",
           fontWeight: "bold",
-          cursor: hasAnswer ? "pointer" : "not-allowed",
+          cursor: hasAnswer
+            ? "pointer"
+            : "not-allowed",
           opacity: hasAnswer ? 1 : 0.6,
         }}
       >
@@ -225,12 +250,21 @@ function SpeakingLesson() {
       </button>
 
       {submitted && (
-        <>
-          <p style={{ color: "green" }}>✅ Answer saved</p>
-          <Link to={`/speaking/${level}`}>
-            <button>Back to lessons</button>
-          </Link>
-        </>
+        <div style={{ marginTop: "20px" }}>
+          {lastLesson ? (
+            <Link to={`/speaking/${level}`}>
+              Back to {level} lessons
+            </Link>
+          ) : (
+            <Link
+              to={`/speaking/${level}/lesson${
+                lessonNumber + 1
+              }`}
+            >
+              ▶️ Next Lesson
+            </Link>
+          )}
+        </div>
       )}
 
       {/* 🤖 AI Modal */}

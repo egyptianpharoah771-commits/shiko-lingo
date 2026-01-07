@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import FeedbackBox from "../components/FeedbackBox";
 
-// 🔐 Feature Gating + Identity
+// 🔐 Feature Gating
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
 import LockedFeature from "../components/LockedFeature";
 
@@ -74,9 +74,10 @@ function ReadingLevel() {
     level,
   });
 
-  /* ===== Lock ===== */
   if (!canAccess) {
-    return <LockedFeature title={`Reading Level ${level}`} />;
+    return (
+      <LockedFeature title={`Reading Level ${level}`} />
+    );
   }
 
   const lessons = READING_LESSONS_BY_LEVEL[level] || [];
@@ -103,7 +104,8 @@ function ReadingLevel() {
         📘 Reading – Level {level}
       </h2>
       <p style={{ color: "#666" }}>
-        Read lessons in order to unlock the next ones.
+        Complete lessons in order to unlock the next
+        ones.
       </p>
 
       <ProgressBar
@@ -116,7 +118,7 @@ function ReadingLevel() {
           style={{
             backgroundColor: "#e8f5e9",
             border: "1px solid #c8e6c9",
-            borderRadius: "10px",
+            borderRadius: "12px",
             padding: "16px",
             marginBottom: "20px",
             textAlign: "center",

@@ -2,6 +2,8 @@ import { Link, useParams } from "react-router-dom";
 import { useMemo } from "react";
 import FeedbackBox from "../components/FeedbackBox";
 
+import STORAGE_KEYS from "../utils/storageKeys";
+
 // 🔐 Feature Gating
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
 import LockedFeature from "../components/LockedFeature";
@@ -51,58 +53,27 @@ const LESSONS_BY_LEVEL = {
 function SpeakingLevel() {
   const { level } = useParams();
 
-  /* ======================
-     Feature Access (IMPORTANT)
-  ====================== */
+  /* ===== Feature Access ===== */
   const { canAccess } = useFeatureAccess({
-    skill: "Speaking", // ✅ MUST be capitalized
+    skill: "Speaking",
     level,
   });
 
-  /* ======================
-     Completed lessons (HOOK ALWAYS)
-  ====================== */
-  const completed = useMemo(() => {
+  /* ===== Completed lessons ===== */
+  const completedLessons = useMemo(() => {
     return (
       JSON.parse(
         localStorage.getItem(
-          "completedSpeakingLessons"
+          STORAGE_KEYS.SPEAKING_COMPLETED
         )
       ) || []
     );
   }, []);
 
-  /* ======================
-     Guard: invalid level
-  ====================== */
+  /* ===== Guard: invalid level ===== */
   if (!LESSONS_BY_LEVEL[level]) {
     return <p>Invalid level.</p>;
   }
-
-  const lessonCount = LESSONS_BY_LEVEL[level];
-
-  const lessons = Array.from(
-    { length: lessonCount },
-    (_, i) => `lesson${i + 1}`
-  );
-
-  /* ======================
-     Progress
-  ====================== */
-  const completedCount = lessons.filter(
-    (lesson) =>
-      completed.includes(`${level}-${lesson}`)
-  ).length;
-
-  const levelCompleted =
-    lessonCount > 0 &&
-    completedCount === lessonCount;
-
-  const isLessonUnlocked = (index) => {
-    if (index === 0) return true;
-    const prevLessonKey = `${level}-lesson${index}`;
-    return completed.includes(prevLessonKey);
-  };
 
   /* 🔒 Lock AFTER hooks */
   if (!canAccess) {
@@ -112,6 +83,30 @@ function SpeakingLevel() {
       />
     );
   }
+
+  const lessonCount = LESSONS_BY_LEVEL[level];
+
+  const lessons = Array.from(
+    { length: lessonCount },
+    (_, i) => `lesson${i + 1}`
+  );
+
+  /* ===== Progress ===== */
+  const completedCount = lessons.filter(
+    (lesson) =>
+      completedLessons.includes(`${level}-${lesson}`)
+  ).length;
+
+  const levelCompleted =
+    lessonCount > 0 &&
+    completedCount === lessonCount;
+
+  const isLessonUnlocked = (index) => {
+    if (index === 0) return true;
+    return completedLessons.includes(
+      `${level}-lesson${index}`
+    );
+  };
 
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto" }}>
@@ -128,7 +123,7 @@ function SpeakingLevel() {
           style={{
             backgroundColor: "#e8f5e9",
             border: "1px solid #c8e6c9",
-            borderRadius: "10px",
+            borderRadius: "12px",
             padding: "16px",
             marginBottom: "20px",
             textAlign: "center",
@@ -172,7 +167,7 @@ function SpeakingLevel() {
         {lessons.map((lesson, index) => {
           const lessonKey = `${level}-${lesson}`;
           const isCompleted =
-            completed.includes(lessonKey);
+            completedLessons.includes(lessonKey);
           const unlocked =
             isLessonUnlocked(index);
 

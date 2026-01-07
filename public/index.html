@@ -28,13 +28,24 @@
     <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-    <!-- Pi SDK Init (TESTNET / CHECKLIST) -->
+    <!-- Pi SDK Init (Auto Sandbox / Production) -->
     <script>
       if (window.Pi) {
+        const isSandbox =
+          window.location.hostname.includes("localhost") ||
+          window.location.hostname.includes("trycloudflare.com");
+
         window.Pi.init({
           version: "2.0",
-          sandbox: true
+          sandbox: isSandbox
         });
+
+        console.log(
+          "🚀 Pi SDK Initialized | Sandbox:",
+          isSandbox
+        );
+      } else {
+        console.error("❌ Pi SDK not loaded");
       }
     </script>
   </head>

@@ -1,9 +1,13 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 
-// ===== Constants =====
-const LEVELS_ORDER = ["A1", "A2", "B1"];
+import STORAGE_KEYS from "../utils/storageKeys";
 
+// 🔐 Feature Gating
+import { useFeatureAccess } from "../hooks/useFeatureAccess";
+import LockedFeature from "../components/LockedFeature";
+
+/* ===== Units by level ===== */
 const UNITS_BY_LEVEL = {
   A1: [
     { id: "unit1", title: "Present Simple" },
@@ -15,8 +19,14 @@ const UNITS_BY_LEVEL = {
   ],
   B1: [
     { id: "unit1", title: "Present Perfect" },
-    { id: "unit2", title: "Present Perfect vs Past Simple" },
-    { id: "unit3", title: "Future Forms (will / going to)" },
+    {
+      id: "unit2",
+      title: "Present Perfect vs Past Simple",
+    },
+    {
+      id: "unit3",
+      title: "Future Forms (will / going to)",
+    },
   ],
 };
 
@@ -24,59 +34,70 @@ function GrammarUnits() {
   const { level } = useParams();
   const navigate = useNavigate();
 
-  // ===== Placement =====
-  const placementLevel = localStorage.getItem("placementLevel");
+  /* ===== HOOKS (ALL FIRST, NO RETURNS BEFORE) ===== */
 
-  // ===== Completed Units (memoized) =====
-  const completed = useMemo(() => {
+  const { canAccess } = useFeatureAccess({
+    skill: "Grammar",
+    level,
+  });
+
+  const placementLevel =
+    localStorage.getItem("placementLevel");
+
+  const completedUnits = useMemo(() => {
     return (
-      JSON.parse(localStorage.getItem("completedGrammarUnits")) ||
-      []
+      JSON.parse(
+        localStorage.getItem(
+          STORAGE_KEYS.GRAMMAR_COMPLETED
+        )
+      ) || []
     );
   }, []);
 
-  // ===== Units for current level =====
   const units = useMemo(() => {
     return UNITS_BY_LEVEL[level] || [];
   }, [level]);
 
-  // ===== Level Lock =====
-  const levelUnlocked =
-    !placementLevel ||
-    LEVELS_ORDER.indexOf(level) <=
-      LEVELS_ORDER.indexOf(placementLevel);
-
-  // ===== Unit Locking (sequential) =====
-  const isUnitUnlocked = (index) => {
-    if (index === 0) return true;
-    const prevUnitKey = `${level}-${units[index - 1].id}`;
-    return completed.includes(prevUnitKey);
-  };
-
-  // ===== Auto-open first unit (placement smart) =====
   useEffect(() => {
+    // smart auto-open only when everything is valid
+    if (!canAccess) return;
     if (!placementLevel) return;
     if (placementLevel !== level) return;
     if (units.length === 0) return;
 
     const firstUnitKey = `${level}-${units[0].id}`;
-    if (completed.includes(firstUnitKey)) return;
+    if (completedUnits.includes(firstUnitKey)) return;
 
     navigate(`/grammar/${level}/${units[0].id}`);
-  }, [placementLevel, level, units, completed, navigate]);
+  }, [
+    canAccess,
+    placementLevel,
+    level,
+    units,
+    completedUnits,
+    navigate,
+  ]);
 
-  // ===== Guard =====
-  if (!levelUnlocked) {
-    return (
-      <p>
-        🔒 This level is locked based on your placement test.
-      </p>
-    );
+  /* ===== GUARDS (AFTER ALL HOOKS) ===== */
+
+  if (!canAccess) {
+    return <LockedFeature title="Grammar" />;
   }
 
+  if (!UNITS_BY_LEVEL[level]) {
+    return <p>Invalid level.</p>;
+  }
+
+  /* ===== Helpers ===== */
+  const isUnitUnlocked = (index) => {
+    if (index === 0) return true;
+    const prevKey = `${level}-${units[index - 1].id}`;
+    return completedUnits.includes(prevKey);
+  };
+
   return (
-    <div>
-      <h2>{level} Grammar</h2>
+    <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+      <h2>📘 Grammar – Level {level}</h2>
 
       <div
         style={{
@@ -87,7 +108,8 @@ function GrammarUnits() {
       >
         {units.map((unit, index) => {
           const unitKey = `${level}-${unit.id}`;
-          const completedUnit = completed.includes(unitKey);
+          const completed =
+            completedUnits.includes(unitKey);
           const unlocked = isUnitUnlocked(index);
 
           return (
@@ -97,7 +119,7 @@ function GrammarUnits() {
                 width: "220px",
                 padding: "15px",
                 borderRadius: "12px",
-                backgroundColor: completedUnit
+                backgroundColor: completed
                   ? "#d4edda"
                   : unlocked
                   ? "#e5e9ff"
@@ -109,12 +131,16 @@ function GrammarUnits() {
             >
               <h4>{unit.title}</h4>
 
-              {completedUnit && <p>✅ Completed</p>}
-              {!completedUnit && unlocked && <p>🟢 Active</p>}
+              {completed && <p>✅ Completed</p>}
+              {!completed && unlocked && (
+                <p>🟢 Active</p>
+              )}
               {!unlocked && <p>🔒 Locked</p>}
 
               {unlocked && (
-                <Link to={`/grammar/${level}/${unit.id}`}>
+                <Link
+                  to={`/grammar/${level}/${unit.id}`}
+                >
                   <button
                     style={{
                       marginTop: "10px",
@@ -132,6 +158,10 @@ function GrammarUnits() {
             </div>
           );
         })}
+      </div>
+
+      <div style={{ marginTop: "20px" }}>
+        <Link to="/grammar">← Back to Grammar</Link>
       </div>
     </div>
   );
