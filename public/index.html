@@ -41,8 +41,8 @@
     ></script>
 
     <!-- ======================
-         Pi SDK Init (SAFE MODE)
-         ✔ Sandbox ONLY
+         Pi SDK Init (LIVE MODE)
+         ✔ Live domain
          ✔ Prevent double init
          ✔ Checklist-safe
     ======================= -->
@@ -58,14 +58,14 @@
           return;
         }
 
-        // 🔐 Checklist & Review phase → SANDBOX ONLY
+        // 🔐 LIVE MODE (required for real domain)
         window.Pi.init({
           version: "2.0",
-          sandbox: true,
+          sandbox: false,
         });
 
         window.__PI_SDK_INITIALIZED__ = true;
-        console.log("✅ Pi SDK initialized (SANDBOX mode)");
+        console.log("✅ Pi SDK initialized (LIVE mode)");
       })();
     </script>
   </head>
@@ -79,12 +79,8 @@
     <div id="root"></div>
 
     <!--
-      ❌ IMPORTANT:
-      Static footer with <a href="/privacy"> was REMOVED
-      because it breaks SPA routing on Vercel.
-
-      ✔ Legal links are rendered safely inside React
-      using <Link /> from react-router-dom.
+      ✔ Static footer removed
+      ✔ Legal pages handled inside React Router
     -->
   </body>
 </html>
