@@ -2,16 +2,6 @@ import { useState } from "react";
 import piLogo from "../assets/pi-logo.png";
 import "./PI.css";
 
-/**
- * Backend URL
- * - Production: Render
- * - Dev/Test: Cloudflare Tunnel
- */
-const BACKEND_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://shiko-lingo-api.onrender.com"
-    : "https://your-tunnel-id.trycloudflare.com";
-
 export default function PI() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,10 +24,10 @@ export default function PI() {
         metadata: { checklist: true },
       },
       {
-        // 1️⃣ Server Approval
+        // ✅ 1️⃣ Server Approval (Vercel Function)
         onReadyForServerApproval: async (paymentId) => {
           try {
-            await fetch(`${BACKEND_URL}/api/pi/approve`, {
+            await fetch("/api/pi/approve", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ paymentId }),
@@ -49,10 +39,10 @@ export default function PI() {
           }
         },
 
-        // 2️⃣ Server Completion
+        // ✅ 2️⃣ Server Completion (Vercel Function)
         onReadyForServerCompletion: async (paymentId, txid) => {
           try {
-            await fetch(`${BACKEND_URL}/api/pi/complete`, {
+            await fetch("/api/pi/complete", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ paymentId, txid }),

@@ -3,27 +3,18 @@
   <head>
     <meta charset="utf-8" />
 
-    <!-- ======================
-         App Identity
-    ======================= -->
     <title>Shiko Lingo – Learn English with AI</title>
 
-    <!-- ======================
-         SEO & Social
-    ======================= -->
     <meta
       name="description"
       content="Shiko Lingo is an AI-powered English learning app with listening, speaking, reading, writing, and smart AI tutor feedback."
     />
     <meta
       name="keywords"
-      content="Shiko Lingo, Learn English, AI English, English with AI, Language Learning App"
+      content="Shiko Lingo, Learn English, AI English, Language Learning App"
     />
     <meta name="author" content="Shiko Lingo" />
 
-    <!-- ======================
-         Mobile & PWA
-    ======================= -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#6C4EFF" />
 
@@ -31,56 +22,23 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- ======================
-         Pi Network SDK
-         (Must be loaded BEFORE React)
-    ======================= -->
-    <script
-      src="https://sdk.minepi.com/pi-sdk.js"
-      crossorigin="anonymous"
-    ></script>
+    <!-- Pi Network SDK -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-    <!-- ======================
-         Pi SDK Init (LIVE MODE)
-         ✔ Live domain
-         ✔ Prevent double init
-         ✔ Checklist-safe
-    ======================= -->
+    <!-- ✅ CHECKLIST MODE (SANDBOX ONLY) -->
     <script>
-      (function () {
-        if (!window.Pi) {
-          console.error("❌ Pi SDK not loaded");
-          return;
-        }
-
-        if (window.__PI_SDK_INITIALIZED__) {
-          console.warn("⚠️ Pi SDK already initialized");
-          return;
-        }
-
-        // 🔐 LIVE MODE (required for real domain)
+      if (window.Pi) {
         window.Pi.init({
           version: "2.0",
-          sandbox: false,
+          sandbox: true,
         });
-
-        window.__PI_SDK_INITIALIZED__ = true;
-        console.log("✅ Pi SDK initialized (LIVE mode)");
-      })();
+        console.log("✅ Pi SDK initialized (SANDBOX mode)");
+      }
     </script>
   </head>
 
   <body>
-    <noscript>
-      You need to enable JavaScript to run Shiko Lingo.
-    </noscript>
-
-    <!-- React mounts هنا -->
+    <noscript>You need to enable JavaScript to run Shiko Lingo.</noscript>
     <div id="root"></div>
-
-    <!--
-      ✔ Static footer removed
-      ✔ Legal pages handled inside React Router
-    -->
   </body>
 </html>
