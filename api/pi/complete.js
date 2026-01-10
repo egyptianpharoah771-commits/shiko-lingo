@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 const PI_API_BASE = "https://api.minepi.com";
 
 function piHeaders() {
@@ -41,7 +39,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ status: "COMPLETED" });
   } catch (err) {
-    console.error(err);
+    console.error("PI COMPLETE ERROR:", err);
     return res.status(500).json({ error: "PI_COMPLETE_ERROR" });
   }
 }
