@@ -7,7 +7,7 @@ export default function PI() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!window.Pi) {
       setError("❌ Please open this app in Pi Browser");
       return;
@@ -17,6 +17,19 @@ export default function PI() {
     setError("");
     setMessage("");
 
+    try {
+      // ✅ AUTHENTICATION IS REQUIRED BEFORE PAYMENT
+      await window.Pi.authenticate(
+        ["username", "payments"],
+        () => {}
+      );
+    } catch (err) {
+      console.error("Pi authentication failed", err);
+      setError("❌ Pi authentication failed");
+      setLoading(false);
+      return;
+    }
+
     window.Pi.createPayment(
       {
         amount: 0.01,
@@ -24,32 +37,43 @@ export default function PI() {
         metadata: { checklist: true },
       },
       {
-        // ✅ MUST return the Promise
+        /* =========================
+           STEP 1 — Server Approval
+        ========================= */
         onReadyForServerApproval: (paymentId) => {
           return fetch("/api/pi/approve", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ paymentId }),
           }).then((res) => {
-            if (!res.ok) throw new Error("Approve failed");
+            if (!res.ok) {
+              throw new Error("Approve failed");
+            }
             return res.json();
           });
         },
 
-        // ✅ MUST return the Promise
+        /* =========================
+           STEP 2 — Server Completion
+        ========================= */
         onReadyForServerCompletion: (paymentId, txid) => {
           return fetch("/api/pi/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ paymentId, txid }),
           }).then((res) => {
-            if (!res.ok) throw new Error("Complete failed");
+            if (!res.ok) {
+              throw new Error("Complete failed");
+            }
             setMessage("✅ Payment completed successfully");
             setLoading(false);
             return res.json();
           });
         },
 
+        /* =========================
+           User Actions / Errors
+        ========================= */
         onCancel: () => {
           setError("⚠️ Payment cancelled");
           setLoading(false);
