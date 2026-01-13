@@ -8,7 +8,11 @@ export default function PI() {
   const [message, setMessage] = useState("");
 
   const handlePayment = async () => {
+    console.log("🟡 handlePayment started");
+
+    // 1️⃣ تأكيد بيئة Pi
     if (!window.Pi) {
+      console.error("❌ Pi SDK not found");
       setError("❌ Please open this app in Pi Browser");
       return;
     }
@@ -17,19 +21,35 @@ export default function PI() {
     setError("");
     setMessage("");
 
+    // 2️⃣ AUTHENTICATION (إجباري)
     try {
-      // ✅ AUTHENTICATION IS REQUIRED BEFORE PAYMENT
+      console.log("🟡 Pi.authenticate called");
       await window.Pi.authenticate(
         ["username", "payments"],
-        () => {}
+        (payment) => {
+          console.warn("⚠️ Incomplete payment found:", payment);
+        }
       );
+      console.log("🟢 Pi.authenticate success");
     } catch (err) {
-      console.error("Pi authentication failed", err);
+      console.error("❌ Pi authentication failed", err);
       setError("❌ Pi authentication failed");
       setLoading(false);
       return;
     }
 
+    // 3️⃣ Safety Timeout (تشخيص فقط)
+    const safetyTimeout = setTimeout(() => {
+      console.error("⏱️ Payment timeout reached (no callbacks fired)");
+      setError(
+        "⏱️ Payment is taking too long. Please ensure Sandbox is authorized and reopen the app from Pi Browser."
+      );
+      setLoading(false);
+    }, 15000);
+
+    console.log("🟡 Pi.createPayment called");
+
+    // 4️⃣ PAYMENT
     window.Pi.createPayment(
       {
         amount: 0.01,
@@ -41,6 +61,11 @@ export default function PI() {
            STEP 1 — Server Approval
         ========================= */
         onReadyForServerApproval: (paymentId) => {
+          console.log(
+            "🔥 CALLBACK onReadyForServerApproval:",
+            paymentId
+          );
+
           return fetch("/api/pi/approve", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -57,6 +82,14 @@ export default function PI() {
            STEP 2 — Server Completion
         ========================= */
         onReadyForServerCompletion: (paymentId, txid) => {
+          console.log(
+            "🔥 CALLBACK onReadyForServerCompletion:",
+            paymentId,
+            txid
+          );
+
+          clearTimeout(safetyTimeout);
+
           return fetch("/api/pi/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -75,12 +108,15 @@ export default function PI() {
            User Actions / Errors
         ========================= */
         onCancel: () => {
+          console.warn("⚠️ CALLBACK onCancel");
+          clearTimeout(safetyTimeout);
           setError("⚠️ Payment cancelled");
           setLoading(false);
         },
 
         onError: (err) => {
-          console.error("Pi Payment Error", err);
+          console.error("❌ CALLBACK onError:", err);
+          clearTimeout(safetyTimeout);
           setError("❌ Payment failed");
           setLoading(false);
         },
@@ -91,10 +127,16 @@ export default function PI() {
   return (
     <div className="pi-container">
       <div className="logo-wrap">
-        <img src={piLogo} alt="Pi Network" className="pi-logo" />
+        <img
+          src={piLogo}
+          alt="Pi Network"
+          className="pi-logo"
+        />
       </div>
 
-      <h1 className="pi-title">Shiko Lingo — Pi Network</h1>
+      <h1 className="pi-title">
+        Shiko Lingo — Pi Network
+      </h1>
 
       <button
         className="pi-button"
@@ -104,7 +146,9 @@ export default function PI() {
         {loading ? "Processing…" : "Complete Pi Checklist Payment"}
       </button>
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
+      {message && (
+        <p style={{ color: "green" }}>{message}</p>
+      )}
       {error && <p className="pi-error">{error}</p>}
     </div>
   );
