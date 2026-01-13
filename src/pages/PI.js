@@ -24,37 +24,30 @@ export default function PI() {
         metadata: { checklist: true },
       },
       {
-        // ✅ 1️⃣ Server Approval (Vercel Function)
-        onReadyForServerApproval: async (paymentId) => {
-          try {
-            await fetch("/api/pi/approve", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId }),
-            });
-          } catch (err) {
-            console.error("Approve failed", err);
-            setError("❌ Server approval failed");
-            setLoading(false);
-          }
+        // ✅ MUST return the Promise
+        onReadyForServerApproval: (paymentId) => {
+          return fetch("/api/pi/approve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId }),
+          }).then((res) => {
+            if (!res.ok) throw new Error("Approve failed");
+            return res.json();
+          });
         },
 
-        // ✅ 2️⃣ Server Completion (Vercel Function)
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            await fetch("/api/pi/complete", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId, txid }),
-            });
-
+        // ✅ MUST return the Promise
+        onReadyForServerCompletion: (paymentId, txid) => {
+          return fetch("/api/pi/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId, txid }),
+          }).then((res) => {
+            if (!res.ok) throw new Error("Complete failed");
             setMessage("✅ Payment completed successfully");
-          } catch (err) {
-            console.error("Complete failed", err);
-            setError("❌ Payment completion failed");
-          } finally {
             setLoading(false);
-          }
+            return res.json();
+          });
         },
 
         onCancel: () => {
