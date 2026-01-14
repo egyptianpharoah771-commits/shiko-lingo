@@ -25,14 +25,13 @@
     <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-    <!-- ✅ CHECKLIST MODE (SANDBOX ONLY) -->
+    <!-- Pi SDK – Production Mode -->
     <script>
       if (window.Pi) {
         window.Pi.init({
           version: "2.0",
-          sandbox: true,
+          sandbox: false,
         });
-        console.log("✅ Pi SDK initialized (SANDBOX mode)");
       }
     </script>
   </head>
