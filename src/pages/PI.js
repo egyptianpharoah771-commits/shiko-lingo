@@ -18,7 +18,7 @@ export default function PI() {
     setMessage("");
 
     try {
-      // 1️⃣ AUTHENTICATION
+      // ✅ AUTHENTICATION IS REQUIRED BEFORE PAYMENT
       await window.Pi.authenticate(
         ["username", "payments"],
         () => {}
@@ -30,59 +30,62 @@ export default function PI() {
       return;
     }
 
-    /**
-     * 🔴 CRITICAL MICRO-DELAY
-     * Breaks silent pending state in Pi SDK
-     */
-    setTimeout(() => {
-      window.Pi.createPayment(
-        {
-          amount: 0.01,
-          memo: "Shiko Lingo – Pi Checklist Test",
-          metadata: { checklist: true },
+    window.Pi.createPayment(
+      {
+        amount: 0.01,
+        memo: "Shiko Lingo – Pi Checklist Test",
+        metadata: { checklist: true },
+      },
+      {
+        /* =========================
+           STEP 1 — Server Approval
+        ========================= */
+        onReadyForServerApproval: (paymentId) => {
+          return fetch("/api/pi/approve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId }),
+          }).then((res) => {
+            if (!res.ok) {
+              throw new Error("Approve failed");
+            }
+            return res.json();
+          });
         },
-        {
-          onReadyForServerApproval: (paymentId) => {
-            return fetch("/api/pi/approve", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId }),
-            }).then((res) => {
-              if (!res.ok) {
-                throw new Error("Approve failed");
-              }
-              return res.json();
-            });
-          },
 
-          onReadyForServerCompletion: (paymentId, txid) => {
-            return fetch("/api/pi/complete", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId, txid }),
-            }).then((res) => {
-              if (!res.ok) {
-                throw new Error("Complete failed");
-              }
-              setMessage("✅ Payment completed successfully");
-              setLoading(false);
-              return res.json();
-            });
-          },
-
-          onCancel: () => {
-            setError("⚠️ Payment cancelled");
+        /* =========================
+           STEP 2 — Server Completion
+        ========================= */
+        onReadyForServerCompletion: (paymentId, txid) => {
+          return fetch("/api/pi/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId, txid }),
+          }).then((res) => {
+            if (!res.ok) {
+              throw new Error("Complete failed");
+            }
+            setMessage("✅ Payment completed successfully");
             setLoading(false);
-          },
+            return res.json();
+          });
+        },
 
-          onError: (err) => {
-            console.error("Pi Payment Error", err);
-            setError("❌ Payment failed");
-            setLoading(false);
-          },
-        }
-      );
-    }, 0); // 👈 هذا هو التعديل الحاسم
+        /* =========================
+           User Actions / Errors
+        ========================= */
+        onCancel: () => {
+          setError("⚠️ Payment cancelled");
+          setLoading(false);
+        },
+
+        onError: (err) => {
+          console.error("Pi Payment Error", err);
+          setError("❌ Payment failed");
+          setLoading(false);
+        },
+      }
+    );
   };
 
   return (
