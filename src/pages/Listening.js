@@ -90,12 +90,9 @@ function Listening() {
     setSubmitted(false);
     setScore(0);
 
-    fetch(
-      `/listening/${level}/${lessonFolder}/data.json`
-    )
+    fetch(`/listening/${level}/${lessonFolder}/data.json`)
       .then((res) => {
-        if (!res.ok)
-          throw new Error("Lesson not found");
+        if (!res.ok) throw new Error("Lesson not found");
         return res.json();
       })
       .then((data) => {
@@ -108,9 +105,7 @@ function Listening() {
   }, [level, lessonId, lessonFolder, canAccess]);
 
   if (!canAccess) {
-    return (
-      <LockedFeature title="Listening Lesson" />
-    );
+    return <LockedFeature title="Listening Lesson" />;
   }
 
   if (!lessonId) {
@@ -121,17 +116,11 @@ function Listening() {
   if (!lesson) return <p>Lesson not found</p>;
 
   const handleSubmit = () => {
-    if (
-      submitted ||
-      Object.keys(answers).length === 0
-    )
-      return;
+    if (submitted || Object.keys(answers).length === 0) return;
 
     let correct = 0;
     lesson.questions.forEach((q, i) => {
-      if (answers[i] === q.answer) {
-        correct++;
-      }
+      if (answers[i] === q.answer) correct++;
     });
 
     setScore(correct);
@@ -144,6 +133,7 @@ function Listening() {
     );
   };
 
+  // ✅ الإصلاح الكامل هنا
   const handleAskAI = async () => {
     if (!canUseAI) {
       setAiOpen(true);
@@ -158,19 +148,27 @@ function Listening() {
     setAiStatus("LOADING");
     setAiMessage("");
 
-    const result = await askAITutor({
-      skill: "Listening",
-      level,
-      lessonTitle: lesson.title,
-      text: lesson.text.join(" "),
-      score,
-      total: lesson.questions.length,
-      userId,
-      packageName,
-    });
+    try {
+      const result = await askAITutor({
+        question: "Give me feedback on my listening performance.",
+        skill: "Listening",
+        level,
+        lessonTitle: lesson.title,
+        lessonDescription: lesson.description,
+        text: lesson.text.join(" "),
+        score,
+        total: lesson.questions.length,
+        userId,
+        packageName,
+      });
 
-    setAiStatus(result.status);
-    setAiMessage(result.message || "");
+      setAiStatus("SUCCESS");
+      setAiMessage(result.answer || "");
+    } catch (err) {
+      console.error("AI Tutor error:", err);
+      setAiStatus("ERROR");
+      setAiMessage("Sorry, the AI tutor is unavailable right now.");
+    }
   };
 
   return (
@@ -227,16 +225,10 @@ function Listening() {
             const isCorrect = opt === q.answer;
 
             let bg = "#fff";
-            if (submitted && isCorrect)
-              bg = "#d4edda";
-            else if (
-              submitted &&
-              isSelected &&
-              !isCorrect
-            )
+            if (submitted && isCorrect) bg = "#d4edda";
+            else if (submitted && isSelected && !isCorrect)
               bg = "#f8d7da";
-            else if (isSelected)
-              bg = "#e5e9ff";
+            else if (isSelected) bg = "#e5e9ff";
 
             return (
               <div
@@ -269,24 +261,18 @@ function Listening() {
         </div>
       ))}
 
-      <button
-        onClick={handleSubmit}
-        disabled={submitted}
-      >
+      <button onClick={handleSubmit} disabled={submitted}>
         Submit Answers
       </button>
 
       {submitted && (
         <>
           <p style={{ marginTop: 15 }}>
-            🎉 Score: {score} /{" "}
-            {lesson.questions.length}
+            🎉 Score: {score} / {lesson.questions.length}
           </p>
 
           {!lastLesson && nextLessonId && (
-            <Link
-              to={`/listening/${level}/${nextLessonId}`}
-            >
+            <Link to={`/listening/${level}/${nextLessonId}`}>
               Next Lesson →
             </Link>
           )}
