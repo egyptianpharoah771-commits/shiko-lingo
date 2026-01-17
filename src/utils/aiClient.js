@@ -1,10 +1,12 @@
+// BUILD_ID_2026_01_17_02
+
 /**
  * AI Client
  * ---------
  * - Same-origin API ONLY
  * - No external base URLs
  * - No CORS
- * - Cache-safe
+ * - Cache-bust enforced
  * - Pi Browser safe
  */
 
@@ -14,6 +16,7 @@ export async function askAITutor(payload) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Cache-Control": "no-store",
       },
       body: JSON.stringify(payload),
     });
