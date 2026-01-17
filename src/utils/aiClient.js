@@ -24,7 +24,7 @@ ${payload.text}
 Score: ${payload.score}/${payload.total}
 
 Please give helpful feedback to the student.
-`.trim();
+    `.trim();
 
     const res = await fetch("/api/ai/tutor", {
       method: "POST",
@@ -39,8 +39,14 @@ Please give helpful feedback to the student.
       }),
     });
 
-    const data = await res.json();
+    let data = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
 
+    // 🔒 AI limit
     if (res.status === 403) {
       return {
         status: "LIMIT",
@@ -51,14 +57,19 @@ Please give helpful feedback to the student.
       };
     }
 
+    // ✅ SUCCESS — guaranteed non-empty message
     if (res.ok) {
       return {
         status: "SUCCESS",
-        message: data.answer || "",
+        message:
+          data.answer ||
+          data.message ||
+          "AI feedback received successfully.",
         usage: data.usage || null,
       };
     }
 
+    // ❌ Known backend error
     return {
       status: "ERROR",
       message:
