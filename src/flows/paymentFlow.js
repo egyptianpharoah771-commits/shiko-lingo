@@ -2,6 +2,8 @@
  * Payment Flow
  * ------------
  * Orchestrates Pi payments and subscription activation
+ * Single paid subscription (3 Pi)
+ * AI Feedback included as enhancement
  */
 
 import { createPiPayment } from "../pi/piPayments";
@@ -14,34 +16,28 @@ import {
  * Start subscription payment via Pi
  */
 export async function startSubscriptionPayment({
-  uid,   // ✅ توحيد الاسم مع PiUser (uid)
+  uid,   // Unified Pi User ID
   plan,
 }) {
   let amount = 0;
   let expiresAt = null;
 
+  // ✅ Single paid plan only (MONTHLY)
   if (plan === SUBSCRIPTION_PLANS.MONTHLY) {
-    amount = 1; // 1 Pi (Testnet / Example)
+    amount = 3; // ✅ Official price
     expiresAt =
       Date.now() + 30 * 24 * 60 * 60 * 1000;
-  }
-
-  if (plan === SUBSCRIPTION_PLANS.LIFETIME) {
-    amount = 10; // Example
-    expiresAt = null;
-  }
-
-  if (!amount) {
+  } else {
     throw new Error("Invalid subscription plan");
   }
 
   // 🔑 Trigger Pi Payment
   createPiPayment({
     amount,
-    memo: `Shiko Lingo - ${plan} subscription`,
+    memo: "Shiko Lingo - Subscription",
   });
 
-  // ✅ Local activation (until backend subscription verification exists)
+  // ✅ Local activation (until backend verification exists)
   return setUserSubscription({
     pi_uid: uid,
     plan,

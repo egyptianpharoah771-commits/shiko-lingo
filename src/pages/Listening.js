@@ -32,7 +32,7 @@ function Listening() {
 
   const {
     canAccess,
-    canUseAI,
+    canGetAIFeedback,
     userId,
     packageName,
   } = useFeatureAccess({
@@ -133,17 +133,17 @@ function Listening() {
     );
   };
 
-  const handleAskAI = async () => {
-    if (!canUseAI) {
-      setAiOpen(true);
+  const handleAIFeedback = async () => {
+    setAiOpen(true);
+
+    if (!canGetAIFeedback) {
       setAiStatus("LIMIT");
       setAiMessage(
-        "You’re using the FREE plan. Upgrade to PRO to unlock AI feedback."
+        "AI feedback is available after completing lessons."
       );
       return;
     }
 
-    setAiOpen(true);
     setAiStatus("LOADING");
     setAiMessage("");
 
@@ -168,7 +168,7 @@ function Listening() {
       <p>{lesson.description}</p>
 
       <button
-        onClick={handleAskAI}
+        onClick={handleAIFeedback}
         disabled={!submitted}
         style={{
           marginBottom: 15,
@@ -181,12 +181,18 @@ function Listening() {
           fontWeight: "bold",
         }}
       >
-        🤖 Ask AI Tutor
+        🤖 AI Lesson Feedback
       </button>
 
       {!submitted && (
-        <p style={{ fontSize: "13px", color: "#777", marginTop: "-10px" }}>
-          Submit answers first to get AI feedback.
+        <p
+          style={{
+            fontSize: "13px",
+            color: "#777",
+            marginTop: "-10px",
+          }}
+        >
+          Submit answers first to receive AI feedback.
         </p>
       )}
 

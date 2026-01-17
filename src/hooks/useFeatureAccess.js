@@ -3,8 +3,8 @@
  * -------------------
  * Centralized access logic
  * - Uses unified User Identity
- * - Handles FREE / PRO access
- * - Explicit AI permission flag
+ * - Handles FREE / SUBSCRIBED access
+ * - AI Feedback is an enhancement, not a paid feature
  */
 
 import {
@@ -13,8 +13,8 @@ import {
 } from "../utils/userIdentity";
 
 /**
- * Package resolution (TEMP – Phase 2)
- * Later: replace with real Pi subscription
+ * TEMP package resolution
+ * Later: replaced by real Pi subscription
  */
 function getUserPackage() {
   const stored =
@@ -36,21 +36,23 @@ export function useFeatureAccess({ skill, level }) {
 
     return {
       canAccess: allowed,
-      canUseAI: allowed,          // ✅ صريح
-      requiresUpgrade: !allowed,
 
+      // 🧠 AI Feedback is tied to lesson access
+      canGetAIFeedback: allowed,
+
+      requiresUpgrade: !allowed,
       userId,
       packageName: "FREE",
     };
   }
 
   /* ======================
-     2️⃣ PRO USER
+     2️⃣ SUBSCRIBED USER
   ====================== */
   if (userPackage === "PRO") {
     return {
       canAccess: true,
-      canUseAI: true,             // ✅ المهم
+      canGetAIFeedback: true,
       requiresUpgrade: false,
 
       userId,
@@ -65,7 +67,7 @@ export function useFeatureAccess({ skill, level }) {
 
   return {
     canAccess: allowed,
-    canUseAI: allowed,            // ✅ واضح
+    canGetAIFeedback: allowed,
     requiresUpgrade: !allowed,
 
     userId,

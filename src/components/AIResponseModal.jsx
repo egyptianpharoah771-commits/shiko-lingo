@@ -1,19 +1,10 @@
-import { useNavigate } from "react-router-dom";
-
 function AIResponseModal({
   open,
   onClose,
-  status, // "IDLE" | "LOADING" | "SUCCESS" | "LIMIT" | "ERROR"
+  status, // "IDLE" | "LOADING" | "SUCCESS" | "ERROR"
   message,
 }) {
-  const navigate = useNavigate();
-
   if (!open || status === "IDLE") return null;
-
-  const handleUpgrade = () => {
-    onClose();
-    navigate("/upgrade");
-  };
 
   const safeMessage =
     message && message.trim().length > 0
@@ -29,42 +20,26 @@ function AIResponseModal({
 
         {status === "LOADING" && (
           <>
-            <h3>🤖 AI Tutor</h3>
-            <p>Thinking… please wait</p>
+            <h3>🤖 AI Lesson Feedback</h3>
+            <p>Analyzing your answers… please wait.</p>
           </>
         )}
 
         {status === "SUCCESS" && (
           <>
-            <h3>🧠 AI Feedback</h3>
+            <h3>🧠 AI Lesson Feedback</h3>
             <p style={messageStyle}>{safeMessage}</p>
-          </>
-        )}
-
-        {status === "LIMIT" && (
-          <>
-            <h3 style={{ color: "#c0392b" }}>
-              🚫 Daily AI limit reached
-            </h3>
-
-            <p style={{ marginTop: "8px" }}>
-              You’re using the <strong>FREE</strong> plan.
-              <br />
-              Upgrade to <strong>PRO</strong> to unlock unlimited
-              AI feedback.
-            </p>
-
-            <button onClick={handleUpgrade} style={upgradeBtn}>
-              🚀 Upgrade to PRO
-            </button>
           </>
         )}
 
         {status === "ERROR" && (
           <>
-            <h3 style={{ color: "red" }}>❌ AI Error</h3>
+            <h3 style={{ color: "#c0392b" }}>
+              ❌ Feedback unavailable
+            </h3>
             <p>
-              Something went wrong while contacting the AI Tutor.
+              Something went wrong while generating your lesson
+              feedback.
               <br />
               Please try again in a moment.
             </p>
@@ -108,19 +83,6 @@ const closeBtn = {
 const messageStyle = {
   marginTop: "10px",
   lineHeight: "1.6",
-};
-
-const upgradeBtn = {
-  marginTop: "16px",
-  padding: "12px",
-  width: "100%",
-  background: "#4A90E2",
-  color: "#fff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: "bold",
-  fontSize: "15px",
 };
 
 export default AIResponseModal;
