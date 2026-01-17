@@ -133,7 +133,6 @@ function Listening() {
     );
   };
 
-  // ✅ الإصلاح الكامل هنا
   const handleAskAI = async () => {
     if (!canUseAI) {
       setAiOpen(true);
@@ -148,27 +147,19 @@ function Listening() {
     setAiStatus("LOADING");
     setAiMessage("");
 
-    try {
-      const result = await askAITutor({
-        question: "Give me feedback on my listening performance.",
-        skill: "Listening",
-        level,
-        lessonTitle: lesson.title,
-        lessonDescription: lesson.description,
-        text: lesson.text.join(" "),
-        score,
-        total: lesson.questions.length,
-        userId,
-        packageName,
-      });
+    const result = await askAITutor({
+      skill: "Listening",
+      level,
+      lessonTitle: lesson.title,
+      text: lesson.text.join(" "),
+      score,
+      total: lesson.questions.length,
+      userId,
+      packageName,
+    });
 
-      setAiStatus("SUCCESS");
-      setAiMessage(result.answer || "");
-    } catch (err) {
-      console.error("AI Tutor error:", err);
-      setAiStatus("ERROR");
-      setAiMessage("Sorry, the AI tutor is unavailable right now.");
-    }
+    setAiStatus(result.status);
+    setAiMessage(result.message || "");
   };
 
   return (
@@ -178,19 +169,26 @@ function Listening() {
 
       <button
         onClick={handleAskAI}
+        disabled={!submitted}
         style={{
           marginBottom: 15,
           padding: "8px 14px",
           borderRadius: 8,
-          background: "#111",
+          background: submitted ? "#111" : "#aaa",
           color: "#fff",
           border: "none",
-          cursor: "pointer",
+          cursor: submitted ? "pointer" : "not-allowed",
           fontWeight: "bold",
         }}
       >
         🤖 Ask AI Tutor
       </button>
+
+      {!submitted && (
+        <p style={{ fontSize: "13px", color: "#777", marginTop: "-10px" }}>
+          Submit answers first to get AI feedback.
+        </p>
+      )}
 
       <hr />
 
