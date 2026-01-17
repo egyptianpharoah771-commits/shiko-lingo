@@ -12,7 +12,6 @@
 
 export async function askAITutor(payload) {
   try {
-    // 🔑 Build a single question for backend
     const question = `
 Skill: ${payload.skill}
 Level: ${payload.level}
@@ -24,7 +23,7 @@ ${payload.text}
 Score: ${payload.score}/${payload.total}
 
 Please give helpful feedback to the student.
-    `.trim();
+`.trim();
 
     const res = await fetch("/api/ai/tutor", {
       method: "POST",
@@ -39,14 +38,8 @@ Please give helpful feedback to the student.
       }),
     });
 
-    let data = {};
-    try {
-      data = await res.json();
-    } catch {
-      data = {};
-    }
+    const data = await res.json();
 
-    // 🔒 AI limit
     if (res.status === 403) {
       return {
         status: "LIMIT",
@@ -57,19 +50,17 @@ Please give helpful feedback to the student.
       };
     }
 
-    // ✅ SUCCESS — guaranteed non-empty message
     if (res.ok) {
       return {
         status: "SUCCESS",
         message:
           data.answer ||
           data.message ||
-          "AI feedback received successfully.",
+          "AI feedback is ready.",
         usage: data.usage || null,
       };
     }
 
-    // ❌ Known backend error
     return {
       status: "ERROR",
       message:
