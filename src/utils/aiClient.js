@@ -6,34 +6,46 @@
  * - Same-origin API ONLY
  * - No external base URLs
  * - No CORS
- * - Cache-bust enforced
  * - Pi Browser safe
+ * - Backend already verified
  */
 
 export async function askAITutor(payload) {
   try {
+    // 🔑 Build a single question for backend
+    const question = `
+Skill: ${payload.skill}
+Level: ${payload.level}
+Lesson: ${payload.lessonTitle}
+
+Lesson Text:
+${payload.text}
+
+Score: ${payload.score}/${payload.total}
+
+Please give helpful feedback to the student.
+`.trim();
+
     const res = await fetch("/api/ai/tutor", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        question,
+        userId: payload.userId,
+        packageName: payload.packageName,
+      }),
     });
 
-    let data = {};
-    try {
-      data = await res.json();
-    } catch {
-      data = {};
-    }
+    const data = await res.json();
 
     if (res.status === 403) {
       return {
         status: "LIMIT",
         message:
           data.message ||
-          data.error ||
           "AI limit reached for your plan.",
         usage: data.usage || null,
       };
@@ -42,11 +54,7 @@ export async function askAITutor(payload) {
     if (res.ok) {
       return {
         status: "SUCCESS",
-        message:
-          data.answer ||
-          data.message ||
-          data.text ||
-          "",
+        message: data.answer || "",
         usage: data.usage || null,
       };
     }
@@ -55,7 +63,6 @@ export async function askAITutor(payload) {
       status: "ERROR",
       message:
         data.message ||
-        data.error ||
         "AI service error.",
     };
   } catch (err) {
