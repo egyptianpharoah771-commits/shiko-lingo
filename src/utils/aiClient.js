@@ -1,40 +1,22 @@
 /**
  * AI Client
  * ---------
- * - Centralized API base URL
- * - Handles AI limits & responses
- * - Identity passed explicitly (from useFeatureAccess)
- * - Cloudflare / Pi Browser safe
+ * - Same-origin API (/api/ai/tutor)
+ * - Safe JSON parsing
+ * - Supports multiple backend response formats
+ * - Pi Browser & Production safe
  */
 
-import { API_BASE_URL } from "./apiConfig";
-
-/**
- * Ask AI Tutor
- * -------------
- * payload must include:
- * - skill
- * - level
- * - lessonTitle
- * - prompt / text / studentText / bullets / etc
- * - userId
- * - packageName
- */
 export async function askAITutor(payload) {
   try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/ai/tutor`,
-      {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      }
-    );
+    const res = await fetch("/api/ai/tutor", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-    // 🔐 Safely parse JSON
     let data = {};
     try {
       data = await res.json();
@@ -42,31 +24,37 @@ export async function askAITutor(payload) {
       data = {};
     }
 
-    /* ===== AI limit reached ===== */
+    // 🔐 AI limit
     if (res.status === 403) {
       return {
         status: "LIMIT",
         message:
           data.message ||
+          data.error ||
           "AI limit reached for your plan.",
         usage: data.usage || null,
       };
     }
 
-    /* ===== Success ===== */
+    // ✅ Success
     if (res.ok) {
       return {
         status: "SUCCESS",
-        message: data.message || "OK",
+        message:
+          data.message ||
+          data.answer || // 👈 ده المهم
+          data.text ||
+          "",
         usage: data.usage || null,
       };
     }
 
-    /* ===== Known error ===== */
+    // ❌ Known error
     return {
       status: "ERROR",
       message:
         data.message ||
+        data.error ||
         "AI service error.",
     };
   } catch (err) {
