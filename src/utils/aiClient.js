@@ -1,10 +1,11 @@
 /**
  * AI Client
  * ---------
- * - Same-origin API (/api/ai/tutor)
- * - Safe JSON parsing
- * - Supports multiple backend response formats
- * - Pi Browser & Production safe
+ * - Same-origin API ONLY
+ * - No external base URLs
+ * - No CORS
+ * - Cache-safe
+ * - Pi Browser safe
  */
 
 export async function askAITutor(payload) {
@@ -24,7 +25,6 @@ export async function askAITutor(payload) {
       data = {};
     }
 
-    // 🔐 AI limit
     if (res.status === 403) {
       return {
         status: "LIMIT",
@@ -36,20 +36,18 @@ export async function askAITutor(payload) {
       };
     }
 
-    // ✅ Success
     if (res.ok) {
       return {
         status: "SUCCESS",
         message:
+          data.answer ||
           data.message ||
-          data.answer || // 👈 ده المهم
           data.text ||
           "",
         usage: data.usage || null,
       };
     }
 
-    // ❌ Known error
     return {
       status: "ERROR",
       message:
