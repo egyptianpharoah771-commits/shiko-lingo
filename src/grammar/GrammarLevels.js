@@ -1,20 +1,6 @@
 import { Link } from "react-router-dom";
 
-// 🔐 Feature Gating
-import { useFeatureAccess } from "../hooks/useFeatureAccess";
-import LockedFeature from "../components/LockedFeature";
-
 function GrammarLevels() {
-  /* ===== Feature Access ===== */
-  const { canAccess } = useFeatureAccess({
-    skill: "Grammar",
-  });
-
-  /* 🔒 Lock */
-  if (!canAccess) {
-    return <LockedFeature title="Grammar" />;
-  }
-
   const placementLevel =
     localStorage.getItem("placementLevel");
 

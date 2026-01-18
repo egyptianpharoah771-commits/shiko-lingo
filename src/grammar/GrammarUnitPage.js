@@ -3,10 +3,6 @@ import { useEffect, useState } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 
-// Feature Gating
-import { useFeatureAccess } from "../hooks/useFeatureAccess";
-import LockedFeature from "../components/LockedFeature";
-
 // ===== A1 Units =====
 import a1Content1 from "./A1/unit1/content";
 import a1Questions1 from "./A1/unit1/questions";
@@ -46,11 +42,6 @@ const GRAMMAR_MAP = {
 function GrammarUnitPage() {
   const { level, unit } = useParams();
 
-  const { canAccess } = useFeatureAccess({
-    skill: "Grammar",
-    level,
-  });
-
   const grammarUnit = GRAMMAR_MAP[level]?.[unit];
   const content = grammarUnit?.content;
   const questions = grammarUnit?.questions || [];
@@ -73,10 +64,6 @@ function GrammarUnitPage() {
     setScore(null);
     setSubmitted(false);
   }, [level, unit]);
-
-  if (!canAccess) {
-    return <LockedFeature title="Grammar Unit" />;
-  }
 
   if (!content || !questions.length) {
     return <p>Unit not found</p>;

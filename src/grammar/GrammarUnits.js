@@ -3,10 +3,6 @@ import { useEffect, useMemo } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 
-// 🔐 Feature Gating
-import { useFeatureAccess } from "../hooks/useFeatureAccess";
-import LockedFeature from "../components/LockedFeature";
-
 /* ===== Units by level ===== */
 const UNITS_BY_LEVEL = {
   A1: [
@@ -34,13 +30,6 @@ function GrammarUnits() {
   const { level } = useParams();
   const navigate = useNavigate();
 
-  /* ===== HOOKS (ALL FIRST, NO RETURNS BEFORE) ===== */
-
-  const { canAccess } = useFeatureAccess({
-    skill: "Grammar",
-    level,
-  });
-
   const placementLevel =
     localStorage.getItem("placementLevel");
 
@@ -59,8 +48,6 @@ function GrammarUnits() {
   }, [level]);
 
   useEffect(() => {
-    // smart auto-open only when everything is valid
-    if (!canAccess) return;
     if (!placementLevel) return;
     if (placementLevel !== level) return;
     if (units.length === 0) return;
@@ -70,19 +57,12 @@ function GrammarUnits() {
 
     navigate(`/grammar/${level}/${units[0].id}`);
   }, [
-    canAccess,
     placementLevel,
     level,
     units,
     completedUnits,
     navigate,
   ]);
-
-  /* ===== GUARDS (AFTER ALL HOOKS) ===== */
-
-  if (!canAccess) {
-    return <LockedFeature title="Grammar" />;
-  }
 
   if (!UNITS_BY_LEVEL[level]) {
     return <p>Invalid level.</p>;
