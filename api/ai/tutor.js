@@ -10,17 +10,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { question, level, lessonTitle, lessonDescription } = req.body;
+    const {
+      question,
+      level,
+      lessonTitle,
+      lessonDescription,
+      text, // ✅ coming from Grammar
+    } = req.body;
 
     if (!question) {
       return res.status(400).json({ error: "Question is required" });
     }
 
+    const finalLessonDescription =
+      lessonDescription || text || "English lesson practice";
+
     const systemPrompt = `
 You are an English AI Tutor helping a student at CEFR level ${level || "A1"}.
 
 Lesson title: ${lessonTitle || "General English"}
-Lesson description: ${lessonDescription || "Basic English conversation practice"}
+Lesson description: ${finalLessonDescription}
 
 Rules:
 - Explain simply and clearly
@@ -28,8 +37,10 @@ Rules:
 - Give examples when useful
 - Correct mistakes gently
 - Do NOT be verbose
+- Do NOT ask questions
+- Do NOT start a conversation
 - Speak like a friendly tutor, not a chatbot
-`;
+`.trim();
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
@@ -40,11 +51,15 @@ Rules:
       temperature: 0.4,
     });
 
-    const answer = completion.choices[0].message.content;
+    const answer =
+      completion?.choices?.[0]?.message?.content ||
+      "Good job. Keep practicing to improve your skills.";
 
     return res.status(200).json({ answer });
   } catch (err) {
     console.error("AI Tutor error:", err);
-    return res.status(500).json({ error: "AI Tutor failed" });
+    return res
+      .status(500)
+      .json({ error: "AI Tutor failed" });
   }
 }
