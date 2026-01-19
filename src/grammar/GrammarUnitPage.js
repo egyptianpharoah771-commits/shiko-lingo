@@ -26,6 +26,18 @@ import b1Questions2 from "./B1/unit2/questions";
 import b1Content3 from "./B1/unit3/content";
 import b1Questions3 from "./B1/unit3/questions";
 
+// ===== B2 Units =====
+import b2Content1 from "./B2/unit1/content";
+import b2Questions1 from "./B2/unit1/questions";
+import b2Content2 from "./B2/unit2/content";
+import b2Questions2 from "./B2/unit2/questions";
+
+// ===== C1 Units =====
+import c1Content1 from "./C1/unit1/content";
+import c1Questions1 from "./C1/unit1/questions";
+import c1Content2 from "./C1/unit2/content";
+import c1Questions2 from "./C1/unit2/questions";
+
 const GRAMMAR_MAP = {
   A1: {
     unit1: { content: a1Content1, questions: a1Questions1 },
@@ -40,11 +52,20 @@ const GRAMMAR_MAP = {
     unit2: { content: b1Content2, questions: b1Questions2 },
     unit3: { content: b1Content3, questions: b1Questions3 },
   },
+  B2: {
+    unit1: { content: b2Content1, questions: b2Questions1 },
+    unit2: { content: b2Content2, questions: b2Questions2 },
+  },
+  C1: {
+    unit1: { content: c1Content1, questions: c1Questions1 },
+    unit2: { content: c1Content2, questions: c1Questions2 },
+  },
 };
 
 function GrammarUnitPage() {
   const { level, unit } = useParams();
   const grammarUnit = GRAMMAR_MAP[level]?.[unit];
+
   const content = grammarUnit?.content;
   const questions = grammarUnit?.questions || [];
 
@@ -57,13 +78,10 @@ function GrammarUnitPage() {
   const [aiStatus, setAiStatus] = useState("IDLE");
   const [aiMessage, setAiMessage] = useState("");
 
-  // 🔊 Audio refs
+  // 🔊 Sounds
   const selectSound = useRef(null);
   const correctSound = useRef(null);
   const wrongSound = useRef(null);
-
-  // 🔊 TTS state
-  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const userId = getUserId();
   const packageName = "FREE";
@@ -84,37 +102,25 @@ function GrammarUnitPage() {
     setAiOpen(false);
     setAiStatus("IDLE");
     setAiMessage("");
-    setIsSpeaking(false);
 
-    // Fallback-safe audio init
-    const safeAudio = (src) => {
-      try {
-        const a = new Audio(src);
-        a.volume = 0.6;
-        return a;
-      } catch {
-        return null;
-      }
-    };
-
-    selectSound.current = safeAudio("/sounds/select.mp3");
-    correctSound.current = safeAudio("/sounds/correct.mp3");
-    wrongSound.current = safeAudio("/sounds/wrong.mp3");
+    selectSound.current = new Audio("/sounds/select.mp3");
+    correctSound.current = new Audio("/sounds/correct.mp3");
+    wrongSound.current = new Audio("/sounds/wrong.mp3");
   }, [level, unit]);
 
   if (!content || !questions.length) {
     return <p>Unit not found</p>;
   }
 
-  const safePlay = (ref) => {
+  const play = (ref) => {
     try {
-      ref?.current?.play?.();
+      ref?.current?.play();
     } catch {}
   };
 
   const handleAnswer = (qId, option) => {
     if (submitted) return;
-    safePlay(selectSound);
+    play(selectSound);
     setAnswers((prev) => ({ ...prev, [qId]: option }));
   };
 
@@ -130,30 +136,8 @@ function GrammarUnitPage() {
     setSubmitted(true);
 
     correct >= PASS_SCORE
-      ? safePlay(correctSound)
-      : safePlay(wrongSound);
-  };
-
-  // 🔊 TTS
-  const toggleExplanationAudio = () => {
-    if (!window.speechSynthesis) return;
-
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(
-      content.explanation
-    );
-    utterance.lang = "en-US";
-    utterance.rate = 0.95;
-    utterance.onend = () => setIsSpeaking(false);
-
-    setIsSpeaking(true);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+      ? play(correctSound)
+      : play(wrongSound);
   };
 
   const handleAIFeedback = async () => {
@@ -161,24 +145,19 @@ function GrammarUnitPage() {
     setAiStatus("LOADING");
     setAiMessage("");
 
-    try {
-      const result = await askAITutor({
-        skill: "Grammar",
-        level,
-        lessonTitle: content.title,
-        text: content.explanation,
-        score,
-        total: questions.length,
-        userId,
-        packageName,
-      });
+    const result = await askAITutor({
+      skill: "Grammar",
+      level,
+      lessonTitle: content.title,
+      text: content.explanation,
+      score,
+      total: questions.length,
+      userId,
+      packageName,
+    });
 
-      setAiStatus(result?.status || "ERROR");
-      setAiMessage(result?.message || "");
-    } catch {
-      setAiStatus("ERROR");
-      setAiMessage("AI feedback unavailable.");
-    }
+    setAiStatus(result?.status || "ERROR");
+    setAiMessage(result?.message || "");
   };
 
   const passed = score !== null && score >= PASS_SCORE;
@@ -196,37 +175,8 @@ function GrammarUnitPage() {
       <h2>{content.title}</h2>
       <p>{content.explanation}</p>
 
-      {/* 🔊 Lesson Audio */}
-      <button
-        onClick={toggleExplanationAudio}
-        style={{
-          marginBottom: 15,
-          padding: "8px 14px",
-          borderRadius: 8,
-          background: isSpeaking ? "#6c757d" : "#0a58ca",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-          fontWeight: "bold",
-        }}
-      >
-        {isSpeaking ? "⏸ Stop Explanation" : "▶️ Play Explanation"}
-      </button>
-
       {submitted && (
-        <button
-          onClick={handleAIFeedback}
-          style={{
-            marginLeft: 10,
-            padding: "8px 14px",
-            borderRadius: 8,
-            background: "#111",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
+        <button onClick={handleAIFeedback}>
           🤖 AI Lesson Feedback
         </button>
       )}
@@ -248,7 +198,6 @@ function GrammarUnitPage() {
                   disabled={submitted}
                   style={{
                     marginRight: 6,
-                    padding: "6px 10px",
                     background:
                       userAnswer === opt ? "#e5e9ff" : "#eee",
                   }}
@@ -257,7 +206,6 @@ function GrammarUnitPage() {
                 </button>
               ))}
             </div>
-
             {submitted && (
               <p>{isCorrect ? "✅ Correct" : "❌ Wrong"}</p>
             )}
@@ -282,11 +230,7 @@ function GrammarUnitPage() {
         Finish Unit
       </button>
 
-      <div style={{ marginTop: 20 }}>
-        <Link to={`/grammar/${level}`}>
-          Back to Grammar {level}
-        </Link>
-      </div>
+      <Link to={`/grammar/${level}`}>Back</Link>
 
       <AIResponseModal
         open={aiOpen}
