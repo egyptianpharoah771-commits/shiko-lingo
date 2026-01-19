@@ -53,7 +53,7 @@ function GrammarUnitPage() {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(null);
 
-  // 🤖 AI (زي Listening)
+  // 🤖 AI
   const [aiOpen, setAiOpen] = useState(false);
   const [aiStatus, setAiStatus] = useState("IDLE");
   const [aiMessage, setAiMessage] = useState("");
@@ -105,19 +105,24 @@ function GrammarUnitPage() {
     setAiStatus("LOADING");
     setAiMessage("");
 
-    const result = await askAITutor({
-      skill: "Grammar",
-      level,
-      lessonTitle: content.title,
-      text: content.explanation,
-      score,
-      total: questions.length,
-      userId,
-      packageName,
-    });
+    try {
+      const result = await askAITutor({
+        skill: "Grammar",
+        level,
+        lessonTitle: content.title,
+        text: content.explanation,
+        score,
+        total: questions.length,
+        userId,
+        packageName,
+      });
 
-    setAiStatus(result.status);
-    setAiMessage(result.message || "");
+      setAiStatus(result?.status || "ERROR");
+      setAiMessage(result?.message || "");
+    } catch {
+      setAiStatus("ERROR");
+      setAiMessage("AI feedback unavailable.");
+    }
   };
 
   const passed = score !== null && score >= PASS_SCORE;
@@ -132,32 +137,25 @@ function GrammarUnitPage() {
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      {/* 🔴 ZZZ TEST */}
-      <h2>ZZZ TEST {content.title}</h2>
-
+      <h2>{content.title}</h2>
       <p>{content.explanation}</p>
 
-      <button
-        onClick={handleAIFeedback}
-        disabled={!submitted}
-        style={{
-          marginBottom: 15,
-          padding: "8px 14px",
-          borderRadius: 8,
-          background: submitted ? "#111" : "#aaa",
-          color: "#fff",
-          border: "none",
-          cursor: submitted ? "pointer" : "not-allowed",
-          fontWeight: "bold",
-        }}
-      >
-        🤖 AI Lesson Feedback
-      </button>
-
-      {!submitted && (
-        <p style={{ fontSize: 13, color: "#777", marginTop: -10 }}>
-          Submit answers first to receive AI feedback.
-        </p>
+      {submitted && (
+        <button
+          onClick={handleAIFeedback}
+          style={{
+            marginBottom: 15,
+            padding: "10px 16px",
+            borderRadius: 8,
+            background: "#111",
+            color: "#fff",
+            border: "none",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          🤖 AI Lesson Feedback
+        </button>
       )}
 
       <h4>Questions</h4>
