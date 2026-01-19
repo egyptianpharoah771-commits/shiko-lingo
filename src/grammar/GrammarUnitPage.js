@@ -2,6 +2,9 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
+import { askAITutor } from "../utils/aiClient";
+import { getUserId } from "../utils/userIdentity";
+import AIResponseModal from "../components/AIResponseModal";
 
 // ===== A1 Units =====
 import a1Content1 from "./A1/unit1/content";
@@ -47,8 +50,16 @@ function GrammarUnitPage() {
   const questions = grammarUnit?.questions || [];
 
   const [answers, setAnswers] = useState({});
-  const [score, setScore] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(null);
+
+  // 🤖 AI (زي Listening)
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiStatus, setAiStatus] = useState("IDLE");
+  const [aiMessage, setAiMessage] = useState("");
+
+  const userId = getUserId();
+  const packageName = "FREE";
 
   const storageKey = STORAGE_KEYS.GRAMMAR_COMPLETED;
   const completedUnits =
@@ -61,30 +72,24 @@ function GrammarUnitPage() {
 
   useEffect(() => {
     setAnswers({});
-    setScore(null);
     setSubmitted(false);
+    setScore(null);
+    setAiStatus("IDLE");
+    setAiMessage("");
+    setAiOpen(false);
   }, [level, unit]);
 
   if (!content || !questions.length) {
     return <p>Unit not found</p>;
   }
 
-  const allAnswered =
-    Object.keys(answers).length === questions.length;
-
-  const passed =
-    score !== null && score >= PASS_SCORE;
-
   const handleAnswer = (qId, option) => {
     if (submitted) return;
-    setAnswers((prev) => ({
-      ...prev,
-      [qId]: option,
-    }));
+    setAnswers((prev) => ({ ...prev, [qId]: option }));
   };
 
   const handleSubmit = () => {
-    if (!allAnswered || submitted) return;
+    if (submitted) return;
 
     let correct = 0;
     questions.forEach((q) => {
@@ -95,34 +100,65 @@ function GrammarUnitPage() {
     setSubmitted(true);
   };
 
+  const handleAIFeedback = async () => {
+    setAiOpen(true);
+    setAiStatus("LOADING");
+    setAiMessage("");
+
+    const result = await askAITutor({
+      skill: "Grammar",
+      level,
+      lessonTitle: content.title,
+      text: content.explanation,
+      score,
+      total: questions.length,
+      userId,
+      packageName,
+    });
+
+    setAiStatus(result.status);
+    setAiMessage(result.message || "");
+  };
+
+  const passed = score !== null && score >= PASS_SCORE;
+
   const handleFinishUnit = () => {
     if (!passed || isCompleted) return;
-
-    const updated = [...completedUnits, unitKey];
     localStorage.setItem(
       storageKey,
-      JSON.stringify(updated)
+      JSON.stringify([...completedUnits, unitKey])
     );
   };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <h2>{content.title}</h2>
+    <div style={{ maxWidth: 800, margin: "0 auto" }}>
+      {/* 🔴 ZZZ TEST */}
+      <h2>ZZZ TEST {content.title}</h2>
+
       <p>{content.explanation}</p>
 
-      <h4>Rules</h4>
-      <ul>
-        {content.rules.map((rule, i) => (
-          <li key={i}>{rule}</li>
-        ))}
-      </ul>
+      <button
+        onClick={handleAIFeedback}
+        disabled={!submitted}
+        style={{
+          marginBottom: 15,
+          padding: "8px 14px",
+          borderRadius: 8,
+          background: submitted ? "#111" : "#aaa",
+          color: "#fff",
+          border: "none",
+          cursor: submitted ? "pointer" : "not-allowed",
+          fontWeight: "bold",
+        }}
+      >
+        🤖 AI Lesson Feedback
+      </button>
 
-      <h4>Examples</h4>
-      <ul>
-        {content.examples.map((ex, i) => (
-          <li key={i}>{ex}</li>
-        ))}
-      </ul>
+      {!submitted && (
+        <p style={{ fontSize: 13, color: "#777", marginTop: -10 }}>
+          Submit answers first to receive AI feedback.
+        </p>
+      )}
 
       <h4>Questions</h4>
 
@@ -131,31 +167,35 @@ function GrammarUnitPage() {
         const isCorrect = userAnswer === q.answer;
 
         return (
-          <div key={q.id}>
+          <div key={q.id} style={{ marginBottom: 12 }}>
             <strong>{q.question}</strong>
-            {q.options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => handleAnswer(q.id, opt)}
-                disabled={submitted}
-              >
-                {opt}
-              </button>
-            ))}
+            <div style={{ marginTop: 6 }}>
+              {q.options.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => handleAnswer(q.id, opt)}
+                  disabled={submitted}
+                  style={{
+                    marginRight: 6,
+                    padding: "6px 10px",
+                    background:
+                      userAnswer === opt ? "#e5e9ff" : "#eee",
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+
             {submitted && (
-              <p>{isCorrect ? "Correct" : "Wrong"}</p>
+              <p>{isCorrect ? "✅ Correct" : "❌ Wrong"}</p>
             )}
           </div>
         );
       })}
 
       {!submitted && (
-        <button
-          onClick={handleSubmit}
-          disabled={!allAnswered}
-        >
-          Check Answers
-        </button>
+        <button onClick={handleSubmit}>Check Answers</button>
       )}
 
       {submitted && (
@@ -171,11 +211,18 @@ function GrammarUnitPage() {
         Finish Unit
       </button>
 
-      <div>
+      <div style={{ marginTop: 20 }}>
         <Link to={`/grammar/${level}`}>
           Back to Grammar {level}
         </Link>
       </div>
+
+      <AIResponseModal
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        status={aiStatus}
+        message={aiMessage}
+      />
     </div>
   );
 }
