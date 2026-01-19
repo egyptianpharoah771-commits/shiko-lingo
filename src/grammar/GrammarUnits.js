@@ -1,5 +1,5 @@
-import { Link, useParams, useNavigate } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import { Link, useParams } from "react-router-dom";
+import { useMemo } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 
@@ -24,14 +24,49 @@ const UNITS_BY_LEVEL = {
       title: "Future Forms (will / going to)",
     },
   ],
+
+  // ===== NEW LEVELS =====
+  B2: [
+    {
+      id: "unit1",
+      title: "Passive Voice (All Tenses)",
+    },
+    {
+      id: "unit2",
+      title: "Conditionals (Zero, First, Second, Third)",
+    },
+    {
+      id: "unit3",
+      title: "Reported Speech",
+    },
+    {
+      id: "unit4",
+      title: "Modal Verbs (Obligation, Deduction)",
+    },
+  ],
+
+  C1: [
+    {
+      id: "unit1",
+      title: "Advanced Sentence Structures",
+    },
+    {
+      id: "unit2",
+      title: "Inversion & Emphasis",
+    },
+    {
+      id: "unit3",
+      title: "Advanced Linking & Cohesion",
+    },
+    {
+      id: "unit4",
+      title: "Nuance, Tone & Formality",
+    },
+  ],
 };
 
 function GrammarUnits() {
   const { level } = useParams();
-  const navigate = useNavigate();
-
-  const placementLevel =
-    localStorage.getItem("placementLevel");
 
   const completedUnits = useMemo(() => {
     return (
@@ -47,28 +82,10 @@ function GrammarUnits() {
     return UNITS_BY_LEVEL[level] || [];
   }, [level]);
 
-  useEffect(() => {
-    if (!placementLevel) return;
-    if (placementLevel !== level) return;
-    if (units.length === 0) return;
-
-    const firstUnitKey = `${level}-${units[0].id}`;
-    if (completedUnits.includes(firstUnitKey)) return;
-
-    navigate(`/grammar/${level}/${units[0].id}`);
-  }, [
-    placementLevel,
-    level,
-    units,
-    completedUnits,
-    navigate,
-  ]);
-
   if (!UNITS_BY_LEVEL[level]) {
     return <p>Invalid level.</p>;
   }
 
-  /* ===== Helpers ===== */
   const isUnitUnlocked = (index) => {
     if (index === 0) return true;
     const prevKey = `${level}-${units[index - 1].id}`;
@@ -105,8 +122,6 @@ function GrammarUnits() {
                   ? "#e5e9ff"
                   : "#eee",
                 opacity: unlocked ? 1 : 0.6,
-                boxShadow:
-                  "0 4px 10px rgba(0,0,0,0.08)",
               }}
             >
               <h4>{unit.title}</h4>
@@ -121,16 +136,7 @@ function GrammarUnits() {
                 <Link
                   to={`/grammar/${level}/${unit.id}`}
                 >
-                  <button
-                    style={{
-                      marginTop: "10px",
-                      padding: "8px 12px",
-                      borderRadius: "6px",
-                      border: "none",
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                    }}
-                  >
+                  <button type="button">
                     Open
                   </button>
                 </Link>

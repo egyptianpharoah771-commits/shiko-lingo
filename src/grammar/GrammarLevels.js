@@ -4,10 +4,12 @@ function GrammarLevels() {
   const placementLevel =
     localStorage.getItem("placementLevel");
 
-  const levels = ["A1", "A2", "B1"];
+  // ===== UPDATED LEVELS =====
+  const levels = ["A1", "A2", "B1", "B2", "C1"];
 
   const isUnlocked = (level) => {
     if (!placementLevel) return true;
+
     return (
       levels.indexOf(level) <=
       levels.indexOf(placementLevel)
