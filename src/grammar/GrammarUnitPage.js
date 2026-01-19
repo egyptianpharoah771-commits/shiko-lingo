@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 import { askAITutor } from "../utils/aiClient";
@@ -44,7 +44,6 @@ const GRAMMAR_MAP = {
 
 function GrammarUnitPage() {
   const { level, unit } = useParams();
-
   const grammarUnit = GRAMMAR_MAP[level]?.[unit];
   const content = grammarUnit?.content;
   const questions = grammarUnit?.questions || [];
@@ -57,6 +56,14 @@ function GrammarUnitPage() {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiStatus, setAiStatus] = useState("IDLE");
   const [aiMessage, setAiMessage] = useState("");
+
+  // 🔊 Audio refs
+  const selectSound = useRef(null);
+  const correctSound = useRef(null);
+  const wrongSound = useRef(null);
+
+  // 🔊 TTS state
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const userId = getUserId();
   const packageName = "FREE";
@@ -74,17 +81,40 @@ function GrammarUnitPage() {
     setAnswers({});
     setSubmitted(false);
     setScore(null);
+    setAiOpen(false);
     setAiStatus("IDLE");
     setAiMessage("");
-    setAiOpen(false);
+    setIsSpeaking(false);
+
+    // Fallback-safe audio init
+    const safeAudio = (src) => {
+      try {
+        const a = new Audio(src);
+        a.volume = 0.6;
+        return a;
+      } catch {
+        return null;
+      }
+    };
+
+    selectSound.current = safeAudio("/sounds/select.mp3");
+    correctSound.current = safeAudio("/sounds/correct.mp3");
+    wrongSound.current = safeAudio("/sounds/wrong.mp3");
   }, [level, unit]);
 
   if (!content || !questions.length) {
     return <p>Unit not found</p>;
   }
 
+  const safePlay = (ref) => {
+    try {
+      ref?.current?.play?.();
+    } catch {}
+  };
+
   const handleAnswer = (qId, option) => {
     if (submitted) return;
+    safePlay(selectSound);
     setAnswers((prev) => ({ ...prev, [qId]: option }));
   };
 
@@ -98,6 +128,32 @@ function GrammarUnitPage() {
 
     setScore(correct);
     setSubmitted(true);
+
+    correct >= PASS_SCORE
+      ? safePlay(correctSound)
+      : safePlay(wrongSound);
+  };
+
+  // 🔊 TTS
+  const toggleExplanationAudio = () => {
+    if (!window.speechSynthesis) return;
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(
+      content.explanation
+    );
+    utterance.lang = "en-US";
+    utterance.rate = 0.95;
+    utterance.onend = () => setIsSpeaking(false);
+
+    setIsSpeaking(true);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
   };
 
   const handleAIFeedback = async () => {
@@ -140,12 +196,29 @@ function GrammarUnitPage() {
       <h2>{content.title}</h2>
       <p>{content.explanation}</p>
 
+      {/* 🔊 Lesson Audio */}
+      <button
+        onClick={toggleExplanationAudio}
+        style={{
+          marginBottom: 15,
+          padding: "8px 14px",
+          borderRadius: 8,
+          background: isSpeaking ? "#6c757d" : "#0a58ca",
+          color: "#fff",
+          border: "none",
+          cursor: "pointer",
+          fontWeight: "bold",
+        }}
+      >
+        {isSpeaking ? "⏸ Stop Explanation" : "▶️ Play Explanation"}
+      </button>
+
       {submitted && (
         <button
           onClick={handleAIFeedback}
           style={{
-            marginBottom: 15,
-            padding: "10px 16px",
+            marginLeft: 10,
+            padding: "8px 14px",
             borderRadius: 8,
             background: "#111",
             color: "#fff",
