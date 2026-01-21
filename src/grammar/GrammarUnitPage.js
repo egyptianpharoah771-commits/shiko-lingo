@@ -79,7 +79,6 @@ function GrammarUnitPage() {
   const content = grammarUnit?.content;
   const questions = grammarUnit?.questions || [];
 
-  const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
   const selectSound = useRef(null);
@@ -91,7 +90,6 @@ function GrammarUnitPage() {
   const unitKey = `${level}-${unit}`;
 
   useEffect(() => {
-    setAnswers({});
     setSubmitted(false);
     selectSound.current = new Audio("/sounds/select.mp3");
   }, [level, unit]);
@@ -100,10 +98,9 @@ function GrammarUnitPage() {
     return <p>⚠️ This unit is not ready yet.</p>;
   }
 
-  const handleAnswer = (qId, option) => {
+  const handleAnswer = () => {
     if (submitted) return;
     selectSound.current?.play();
-    setAnswers((prev) => ({ ...prev, [qId]: option }));
   };
 
   const handleSubmit = () => {
@@ -144,7 +141,7 @@ function GrammarUnitPage() {
             {q.options.map((opt) => (
               <button
                 key={opt}
-                onClick={() => handleAnswer(q.id, opt)}
+                onClick={handleAnswer}
                 disabled={submitted}
                 style={{ marginRight: 6 }}
               >
