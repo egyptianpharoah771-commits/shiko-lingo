@@ -79,9 +79,13 @@ function GrammarUnitPage() {
   const content = grammarUnit?.content;
   const questions = grammarUnit?.questions || [];
 
+  const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(null);
 
   const selectSound = useRef(null);
+  const correctSound = useRef(null);
+  const wrongSound = useRef(null);
 
   const storageKey = STORAGE_KEYS.GRAMMAR_COMPLETED;
   const completedUnits =
@@ -89,30 +93,50 @@ function GrammarUnitPage() {
 
   const unitKey = `${level}-${unit}`;
 
+  const PASS_SCORE = Math.floor(questions.length * 0.7);
+
   useEffect(() => {
+    setAnswers({});
     setSubmitted(false);
+    setScore(null);
+
     selectSound.current = new Audio("/sounds/select.mp3");
+    correctSound.current = new Audio("/sounds/correct.mp3");
+    wrongSound.current = new Audio("/sounds/wrong.mp3");
   }, [level, unit]);
 
   if (!content || !questions.length) {
     return <p>⚠️ This unit is not ready yet.</p>;
   }
 
-  const handleAnswer = () => {
+  const handleAnswer = (qId, option) => {
     if (submitted) return;
     selectSound.current?.play();
+    setAnswers((prev) => ({ ...prev, [qId]: option }));
   };
 
   const handleSubmit = () => {
     if (submitted) return;
 
+    let correct = 0;
+    questions.forEach((q) => {
+      if (answers[q.id] === q.answer) correct++;
+    });
+
+    setScore(correct);
     setSubmitted(true);
 
-    if (!completedUnits.includes(unitKey)) {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify([...completedUnits, unitKey])
-      );
+    if (correct >= PASS_SCORE) {
+      correctSound.current?.play();
+
+      if (!completedUnits.includes(unitKey)) {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify([...completedUnits, unitKey])
+        );
+      }
+    } else {
+      wrongSound.current?.play();
     }
   };
 
@@ -127,6 +151,9 @@ function GrammarUnitPage() {
     }
   };
 
+  const passed =
+    submitted && score !== null && score >= PASS_SCORE;
+
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
       <h2>{content.title}</h2>
@@ -134,23 +161,35 @@ function GrammarUnitPage() {
 
       <h4>Questions</h4>
 
-      {questions.map((q) => (
-        <div key={q.id} style={{ marginBottom: 10 }}>
-          <strong>{q.question}</strong>
-          <div>
-            {q.options.map((opt) => (
-              <button
-                key={opt}
-                onClick={handleAnswer}
-                disabled={submitted}
-                style={{ marginRight: 6 }}
-              >
-                {opt}
-              </button>
-            ))}
+      {questions.map((q) => {
+        const selected = answers[q.id];
+
+        return (
+          <div key={q.id} style={{ marginBottom: 12 }}>
+            <strong>{q.question}</strong>
+            <div style={{ marginTop: 6 }}>
+              {q.options.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() =>
+                    handleAnswer(q.id, opt)
+                  }
+                  disabled={submitted}
+                  style={{
+                    marginRight: 6,
+                    background:
+                      selected === opt
+                        ? "#e5e9ff"
+                        : "#eee",
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {!submitted && (
         <button onClick={handleSubmit}>
@@ -159,17 +198,28 @@ function GrammarUnitPage() {
       )}
 
       {submitted && (
+        <p>
+          Score: {score} / {questions.length}
+        </p>
+      )}
+
+      {passed && (
         <div
           style={{
             marginTop: 20,
             padding: 20,
-            border: "2px solid green",
+            border: "2px solid #28a745",
             background: "#f0fff4",
             textAlign: "center",
           }}
         >
-          <p style={{ fontWeight: "bold" }}>
-            NEXT UNIT SHOULD APPEAR NOW
+          <p
+            style={{
+              fontWeight: "bold",
+              color: "#28a745",
+            }}
+          >
+            Excellent! Lesson Completed.
           </p>
           <button onClick={handleNextUnit}>
             Next Unit →

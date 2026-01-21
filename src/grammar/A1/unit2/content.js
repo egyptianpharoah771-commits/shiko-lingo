@@ -1,23 +1,22 @@
 const content = {
   title: "Present Continuous",
   explanation: `
-We use the Present Continuous to talk about:
-• Actions happening now
-• Temporary actions
-• Actions happening at the moment of speaking
+We use the Present Continuous to talk about actions that are happening now or around the present time.
+
+It focuses on what is in progress, not on habits or permanent situations.
   `,
   rules: [
-    "am / is / are + verb + ing",
-    "I am (I'm) playing",
+    "Subject + am / is / are + verb + ing",
+    "I am (I'm) studying",
     "He / She / It is (he's) working",
-    "We / You / They are (we're) studying"
+    "We / You / They are (we're) learning"
   ],
   examples: [
-    "I am studying English now.",
-    "She is watching TV.",
-    "They are playing football.",
-    "He is working at the moment.",
-    "We are learning grammar."
+    "I am studying English right now.",
+    "She is talking on the phone.",
+    "They are playing football at the moment.",
+    "He is working on a new project.",
+    "We are learning a new grammar rule."
   ]
 };
 

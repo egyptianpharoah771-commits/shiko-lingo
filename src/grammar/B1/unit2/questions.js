@@ -7,9 +7,13 @@ const questions = [
   },
   {
     id: 2,
-    question: "She has ___ her homework.",
-    options: ["finish", "finished", "finishing"],
-    answer: "finished"
+    question: "Which sentence is correct?",
+    options: [
+      "She has finish her homework.",
+      "She has finished her homework.",
+      "She finished her homework just."
+    ],
+    answer: "She has finished her homework."
   },
   {
     id: 3,
@@ -19,9 +23,13 @@ const questions = [
   },
   {
     id: 4,
-    question: "They ___ the match yesterday.",
-    options: ["have won", "won", "win"],
-    answer: "won"
+    question: "Which sentence uses the Past Simple correctly?",
+    options: [
+      "They have won the match yesterday.",
+      "They won the match yesterday.",
+      "They win the match yesterday."
+    ],
+    answer: "They won the match yesterday."
   },
   {
     id: 5,

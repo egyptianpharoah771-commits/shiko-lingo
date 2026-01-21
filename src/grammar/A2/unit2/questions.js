@@ -7,9 +7,13 @@ const questions = [
   },
   {
     id: 2,
-    question: "They ___ playing football at 6 PM.",
-    options: ["was", "were", "are"],
-    answer: "were"
+    question: "Which sentence is correct?",
+    options: [
+      "They was playing football at 6 PM.",
+      "They were playing football at 6 PM.",
+      "They are playing football at 6 PM."
+    ],
+    answer: "They were playing football at 6 PM."
   },
   {
     id: 3,
@@ -19,15 +23,23 @@ const questions = [
   },
   {
     id: 4,
-    question: "He ___ working while I was cooking.",
-    options: ["was", "were", "is"],
-    answer: "was"
+    question: "Which sentence shows two actions happening in the past?",
+    options: [
+      "He worked while I cook.",
+      "He was working while I was cooking.",
+      "He is working while I cook."
+    ],
+    answer: "He was working while I was cooking."
   },
   {
     id: 5,
-    question: "We were ___ dinner at that time.",
-    options: ["have", "having", "had"],
-    answer: "having"
+    question: "Which sentence talks about an action in progress at a past time?",
+    options: [
+      "We had dinner yesterday.",
+      "We were having dinner at that time.",
+      "We have dinner every day."
+    ],
+    answer: "We were having dinner at that time."
   }
 ];
 

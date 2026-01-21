@@ -1,7 +1,7 @@
 const questions = [
   {
     id: 1,
-    question: "The experiment failed; ___, the data was useful.",
+    question: "The experiment failed; ___, the data was still valuable.",
     options: ["however", "because", "therefore"],
     answer: "however"
   },
@@ -13,7 +13,7 @@ const questions = [
   },
   {
     id: 3,
-    question: "She is highly qualified; ___, she has years of experience.",
+    question: "She is highly qualified; ___, she has extensive experience in the field.",
     options: ["however", "moreover", "despite"],
     answer: "moreover"
   },
@@ -25,7 +25,7 @@ const questions = [
   },
   {
     id: 5,
-    question: "The proposal was rejected, ___ its innovative ideas.",
+    question: "The proposal was rejected ___ its innovative ideas.",
     options: ["although", "despite", "therefore"],
     answer: "despite"
   }

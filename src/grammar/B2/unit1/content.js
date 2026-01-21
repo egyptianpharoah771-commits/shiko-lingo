@@ -1,28 +1,28 @@
 const content = {
-  title: "Passive Voice",
+  title: "Passive Voice (All Tenses & Advanced Use)",
   explanation: `
-We use the Passive Voice when the focus is on the action or the result,
+At B2 level, the Passive Voice is used to control focus.
+The emphasis is placed on the action, result, or process,
 not on who performs the action.
 
-The passive is very common in:
-• Formal writing
-• News reports
-• Academic and professional contexts
-• When the doer is unknown or unimportant
+It is commonly used when the doer is unknown, unimportant,
+obvious from context, or deliberately omitted to sound formal or objective.
   `,
   rules: [
-    "Passive form: subject + be + past participle",
-    "The tense of 'be' changes according to the tense needed",
-    "The main verb is always in past participle form",
-    "The agent (who does the action) can be added using 'by'",
-    "If the agent is obvious or unimportant, it is usually omitted"
+    "Basic structure: subject + be + past participle (V3)",
+    "The tense is shown through the verb 'be'",
+    "Passive forms exist in all main tenses, including perfect and continuous",
+    "Use 'by' to mention the agent only if it adds important information",
+    "Omitting the agent is common in formal and academic contexts",
+    "Passive voice is often used to sound neutral, formal, or impersonal"
   ],
   examples: [
-    "The letter is written every day.",
-    "The house was built in 1995.",
-    "The report has been completed.",
-    "The meeting will be held tomorrow.",
-    "The cake was made by my mother."
+    "The letter is written every day. (present simple passive)",
+    "The house was built in 1995. (past simple passive)",
+    "The report has been completed. (present perfect passive)",
+    "The meeting will be held tomorrow. (future passive)",
+    "The experiment is being conducted carefully. (continuous passive)",
+    "The decision was made by the committee. (agent included)"
   ]
 };
 

@@ -19,15 +19,29 @@ const questions = [
   },
   {
     id: 4,
-    question: "If she had left earlier, she ___ late.",
-    options: ["wouldn't be", "won't be", "wouldn't have been"],
-    answer: "wouldn't have been"
+    question: "Which sentence correctly expresses an unreal past situation?",
+    options: [
+      "If she left earlier, she wouldn't be late.",
+      "If she had left earlier, she wouldn't have been late.",
+      "If she leaves earlier, she won't be late."
+    ],
+    answer: "If she had left earlier, she wouldn't have been late."
   },
   {
     id: 5,
     question: "You won't succeed ___ you work harder.",
     options: ["if", "unless", "when"],
     answer: "unless"
+  },
+  {
+    id: 6,
+    question: "Which sentence shows a mixed conditional (past cause, present result)?",
+    options: [
+      "If he follows the instructions, the problem will disappear.",
+      "If he had followed the instructions, the problem wouldn't exist now.",
+      "If he followed the instructions, the problem wouldn't exist."
+    ],
+    answer: "If he had followed the instructions, the problem wouldn't exist now."
   }
 ];
 

@@ -1,13 +1,13 @@
 const questions = [
   {
     id: 1,
-    question: "Which sentence is the most formal?",
+    question: "Which sentence uses the most formal and polite tone?",
     options: [
-      "Can you help me?",
+      "Can you help me with this?",
       "Help me with this.",
-      "I would appreciate your assistance."
+      "I would appreciate your assistance with this matter."
     ],
-    answer: "I would appreciate your assistance."
+    answer: "I would appreciate your assistance with this matter."
   },
   {
     id: 2,
@@ -17,23 +17,23 @@ const questions = [
   },
   {
     id: 3,
-    question: "Which phrase sounds more polite?",
+    question: "Which option sounds the most polite and diplomatic?",
     options: [
-      "Send me the file.",
+      "Send me the file as soon as possible.",
       "I need the file now.",
-      "Could you please send me the file?"
+      "Could you please send me the file when you have a moment?"
     ],
-    answer: "Could you please send me the file?"
+    answer: "Could you please send me the file when you have a moment?"
   },
   {
     id: 4,
-    question: "Formal writing usually avoids ___ .",
-    options: ["contractions", "complex sentences", "passive voice"],
+    question: "Formal academic writing usually avoids ___ .",
+    options: ["contractions", "complex sentence structures", "passive constructions"],
     answer: "contractions"
   },
   {
     id: 5,
-    question: "We regret to inform you ___ your application was unsuccessful.",
+    question: "We regret to inform you ___ your application has been unsuccessful.",
     options: ["that", "because", "so"],
     answer: "that"
   }

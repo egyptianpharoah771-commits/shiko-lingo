@@ -1,29 +1,25 @@
 const content = {
-  title: "Present Perfect vs Past Simple",
+  title: "Advanced Comparison: Present Perfect vs Past Simple",
   explanation: `
-We use the Present Perfect and Past Simple differently:
+At B2 level, the difference between the Present Perfect and the Past Simple
+is not just about time, but about how the speaker chooses to present the action.
 
-• Present Perfect:
-  - For experiences
-  - For actions with no specific time
-  - For actions with result now
-
-• Past Simple:
-  - For actions finished in the past
-  - When the time is mentioned
+The Present Perfect connects past actions to the present situation.
+The Past Simple presents actions as completed and finished in the past.
   `,
   rules: [
-    "Present Perfect: have / has + past participle (V3)",
-    "Past Simple: verb + ed or irregular form (V2)",
-    "Use Present Perfect with: ever, never, yet, already",
-    "Use Past Simple with: yesterday, last week, in 2020"
+    "Present Perfect highlights relevance or impact on the present",
+    "Past Simple presents the action as a closed past event",
+    "Use Present Perfect to talk about experience without giving details",
+    "Use Past Simple to describe, narrate, or give background information",
+    "In questions, Present Perfect asks about experience, Past Simple asks about specific events"
   ],
   examples: [
-    "I have visited London. (experience)",
-    "I visited London last year. (specific time)",
-    "She has finished her homework.",
-    "She finished her homework yesterday.",
-    "Have you ever eaten sushi?"
+    "I have worked with international teams. (relevant experience)",
+    "I worked with an international team in 2021. (specific past event)",
+    "She has broken her arm. (the result affects the present)",
+    "She broke her arm last summer. (telling a past story)",
+    "Have you ever managed a large project?"
   ]
 };
 

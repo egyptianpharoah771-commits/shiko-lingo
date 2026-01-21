@@ -7,9 +7,13 @@ const questions = [
   },
   {
     id: 2,
-    question: "Look at the sky! It ___ rain.",
-    options: ["will", "is going to", "was going to"],
-    answer: "is going to"
+    question: "Which sentence shows a prediction based on evidence?",
+    options: [
+      "I think it will rain someday.",
+      "Look at the dark clouds! It is going to rain.",
+      "It rained yesterday."
+    ],
+    answer: "Look at the dark clouds! It is going to rain."
   },
   {
     id: 3,

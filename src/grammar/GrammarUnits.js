@@ -15,53 +15,20 @@ const UNITS_BY_LEVEL = {
   ],
   B1: [
     { id: "unit1", title: "Present Perfect" },
-    {
-      id: "unit2",
-      title: "Present Perfect vs Past Simple",
-    },
-    {
-      id: "unit3",
-      title: "Future Forms (will / going to)",
-    },
+    { id: "unit2", title: "Present Perfect vs Past Simple" },
+    { id: "unit3", title: "Future Forms (will / going to)" },
   ],
-
-  // ===== NEW LEVELS =====
   B2: [
-    {
-      id: "unit1",
-      title: "Passive Voice (All Tenses)",
-    },
-    {
-      id: "unit2",
-      title: "Conditionals (Zero, First, Second, Third)",
-    },
-    {
-      id: "unit3",
-      title: "Reported Speech",
-    },
-    {
-      id: "unit4",
-      title: "Modal Verbs (Obligation, Deduction)",
-    },
+    { id: "unit1", title: "Passive Voice (All Tenses)" },
+    { id: "unit2", title: "Conditionals (Zero, First, Second, Third)" },
+    { id: "unit3", title: "Reported Speech" },
+    { id: "unit4", title: "Modal Verbs (Obligation, Deduction)" },
   ],
-
   C1: [
-    {
-      id: "unit1",
-      title: "Advanced Sentence Structures",
-    },
-    {
-      id: "unit2",
-      title: "Inversion & Emphasis",
-    },
-    {
-      id: "unit3",
-      title: "Advanced Linking & Cohesion",
-    },
-    {
-      id: "unit4",
-      title: "Nuance, Tone & Formality",
-    },
+    { id: "unit1", title: "Advanced Sentence Structures" },
+    { id: "unit2", title: "Inversion & Emphasis" },
+    { id: "unit3", title: "Advanced Linking & Cohesion" },
+    { id: "unit4", title: "Nuance, Tone & Formality" },
   ],
 };
 
@@ -71,9 +38,7 @@ function GrammarUnits() {
   const completedUnits = useMemo(() => {
     return (
       JSON.parse(
-        localStorage.getItem(
-          STORAGE_KEYS.GRAMMAR_COMPLETED
-        )
+        localStorage.getItem(STORAGE_KEYS.GRAMMAR_COMPLETED)
       ) || []
     );
   }, []);
@@ -105,13 +70,12 @@ function GrammarUnits() {
       >
         {units.map((unit, index) => {
           const unitKey = `${level}-${unit.id}`;
-          const completed =
-            completedUnits.includes(unitKey);
+          const completed = completedUnits.includes(unitKey);
           const unlocked = isUnitUnlocked(index);
 
           return (
             <div
-              key={unit.id}
+              key={unitKey}
               style={{
                 width: "220px",
                 padding: "15px",
@@ -127,18 +91,12 @@ function GrammarUnits() {
               <h4>{unit.title}</h4>
 
               {completed && <p>✅ Completed</p>}
-              {!completed && unlocked && (
-                <p>🟢 Active</p>
-              )}
+              {!completed && unlocked && <p>🟢 Active</p>}
               {!unlocked && <p>🔒 Locked</p>}
 
               {unlocked && (
-                <Link
-                  to={`/grammar/${level}/${unit.id}`}
-                >
-                  <button type="button">
-                    Open
-                  </button>
+                <Link to={`/grammar/${level}/${unit.id}`}>
+                  <button type="button">Open</button>
                 </Link>
               )}
             </div>

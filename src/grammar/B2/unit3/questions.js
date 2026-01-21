@@ -13,9 +13,13 @@ const questions = [
   },
   {
     id: 3,
-    question: "They said they ___ working at that moment.",
-    options: ["are", "were", "have been"],
-    answer: "were"
+    question: "Which sentence correctly reports an action in progress in the past?",
+    options: [
+      "They said they are working at that moment.",
+      "They said they were working at that moment.",
+      "They said they have been working at that moment."
+    ],
+    answer: "They said they were working at that moment."
   },
   {
     id: 4,
@@ -28,6 +32,18 @@ const questions = [
     question: "He said that he lived ___ .",
     options: ["here", "there", "this place"],
     answer: "there"
+  },
+  {
+    id: 6,
+    question: "She asked me where I ___ from.",
+    options: ["am", "was", "were"],
+    answer: "was"
+  },
+  {
+    id: 7,
+    question: "The teacher told us ___ quiet.",
+    options: ["be", "to be", "being"],
+    answer: "to be"
   }
 ];
 

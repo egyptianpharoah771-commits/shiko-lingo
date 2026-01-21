@@ -7,9 +7,13 @@ const questions = [
   },
   {
     id: 2,
-    question: "They ___ a movie last night.",
-    options: ["watch", "watched", "watching"],
-    answer: "watched"
+    question: "Which sentence is correct?",
+    options: [
+      "They watch a movie last night.",
+      "They watched a movie last night.",
+      "They are watching a movie last night."
+    ],
+    answer: "They watched a movie last night."
   },
   {
     id: 3,
@@ -19,15 +23,23 @@ const questions = [
   },
   {
     id: 4,
-    question: "He ___ like the food.",
-    options: ["didn't", "doesn't", "isn't"],
-    answer: "didn't"
+    question: "Choose the correct negative sentence.",
+    options: [
+      "He doesn't like the food yesterday.",
+      "He didn't like the food.",
+      "He isn't like the food."
+    ],
+    answer: "He didn't like the food."
   },
   {
     id: 5,
-    question: "We ___ football yesterday.",
-    options: ["play", "played", "playing"],
-    answer: "played"
+    question: "Which sentence talks about a finished action?",
+    options: [
+      "We play football every day.",
+      "We are playing football now.",
+      "We played football yesterday."
+    ],
+    answer: "We played football yesterday."
   }
 ];
 

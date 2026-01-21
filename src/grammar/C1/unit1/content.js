@@ -1,27 +1,27 @@
 const content = {
   title: "Advanced Sentence Structures",
   explanation: `
-At C1 level, learners use complex and flexible sentence structures
-to express ideas clearly, precisely, and naturally.
+At C1 level, advanced sentence structures are used to express complex ideas
+clearly, fluently, and with stylistic control.
 
-These structures allow you to:
-• Add emphasis
-• Combine multiple ideas
-• Sound more fluent and academic
+These structures allow speakers and writers to combine ideas,
+add emphasis, and vary sentence patterns in a natural and sophisticated way.
   `,
   rules: [
-    "Use relative clauses to add detailed information",
-    "Use participle clauses to shorten sentences",
-    "Use noun clauses as subjects or objects",
-    "Vary sentence openings for better flow",
-    "Avoid repetitive simple sentence patterns"
+    "Use defining and non-defining relative clauses to add precise information",
+    "Use participle clauses to reduce repetition and improve flow",
+    "Use noun clauses as subjects, objects, or complements",
+    "Vary sentence openings to improve cohesion and style",
+    "Use concessive structures (although, despite, in spite of) to express contrast",
+    "Avoid overusing short, simple sentences in formal or academic writing"
   ],
   examples: [
-    "The man who lives next door is a doctor.",
-    "Having finished his work, he went home.",
-    "What she said surprised everyone.",
-    "Despite being tired, he continued working.",
-    "The reason why she left remains unclear."
+    "The man who lives next door, who is a surgeon, works long hours.",
+    "Having finished his work, he decided to leave early.",
+    "What she suggested during the meeting surprised everyone.",
+    "Despite being under pressure, the team managed to meet the deadline.",
+    "The reason why she left the company remains unclear.",
+    "Not only did he miss the deadline, but he also failed to inform his manager."
   ]
 };
 

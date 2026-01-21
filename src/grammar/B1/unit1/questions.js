@@ -7,9 +7,13 @@ const questions = [
   },
   {
     id: 2,
-    question: "She ___ finished her work.",
-    options: ["have", "has", "did"],
-    answer: "has"
+    question: "Which sentence is correct?",
+    options: [
+      "She have finished her work.",
+      "She has finished her work.",
+      "She finished her work just."
+    ],
+    answer: "She has finished her work."
   },
   {
     id: 3,
@@ -25,9 +29,13 @@ const questions = [
   },
   {
     id: 5,
-    question: "He hasn't ___ his homework yet.",
-    options: ["do", "did", "done"],
-    answer: "done"
+    question: "Which sentence shows something that has NOT happened yet?",
+    options: [
+      "He finished his homework yesterday.",
+      "He hasn't done his homework yet.",
+      "He is doing his homework now."
+    ],
+    answer: "He hasn't done his homework yet."
   }
 ];
 

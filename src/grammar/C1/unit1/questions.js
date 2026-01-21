@@ -7,13 +7,17 @@ const questions = [
   },
   {
     id: 2,
-    question: "The book ___ on the table belongs to me.",
-    options: ["is lying", "lying", "lies"],
-    answer: "lying"
+    question: "Which sentence correctly uses a reduced relative clause?",
+    options: [
+      "The book is lying on the table belongs to me.",
+      "The book lying on the table belongs to me.",
+      "The book lies on the table belongs to me."
+    ],
+    answer: "The book lying on the table belongs to me."
   },
   {
     id: 3,
-    question: "___ he said shocked the audience.",
+    question: "___ he said during the interview shocked the audience.",
     options: ["That", "What", "Which"],
     answer: "What"
   },
@@ -25,7 +29,7 @@ const questions = [
   },
   {
     id: 5,
-    question: "This is the reason ___ she resigned.",
+    question: "This is the main reason ___ she decided to resign.",
     options: ["which", "what", "why"],
     answer: "why"
   }

@@ -1,28 +1,24 @@
 const content = {
   title: "Future Forms: will vs going to",
   explanation: `
-We use different forms to talk about the future:
+At B1 level, we use 'will' and 'going to' to talk about the future,
+but the difference depends on intention and timing.
 
-• will:
-  - Decisions made at the moment of speaking
-  - Promises, offers, predictions (opinion)
-
-• going to:
-  - Plans decided before speaking
-  - Predictions based on evidence
+The key idea is whether the decision is made now
+or was already planned before speaking.
   `,
   rules: [
-    "will + base verb",
-    "be (am/is/are) + going to + base verb",
-    "Use 'will' for instant decisions and promises",
-    "Use 'going to' for plans and evidence-based predictions"
+    "Use 'will' for decisions made at the moment of speaking",
+    "Use 'will' for promises, offers, and quick reactions",
+    "Use 'going to' for plans decided before speaking",
+    "Use 'going to' for predictions based on clear evidence"
   ],
   examples: [
-    "I think it will rain tomorrow.",
-    "I’ll help you with your homework.",
-    "She is going to study medicine.",
-    "Look at those clouds! It’s going to rain.",
-    "We are going to travel next week."
+    "I’m tired. I will go to bed now. (decision made now)",
+    "Don’t worry, I’ll help you. (offer)",
+    "She is going to start a new job next month. (planned decision)",
+    "Look at those dark clouds! It’s going to rain. (clear evidence)",
+    "We are going to visit our grandparents this weekend."
   ]
 };
 
