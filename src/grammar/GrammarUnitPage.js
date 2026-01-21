@@ -1,10 +1,7 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
-import { askAITutor } from "../utils/aiClient";
-import { getUserId } from "../utils/userIdentity";
-import AIResponseModal from "../components/AIResponseModal";
 
 // ===== A1 Units =====
 import a1Content1 from "./A1/unit1/content";
@@ -76,110 +73,61 @@ const GRAMMAR_MAP = {
 
 function GrammarUnitPage() {
   const { level, unit } = useParams();
-  const grammarUnit = GRAMMAR_MAP[level]?.[unit];
+  const navigate = useNavigate();
 
+  const grammarUnit = GRAMMAR_MAP[level]?.[unit];
   const content = grammarUnit?.content;
   const questions = grammarUnit?.questions || [];
 
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(null);
 
-  // 🤖 AI
-  const [aiOpen, setAiOpen] = useState(false);
-  const [aiStatus, setAiStatus] = useState("IDLE");
-  const [aiMessage, setAiMessage] = useState("");
-
-  // 🔊 Sounds
   const selectSound = useRef(null);
-  const correctSound = useRef(null);
-  const wrongSound = useRef(null);
-
-  const userId = getUserId();
-  const packageName = "FREE";
 
   const storageKey = STORAGE_KEYS.GRAMMAR_COMPLETED;
   const completedUnits =
     JSON.parse(localStorage.getItem(storageKey)) || [];
 
   const unitKey = `${level}-${unit}`;
-  const isCompleted = completedUnits.includes(unitKey);
-
-  const PASS_SCORE = Math.ceil(questions.length * 0.7);
 
   useEffect(() => {
     setAnswers({});
     setSubmitted(false);
-    setScore(null);
-    setAiOpen(false);
-    setAiStatus("IDLE");
-    setAiMessage("");
-
     selectSound.current = new Audio("/sounds/select.mp3");
-    correctSound.current = new Audio("/sounds/correct.mp3");
-    wrongSound.current = new Audio("/sounds/wrong.mp3");
   }, [level, unit]);
 
   if (!content || !questions.length) {
     return <p>⚠️ This unit is not ready yet.</p>;
   }
 
-  const play = (ref) => {
-    try {
-      ref?.current?.play();
-    } catch {}
-  };
-
   const handleAnswer = (qId, option) => {
     if (submitted) return;
-    play(selectSound);
+    selectSound.current?.play();
     setAnswers((prev) => ({ ...prev, [qId]: option }));
   };
 
   const handleSubmit = () => {
     if (submitted) return;
 
-    let correct = 0;
-    questions.forEach((q) => {
-      if (answers[q.id] === q.answer) correct++;
-    });
-
-    setScore(correct);
     setSubmitted(true);
 
-    correct >= PASS_SCORE
-      ? play(correctSound)
-      : play(wrongSound);
+    if (!completedUnits.includes(unitKey)) {
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify([...completedUnits, unitKey])
+      );
+    }
   };
 
-  const handleAIFeedback = async () => {
-    setAiOpen(true);
-    setAiStatus("LOADING");
-    setAiMessage("");
+  const handleNextUnit = () => {
+    const currentNumber = parseInt(unit.replace("unit", ""), 10);
+    const nextUnitId = `unit${currentNumber + 1}`;
 
-    const result = await askAITutor({
-      skill: "Grammar",
-      level,
-      lessonTitle: content.title,
-      text: content.explanation,
-      score,
-      total: questions.length,
-      userId,
-      packageName,
-    });
-
-    setAiStatus(result?.status || "ERROR");
-    setAiMessage(result?.message || "");
-  };
-
-  const passed = score !== null && score >= PASS_SCORE;
-
-  const handleFinishUnit = () => {
-    if (!passed || isCompleted) return;
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify([...completedUnits, unitKey])
-    );
+    if (GRAMMAR_MAP[level]?.[nextUnitId]) {
+      navigate(`/grammar/${level}/${nextUnitId}`);
+    } else {
+      navigate(`/grammar/${level}`);
+    }
   };
 
   return (
@@ -187,69 +135,54 @@ function GrammarUnitPage() {
       <h2>{content.title}</h2>
       <p>{content.explanation}</p>
 
-      {submitted && (
-        <button onClick={handleAIFeedback}>
-          🤖 AI Lesson Feedback
+      <h4>Questions</h4>
+
+      {questions.map((q) => (
+        <div key={q.id} style={{ marginBottom: 10 }}>
+          <strong>{q.question}</strong>
+          <div>
+            {q.options.map((opt) => (
+              <button
+                key={opt}
+                onClick={() => handleAnswer(q.id, opt)}
+                disabled={submitted}
+                style={{ marginRight: 6 }}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {!submitted && (
+        <button onClick={handleSubmit}>
+          Check Answers
         </button>
       )}
 
-      <h4>Questions</h4>
-
-      {questions.map((q) => {
-        const userAnswer = answers[q.id];
-        const isCorrect = userAnswer === q.answer;
-
-        return (
-          <div key={q.id} style={{ marginBottom: 12 }}>
-            <strong>{q.question}</strong>
-            <div style={{ marginTop: 6 }}>
-              {q.options.map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => handleAnswer(q.id, opt)}
-                  disabled={submitted}
-                  style={{
-                    marginRight: 6,
-                    background:
-                      userAnswer === opt ? "#e5e9ff" : "#eee",
-                  }}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-            {submitted && (
-              <p>{isCorrect ? "✅ Correct" : "❌ Wrong"}</p>
-            )}
-          </div>
-        );
-      })}
-
-      {!submitted && (
-        <button onClick={handleSubmit}>Check Answers</button>
-      )}
-
       {submitted && (
-        <p>
-          Score: {score} / {questions.length}
-        </p>
+        <div
+          style={{
+            marginTop: 20,
+            padding: 20,
+            border: "2px solid green",
+            background: "#f0fff4",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ fontWeight: "bold" }}>
+            NEXT UNIT SHOULD APPEAR NOW
+          </p>
+          <button onClick={handleNextUnit}>
+            Next Unit →
+          </button>
+        </div>
       )}
 
-      <button
-        onClick={handleFinishUnit}
-        disabled={!passed || isCompleted}
-      >
-        Finish Unit
-      </button>
-
-      <Link to={`/grammar/${level}`}>Back</Link>
-
-      <AIResponseModal
-        open={aiOpen}
-        onClose={() => setAiOpen(false)}
-        status={aiStatus}
-        message={aiMessage}
-      />
+      <div style={{ marginTop: 20 }}>
+        <Link to={`/grammar/${level}`}>Back</Link>
+      </div>
     </div>
   );
 }
