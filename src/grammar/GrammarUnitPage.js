@@ -117,8 +117,7 @@ function GrammarUnitPage() {
     setScore(correct);
     setSubmitted(true);
 
-    if (correct >= PASS_SCORE) playCorrect();
-    else playWrong();
+    correct >= PASS_SCORE ? playCorrect() : playWrong();
   };
 
   const handleNextUnit = () => {
@@ -132,11 +131,22 @@ function GrammarUnitPage() {
     }
   };
 
-  // ===== AI FEEDBACK =====
+  // ===== AI FEEDBACK (SMART & CLEAN) =====
   const handleAIFeedback = async () => {
+    if (aiStatus === "LOADING") return;
+
     setAiOpen(true);
     setAiStatus("LOADING");
     setAiMessage("");
+
+    const wrongSkills = [
+      ...new Set(
+        questions
+          .filter((q) => answers[q.id] !== q.answer)
+          .map((q) => q.skill)
+          .filter(Boolean)
+      ),
+    ];
 
     try {
       const res = await fetch("/api/ai/tutor", {
@@ -144,31 +154,21 @@ function GrammarUnitPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: `
-The student finished a grammar lesson.
+Student completed a grammar lesson.
 
 Score: ${score} / ${questions.length}
-
-Lesson title: ${content.title}
-
-Lesson explanation:
-${content.explanation}
-
-Give short, clear, helpful feedback.
+Wrong skills: ${wrongSkills.join(", ") || "none"}
           `.trim(),
           level,
           lessonTitle: content.title,
           text: content.explanation,
+          passed,
+          wrongSkills,
         }),
       });
 
       const data = await res.json();
-
-      const cleaned =
-        typeof data.answer === "string" && data.answer.trim().length > 0
-          ? data.answer.trim()
-          : "Good job! Review the lesson once more and keep practicing.";
-
-      setAiMessage(cleaned);
+      setAiMessage(data.answer || "");
       setAiStatus("SUCCESS");
     } catch {
       setAiStatus("ERROR");
@@ -226,7 +226,7 @@ Give short, clear, helpful feedback.
         </button>
       )}
 
-      {submitted && (
+      {submitted && aiStatus === "IDLE" && (
         <button onClick={handleAIFeedback} style={{ marginTop: 16 }}>
           🤖 Get AI Feedback
         </button>
