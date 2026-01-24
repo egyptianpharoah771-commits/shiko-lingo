@@ -132,9 +132,11 @@ function GrammarUnitPage() {
     }
   };
 
+  // ===== AI FEEDBACK (FIXED) =====
   const handleAIFeedback = async () => {
     setAiOpen(true);
     setAiStatus("LOADING");
+    setAiMessage("");
 
     try {
       const res = await fetch("/api/ai/tutor", {
@@ -142,16 +144,31 @@ function GrammarUnitPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: `
-Score: ${score}/${questions.length}
-Lesson: ${content.title}
+The student finished a grammar lesson.
+
+Score: ${score} / ${questions.length}
+
+Lesson title: ${content.title}
+
+Lesson explanation:
 ${content.explanation}
+
+Give short, clear, helpful feedback.
           `.trim(),
           level,
+          lessonTitle: content.title,
+          text: content.explanation,
         }),
       });
 
       const data = await res.json();
-      setAiMessage(data.answer || "No feedback available.");
+
+      const cleaned =
+        typeof data.answer === "string" && data.answer.trim().length > 0
+          ? data.answer.trim()
+          : "Good job! Review the lesson once more and keep practicing.";
+
+      setAiMessage(cleaned);
       setAiStatus("SUCCESS");
     } catch {
       setAiStatus("ERROR");
