@@ -131,8 +131,6 @@ function GrammarUnitPage() {
 
       {questions.map((q) => {
         const selected = answers[q.id];
-        const isCorrect = submitted && selected === q.answer;
-        const isWrong = submitted && selected && selected !== q.answer;
 
         return (
           <div key={q.id} style={{ marginBottom: 22 }}>
