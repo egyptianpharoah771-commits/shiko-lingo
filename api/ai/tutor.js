@@ -11,85 +11,70 @@ export default async function handler(req, res) {
 
   try {
     const {
-      skill = "Grammar",
-      level = "A1",
-      unit,
-      score,
-      total,
+      question,
+      level,
       lessonTitle,
-      lessonText,
+      text,
     } = req.body;
 
-    if (typeof score !== "number" || typeof total !== "number") {
-      return res
-        .status(400)
-        .json({ error: "Score and total are required" });
+    if (!question) {
+      return res.status(400).json({ error: "Question is required" });
     }
 
-    const percentage = Math.round((score / total) * 100);
-
     const systemPrompt = `
-You are an English AI tutor.
+You are an English AI Tutor helping a student at CEFR level ${level || "A1"}.
 
-You are giving feedback for a completed ${skill} lesson.
-
-Student level: CEFR ${level}
-Lesson: ${lessonTitle || "English Lesson"}
-Unit: ${unit || "Unknown"}
-Score: ${score} out of ${total} (${percentage}%)
-
+Lesson title: ${lessonTitle || "Grammar lesson"}
 Lesson content:
-${lessonText || "N/A"}
+${text || "English grammar practice"}
 
-Your task:
-- Give a short final evaluation of the student's performance
-- Assign a grade using ONLY one letter: A, B, or C
-- Give 2–3 short sentences of feedback
-- Give one clear recommendation
+VERY IMPORTANT RULES:
+- Always structure your answer EXACTLY like this:
 
-Rules:
-- Be concise
-- Be encouraging
+Strengths:
+- One clear strength the student showed
+
+Weak point:
+- One thing to improve (only if needed, otherwise say "No major issues noticed")
+
+Practical tip:
+- One concrete, practical study tip related to THIS lesson
+
+- Use simple English
+- Be specific, not generic
+- Do NOT praise without explanation
+- Max 6 short lines total
+- After the English feedback, add ONE short Arabic encouragement sentence (Egyptian Arabic)
+- Do NOT translate the English part to Arabic
 - Do NOT ask questions
-- Do NOT mention being an AI
-- Do NOT use markdown
-- Output MUST be valid JSON exactly in this format:
-
-{
-  "grade": "A | B | C",
-  "feedback": "short feedback text",
-  "recommendation": "short recommendation text"
-}
+- Do NOT start a conversation
 `.trim();
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "system", content: systemPrompt }],
-      temperature: 0.3,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: question },
+      ],
+      temperature: 0.6,
     });
 
-    const raw =
-      completion?.choices?.[0]?.message?.content || "";
+    const answer =
+      completion?.choices?.[0]?.message?.content?.trim() ||
+      `Strengths:
+- You completed the lesson successfully.
 
-    let parsed;
+Weak point:
+- No major issues noticed.
 
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      parsed = {
-        grade: percentage >= 85 ? "A" : percentage >= 65 ? "B" : "C",
-        feedback:
-          "You completed the lesson successfully. Keep practicing to improve accuracy.",
-        recommendation:
-          "Review this lesson once more before moving to the next unit.",
-      };
-    }
+Practical tip:
+- Review the examples once more and practice them.
 
-    return res.status(200).json(parsed);
+شغل ممتاز، كمل بنفس الحماس 💪`;
+
+    return res.status(200).json({ answer });
   } catch (err) {
     console.error("AI Tutor error:", err);
-    return res
-      .status(500)
-      .json({ error: "AI Tutor failed" });
+    return res.status(500).json({ error: "AI Tutor failed" });
   }
 }
