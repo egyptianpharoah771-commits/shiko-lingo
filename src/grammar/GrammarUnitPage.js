@@ -132,7 +132,7 @@ function GrammarUnitPage() {
     }
   };
 
-  // ===== AI FEEDBACK (FIXED) =====
+  // ===== AI FEEDBACK =====
   const handleAIFeedback = async () => {
     setAiOpen(true);
     setAiStatus("LOADING");
@@ -226,15 +226,16 @@ Give short, clear, helpful feedback.
         </button>
       )}
 
+      {submitted && (
+        <button onClick={handleAIFeedback} style={{ marginTop: 16 }}>
+          🤖 Get AI Feedback
+        </button>
+      )}
+
       {passed && (
-        <>
-          <button onClick={handleNextUnit} style={{ marginTop: 20 }}>
-            Next Unit →
-          </button>
-          <button onClick={handleAIFeedback} style={{ marginTop: 16 }}>
-            🤖 Get AI Feedback
-          </button>
-        </>
+        <button onClick={handleNextUnit} style={{ marginTop: 20 }}>
+          Next Unit →
+        </button>
       )}
 
       <AIResponseModal
