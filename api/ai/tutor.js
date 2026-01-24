@@ -11,51 +11,81 @@ export default async function handler(req, res) {
 
   try {
     const {
-      question,
-      level,
+      skill = "Grammar",
+      level = "A1",
+      unit,
+      score,
+      total,
       lessonTitle,
-      lessonDescription,
-      text, // ✅ coming from Grammar
+      lessonText,
     } = req.body;
 
-    if (!question) {
-      return res.status(400).json({ error: "Question is required" });
+    if (typeof score !== "number" || typeof total !== "number") {
+      return res
+        .status(400)
+        .json({ error: "Score and total are required" });
     }
 
-    const finalLessonDescription =
-      lessonDescription || text || "English lesson practice";
+    const percentage = Math.round((score / total) * 100);
 
     const systemPrompt = `
-You are an English AI Tutor helping a student at CEFR level ${level || "A1"}.
+You are an English AI tutor.
 
-Lesson title: ${lessonTitle || "General English"}
-Lesson description: ${finalLessonDescription}
+You are giving feedback for a completed ${skill} lesson.
+
+Student level: CEFR ${level}
+Lesson: ${lessonTitle || "English Lesson"}
+Unit: ${unit || "Unknown"}
+Score: ${score} out of ${total} (${percentage}%)
+
+Lesson content:
+${lessonText || "N/A"}
+
+Your task:
+- Give a short final evaluation of the student's performance
+- Assign a grade using ONLY one letter: A, B, or C
+- Give 2–3 short sentences of feedback
+- Give one clear recommendation
 
 Rules:
-- Explain simply and clearly
-- Use short sentences
-- Give examples when useful
-- Correct mistakes gently
-- Do NOT be verbose
+- Be concise
+- Be encouraging
 - Do NOT ask questions
-- Do NOT start a conversation
-- Speak like a friendly tutor, not a chatbot
+- Do NOT mention being an AI
+- Do NOT use markdown
+- Output MUST be valid JSON exactly in this format:
+
+{
+  "grade": "A | B | C",
+  "feedback": "short feedback text",
+  "recommendation": "short recommendation text"
+}
 `.trim();
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: question },
-      ],
-      temperature: 0.4,
+      messages: [{ role: "system", content: systemPrompt }],
+      temperature: 0.3,
     });
 
-    const answer =
-      completion?.choices?.[0]?.message?.content ||
-      "Good job. Keep practicing to improve your skills.";
+    const raw =
+      completion?.choices?.[0]?.message?.content || "";
 
-    return res.status(200).json({ answer });
+    let parsed;
+
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = {
+        grade: percentage >= 85 ? "A" : percentage >= 65 ? "B" : "C",
+        feedback:
+          "You completed the lesson successfully. Keep practicing to improve accuracy.",
+        recommendation:
+          "Review this lesson once more before moving to the next unit.",
+      };
+    }
+
+    return res.status(200).json(parsed);
   } catch (err) {
     console.error("AI Tutor error:", err);
     return res

@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import useSounds from "../hooks/useSounds";
+import AIResponseModal from "../components/ai/AIResponseModal";
 
 // ===== CONTENT IMPORTS =====
 import a1Content1 from "./A1/unit1/content";
@@ -79,6 +80,11 @@ function GrammarUnitPage() {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(null);
 
+  // ===== AI STATE =====
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiStatus, setAiStatus] = useState("IDLE"); // IDLE | LOADING | SUCCESS | ERROR
+  const [aiMessage, setAiMessage] = useState("");
+
   const { playSelect, playCorrect, playWrong } = useSounds();
 
   const PASS_SCORE = Math.ceil(questions.length * 0.7);
@@ -88,6 +94,9 @@ function GrammarUnitPage() {
     setAnswers({});
     setSubmitted(false);
     setScore(null);
+    setAiOpen(false);
+    setAiStatus("IDLE");
+    setAiMessage("");
   }, [level, unit]);
 
   if (!content) return <p>⚠️ Unit not ready.</p>;
@@ -122,6 +131,55 @@ function GrammarUnitPage() {
     } else {
       navigate(`/grammar/${level}`);
     }
+  };
+
+  const handleAIFeedback = async () => {
+    if (aiStatus !== "IDLE") return;
+
+    setAiOpen(true);
+    setAiStatus("LOADING");
+    setAiMessage("");
+
+    try {
+      const res = await fetch("/api/ai/tutor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skill: "Grammar",
+          level,
+          unit,
+          score,
+          total: questions.length,
+          lessonTitle: content.title,
+          lessonText: content.explanation,
+        }),
+      });
+
+      if (!res.ok) throw new Error("AI failed");
+
+      const data = await res.json();
+
+      setAiMessage(
+        `Grade: ${data.grade}
+
+Feedback:
+${data.feedback}
+
+Recommendation:
+${data.recommendation}`
+      );
+
+      setAiStatus("SUCCESS");
+    } catch (e) {
+      console.error(e);
+      setAiStatus("ERROR");
+    }
+  };
+
+  const closeAIModal = () => {
+    setAiOpen(false);
+    setAiStatus("IDLE");
+    setAiMessage("");
   };
 
   return (
@@ -190,14 +248,40 @@ function GrammarUnitPage() {
       )}
 
       {passed && (
-        <button onClick={handleNextUnit} style={{ marginTop: 20 }}>
-          Next Unit →
-        </button>
+        <>
+          <button onClick={handleNextUnit} style={{ marginTop: 20 }}>
+            Next Unit →
+          </button>
+
+          <div style={{ marginTop: 16 }}>
+            <button
+              onClick={handleAIFeedback}
+              style={{
+                padding: "12px 20px",
+                fontWeight: "bold",
+                background: "#4A90E2",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+              }}
+            >
+              🤖 Get AI Feedback
+            </button>
+          </div>
+        </>
       )}
 
       <div style={{ marginTop: 24 }}>
         <Link to={`/grammar/${level}`}>← Back</Link>
       </div>
+
+      <AIResponseModal
+        open={aiOpen}
+        onClose={closeAIModal}
+        status={aiStatus}
+        message={aiMessage}
+      />
     </div>
   );
 }
