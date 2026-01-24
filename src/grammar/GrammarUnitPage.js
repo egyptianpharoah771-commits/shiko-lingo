@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import useSounds from "../hooks/useSounds";
-import AIResponseModal from "../components/ai/AIResponseModal";
+import AIResponseModal from "../components/AIResponseModal";
 
 // ===== CONTENT IMPORTS =====
 import a1Content1 from "./A1/unit1/content";
@@ -80,9 +80,8 @@ function GrammarUnitPage() {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(null);
 
-  // ===== AI STATE =====
   const [aiOpen, setAiOpen] = useState(false);
-  const [aiStatus, setAiStatus] = useState("IDLE"); // IDLE | LOADING | SUCCESS | ERROR
+  const [aiStatus, setAiStatus] = useState("IDLE");
   const [aiMessage, setAiMessage] = useState("");
 
   const { playSelect, playCorrect, playWrong } = useSounds();
@@ -155,8 +154,6 @@ function GrammarUnitPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("AI failed");
-
       const data = await res.json();
 
       setAiMessage(
@@ -170,76 +167,15 @@ ${data.recommendation}`
       );
 
       setAiStatus("SUCCESS");
-    } catch (e) {
-      console.error(e);
+    } catch {
       setAiStatus("ERROR");
     }
-  };
-
-  const closeAIModal = () => {
-    setAiOpen(false);
-    setAiStatus("IDLE");
-    setAiMessage("");
   };
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
       <h2>{content.title}</h2>
       <p>{content.explanation}</p>
-
-      {questions.map((q) => {
-        const selected = answers[q.id];
-
-        return (
-          <div key={q.id} style={{ marginBottom: 22 }}>
-            <strong>{q.question}</strong>
-
-            <div style={{ marginTop: 8 }}>
-              {q.options.map((opt) => {
-                const selectedOpt = selected === opt;
-                const correctOpt = submitted && opt === q.answer;
-                const wrongOpt = submitted && selectedOpt && opt !== q.answer;
-
-                return (
-                  <button
-                    key={opt}
-                    onClick={() => handleAnswer(q.id, opt)}
-                    style={{
-                      padding: "10px 16px",
-                      marginRight: 10,
-                      marginTop: 6,
-                      fontWeight: "bold",
-                      backgroundColor: correctOpt
-                        ? "#2f9e44"
-                        : wrongOpt
-                        ? "#c92a2a"
-                        : selectedOpt
-                        ? "#364fc7"
-                        : "#dee2e6",
-                      color:
-                        correctOpt || wrongOpt || selectedOpt
-                          ? "#ffffff"
-                          : "#000000",
-                      border: "none",
-                      borderRadius: 6,
-                      outline: correctOpt
-                        ? "3px solid #2f9e44"
-                        : wrongOpt
-                        ? "3px solid #c92a2a"
-                        : selectedOpt
-                        ? "3px solid #364fc7"
-                        : "1px solid #adb5bd",
-                      cursor: submitted ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
 
       {!submitted && (
         <button onClick={handleSubmit} style={{ marginTop: 14 }}>
@@ -253,32 +189,15 @@ ${data.recommendation}`
             Next Unit →
           </button>
 
-          <div style={{ marginTop: 16 }}>
-            <button
-              onClick={handleAIFeedback}
-              style={{
-                padding: "12px 20px",
-                fontWeight: "bold",
-                background: "#4A90E2",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-              }}
-            >
-              🤖 Get AI Feedback
-            </button>
-          </div>
+          <button onClick={handleAIFeedback} style={{ marginTop: 16 }}>
+            🤖 Get AI Feedback
+          </button>
         </>
       )}
 
-      <div style={{ marginTop: 24 }}>
-        <Link to={`/grammar/${level}`}>← Back</Link>
-      </div>
-
       <AIResponseModal
         open={aiOpen}
-        onClose={closeAIModal}
+        onClose={() => setAiOpen(false)}
         status={aiStatus}
         message={aiMessage}
       />
