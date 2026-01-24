@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import useSounds from "../hooks/useSounds";
 import AIResponseModal from "../components/AIResponseModal";
@@ -133,39 +133,25 @@ function GrammarUnitPage() {
   };
 
   const handleAIFeedback = async () => {
-    if (aiStatus !== "IDLE") return;
-
     setAiOpen(true);
     setAiStatus("LOADING");
-    setAiMessage("");
 
     try {
       const res = await fetch("/api/ai/tutor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          skill: "Grammar",
+          question: `
+Score: ${score}/${questions.length}
+Lesson: ${content.title}
+${content.explanation}
+          `.trim(),
           level,
-          unit,
-          score,
-          total: questions.length,
-          lessonTitle: content.title,
-          lessonText: content.explanation,
         }),
       });
 
       const data = await res.json();
-
-      setAiMessage(
-        `Grade: ${data.grade}
-
-Feedback:
-${data.feedback}
-
-Recommendation:
-${data.recommendation}`
-      );
-
+      setAiMessage(data.answer || "No feedback available.");
       setAiStatus("SUCCESS");
     } catch {
       setAiStatus("ERROR");
@@ -176,6 +162,46 @@ ${data.recommendation}`
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
       <h2>{content.title}</h2>
       <p>{content.explanation}</p>
+
+      {questions.map((q) => (
+        <div key={q.id} style={{ marginBottom: 22 }}>
+          <strong>{q.question}</strong>
+
+          <div style={{ marginTop: 8 }}>
+            {q.options.map((opt) => {
+              const selected = answers[q.id] === opt;
+              const correct = submitted && opt === q.answer;
+              const wrong = submitted && selected && opt !== q.answer;
+
+              return (
+                <button
+                  key={opt}
+                  onClick={() => handleAnswer(q.id, opt)}
+                  style={{
+                    padding: "10px 16px",
+                    marginRight: 10,
+                    marginTop: 6,
+                    fontWeight: "bold",
+                    backgroundColor: correct
+                      ? "#2f9e44"
+                      : wrong
+                      ? "#c92a2a"
+                      : selected
+                      ? "#364fc7"
+                      : "#dee2e6",
+                    color:
+                      correct || wrong || selected ? "#fff" : "#000",
+                    border: "none",
+                    borderRadius: 6,
+                  }}
+                >
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
 
       {!submitted && (
         <button onClick={handleSubmit} style={{ marginTop: 14 }}>
@@ -188,7 +214,6 @@ ${data.recommendation}`
           <button onClick={handleNextUnit} style={{ marginTop: 20 }}>
             Next Unit →
           </button>
-
           <button onClick={handleAIFeedback} style={{ marginTop: 16 }}>
             🤖 Get AI Feedback
           </button>
