@@ -1,41 +1,41 @@
 const questions = [
   {
     id: 1,
-    question: "I ___ Paris last year.",
-    options: ["have visited", "visited", "have visit"],
-    answer: "visited"
+    question: "My brother ___ his phone, so he can't call anyone now.",
+    options: ["lost", "has lost", "loses"],
+    answer: "has lost"
   },
   {
     id: 2,
     question: "Which sentence is correct?",
     options: [
-      "She has finish her homework.",
-      "She has finished her homework.",
-      "She finished her homework just."
+      "I have met my boss last week.",
+      "I met my boss last week.",
+      "I have meet my boss last week."
     ],
-    answer: "She has finished her homework."
+    answer: "I met my boss last week."
   },
   {
     id: 3,
-    question: "We ___ never eaten sushi before.",
-    options: ["did", "have", "are"],
-    answer: "have"
+    question: "She ___ for that company for ten years before she changed jobs.",
+    options: ["has worked", "worked", "works"],
+    answer: "worked"
   },
   {
     id: 4,
-    question: "Which sentence uses the Past Simple correctly?",
+    question: "Which sentence focuses on the result now?",
     options: [
-      "They have won the match yesterday.",
-      "They won the match yesterday.",
-      "They win the match yesterday."
+      "He broke his leg in 2019.",
+      "He has broken his leg.",
+      "He breaks his leg."
     ],
-    answer: "They won the match yesterday."
+    answer: "He has broken his leg."
   },
   {
     id: 5,
-    question: "Have you ever ___ abroad?",
-    options: ["travel", "traveled", "traveleded"],
-    answer: "traveled"
+    question: "We didn't know the answer because we ___ this topic before.",
+    options: ["didn't study", "haven't studied", "don't study"],
+    answer: "haven't studied"
   }
 ];
 

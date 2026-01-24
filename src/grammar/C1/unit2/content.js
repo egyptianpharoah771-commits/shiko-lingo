@@ -1,34 +1,24 @@
-const questions = [
-  {
-    id: 1,
-    question: "___ finished the report, she immediately sent it to her manager.",
-    options: ["After she", "Having", "Because"],
-    answer: "Having"
-  },
-  {
-    id: 2,
-    question: "The documents ___ on the desk need to be reviewed urgently.",
-    options: ["are lying", "lying", "lie"],
-    answer: "lying"
-  },
-  {
-    id: 3,
-    question: "___ he revealed during the interview shocked the audience.",
-    options: ["That", "What", "Which"],
-    answer: "What"
-  },
-  {
-    id: 4,
-    question: "Despite ___ under intense pressure, the team met the deadline.",
-    options: ["be", "being", "was"],
-    answer: "being"
-  },
-  {
-    id: 5,
-    question: "This is one of the main reasons ___ she decided to resign.",
-    options: ["which", "what", "why"],
-    answer: "why"
-  }
-];
+const content = {
+  title: "Applying Advanced Sentence Structures",
+  explanation: `
+This unit focuses on applying advanced grammatical structures
+to complete sentences accurately.
 
-export default questions;
+You will practice participle clauses, reduced relative clauses,
+noun clauses, and concessive structures in controlled contexts.
+  `,
+  rules: [
+    "Participle clauses are used to show time or cause",
+    "Reduced relative clauses make sentences more concise",
+    "Noun clauses can function as subjects or objects",
+    "Concessive clauses express contrast"
+  ],
+  examples: [
+    "Having finished the report, she sent it to her manager.",
+    "The book lying on the table belongs to me.",
+    "What he said shocked the audience.",
+    "Despite being very tired, he continued working."
+  ]
+};
+
+export default content;

@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import useSounds from "../hooks/useSounds";
 
 // ===== CONTENT IMPORTS =====
 import a1Content1 from "./A1/unit1/content";
@@ -78,46 +79,22 @@ function GrammarUnitPage() {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(null);
 
-  // ===== SOUND REFS =====
-  const selectSound = useRef(null);
-  const correctSound = useRef(null);
-  const wrongSound = useRef(null);
+  const { playSelect, playCorrect, playWrong } = useSounds();
 
   const PASS_SCORE = Math.ceil(questions.length * 0.7);
   const passed = submitted && score >= PASS_SCORE;
 
-  // ===== INIT =====
   useEffect(() => {
     setAnswers({});
     setSubmitted(false);
     setScore(null);
   }, [level, unit]);
 
-  // ===== LOAD SOUNDS (ONCE) =====
-  useEffect(() => {
-    selectSound.current = new Audio("/sounds/select.mp3");
-    correctSound.current = new Audio("/sounds/correct.mp3");
-    wrongSound.current = new Audio("/sounds/wrong.mp3");
-  }, []);
-
   if (!content) return <p>⚠️ Unit not ready.</p>;
-
-  // ===== SAFE PLAY =====
-  const playSound = (soundRef) => {
-    try {
-      if (!soundRef.current) return;
-      soundRef.current.pause();
-      soundRef.current.currentTime = 0;
-      soundRef.current.play();
-    } catch {
-      // silent fail
-    }
-  };
 
   const handleAnswer = (id, opt) => {
     if (submitted) return;
-
-    playSound(selectSound);
+    playSelect();
     setAnswers((prev) => ({ ...prev, [id]: opt }));
   };
 
@@ -132,11 +109,8 @@ function GrammarUnitPage() {
     setScore(correct);
     setSubmitted(true);
 
-    if (correct >= PASS_SCORE) {
-      playSound(correctSound);
-    } else {
-      playSound(wrongSound);
-    }
+    if (correct >= PASS_SCORE) playCorrect();
+    else playWrong();
   };
 
   const handleNextUnit = () => {
@@ -207,68 +181,20 @@ function GrammarUnitPage() {
                 );
               })}
             </div>
-
-            {submitted && isCorrect && (
-              <div style={{ marginTop: 6, color: "#2f9e44", fontWeight: "bold" }}>
-                ✓ Good choice
-              </div>
-            )}
-
-            {submitted && isWrong && (
-              <div style={{ marginTop: 6, color: "#c92a2a", fontWeight: "bold" }}>
-                ✗ Try again
-              </div>
-            )}
           </div>
         );
       })}
 
       {!submitted && (
-        <button
-          onClick={handleSubmit}
-          style={{ padding: "12px 20px", marginTop: 14, fontWeight: "bold" }}
-        >
+        <button onClick={handleSubmit} style={{ marginTop: 14 }}>
           Check Answers
         </button>
       )}
 
-      {submitted && (
-        <p style={{ marginTop: 16, fontWeight: "bold" }}>
-          Score: {score} / {questions.length}
-        </p>
-      )}
-
       {passed && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: 16,
-            background: "#f0fff4",
-            border: "2px solid #2f9e44",
-            borderRadius: 8,
-            textAlign: "center",
-          }}
-        >
-          <p style={{ fontWeight: "bold", color: "#2f9e44" }}>
-            🎉 Lesson Completed Successfully
-          </p>
-
-          <button
-            onClick={handleNextUnit}
-            style={{
-              marginTop: 10,
-              padding: "12px 20px",
-              fontWeight: "bold",
-              background: "#2f9e44",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-          >
-            Next Unit →
-          </button>
-        </div>
+        <button onClick={handleNextUnit} style={{ marginTop: 20 }}>
+          Next Unit →
+        </button>
       )}
 
       <div style={{ marginTop: 24 }}>

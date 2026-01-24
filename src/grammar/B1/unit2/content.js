@@ -1,25 +1,26 @@
 const content = {
-  title: "Advanced Comparison: Present Perfect vs Past Simple",
+  title: "Choosing Between Present Perfect and Past Simple",
   explanation: `
-At B2 level, the difference between the Present Perfect and the Past Simple
-is not just about time, but about how the speaker chooses to present the action.
+At B1 level, learners often know the two tenses,
+but feel unsure which one to use in real situations.
 
-The Present Perfect connects past actions to the present situation.
-The Past Simple presents actions as completed and finished in the past.
+This unit focuses on choosing the correct tense
+based on whether the speaker is thinking about
+a finished time or a general experience.
   `,
   rules: [
-    "Present Perfect highlights relevance or impact on the present",
-    "Past Simple presents the action as a closed past event",
-    "Use Present Perfect to talk about experience without giving details",
-    "Use Past Simple to describe, narrate, or give background information",
-    "In questions, Present Perfect asks about experience, Past Simple asks about specific events"
+    "Use Present Perfect to talk about experiences without saying when",
+    "Use Past Simple when the time is mentioned or clearly finished",
+    "Time words like yesterday, last week, and in 2020 require Past Simple",
+    "Words like ever, never, and before are often used with Present Perfect",
+    "Always ask: Is the time important or finished?"
   ],
   examples: [
-    "I have worked with international teams. (relevant experience)",
-    "I worked with an international team in 2021. (specific past event)",
-    "She has broken her arm. (the result affects the present)",
-    "She broke her arm last summer. (telling a past story)",
-    "Have you ever managed a large project?"
+    "I have seen this movie before. (experience)",
+    "I saw this movie last night. (finished time)",
+    "She has never traveled abroad. (life experience)",
+    "She traveled abroad in 2018. (specific time)",
+    "Have you ever tried sushi?"
   ]
 };
 

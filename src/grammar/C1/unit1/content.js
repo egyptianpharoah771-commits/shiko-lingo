@@ -1,27 +1,30 @@
 const content = {
-  title: "Advanced Sentence Structures",
+  title: "Nuance in Meaning and Expression",
   explanation: `
-At C1 level, advanced sentence structures are used to express complex ideas
-clearly, fluently, and with stylistic control.
+At C1 level, learners move beyond grammatical correctness
+to understanding subtle differences in meaning and intention.
 
-These structures allow speakers and writers to combine ideas,
-add emphasis, and vary sentence patterns in a natural and sophisticated way.
+This unit focuses on how small changes in wording can affect
+tone, emphasis, certainty, and implication, even when sentences
+are grammatically correct.
   `,
   rules: [
-    "Use defining and non-defining relative clauses to add precise information",
-    "Use participle clauses to reduce repetition and improve flow",
-    "Use noun clauses as subjects, objects, or complements",
-    "Vary sentence openings to improve cohesion and style",
-    "Use concessive structures (although, despite, in spite of) to express contrast",
-    "Avoid overusing short, simple sentences in formal or academic writing"
+    "Different word choices can signal varying levels of certainty or caution",
+    "Adding modal or reporting structures can distance the speaker from a claim",
+    "Certain adverbs subtly change emphasis or implication",
+    "Formality often depends on lexical choice rather than structure",
+    "Writers may soften or strengthen statements without changing the core meaning",
+    "Grammatically correct sentences can still differ significantly in nuance"
   ],
   examples: [
-    "The man who lives next door, who is a surgeon, works long hours.",
-    "Having finished his work, he decided to leave early.",
-    "What she suggested during the meeting surprised everyone.",
-    "Despite being under pressure, the team managed to meet the deadline.",
-    "The reason why she left the company remains unclear.",
-    "Not only did he miss the deadline, but he also failed to inform his manager."
+    "She will complete the project by Friday.",
+    "She is expected to complete the project by Friday.",
+    "The results show a big difference between the groups.",
+    "The results indicate a significant difference between the groups.",
+    "He resolved the issue.",
+    "He managed to resolve the issue.",
+    "The proposal is interesting.",
+    "The proposal is interesting, but somewhat unclear."
   ]
 };
 
