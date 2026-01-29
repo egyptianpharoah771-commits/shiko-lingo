@@ -52,12 +52,6 @@ import SpeakingLesson from "./speaking/SpeakingLesson";
 import SpeakingLessonB1 from "./speaking/SpeakingLessonB1";
 
 /* ======================
-   Vocabulary
-====================== */
-import VocabularyLevelPage from "./vocabulary/VocabularyLevelPage";
-import VocabularyUnitPage from "./vocabulary/VocabularyUnitPage";
-
-/* ======================
    Tests
 ====================== */
 import LevelTest from "./skills/LevelTest";
@@ -137,6 +131,8 @@ function AppLayout({ children }) {
 
     loadUnread();
 
+    // ❗ IMPORTANT FIX:
+    // Disable storage listener while inside Grammar units
     if (!location.pathname.startsWith("/grammar/")) {
       window.addEventListener("storage", loadUnread);
 
@@ -186,16 +182,42 @@ function AppLayout({ children }) {
           </header>
 
           <nav style={navStyle}>
-            <NavButton to="/dashboard" label="Dashboard" />
-            <NavButton to="/level-test" label="Level Test" />
-            <NavButton to="/placement-test" label="Placement Test" />
-            <NavButton to="/grammar" label="Grammar" />
-            <NavButton to="/vocabulary/A1" label="Vocabulary" />
-            <NavButton to="/listening" label="Listening" />
-            <NavButton to="/reading" label="Reading" />
-            <NavButton to="/speaking" label="Speaking" />
-            <NavButton to="/writing" label="Writing" />
-            <NavButton to="/upgrade" label="Upgrade" />
+            <NavButton
+              to="/dashboard"
+              label="Dashboard"
+            />
+            <NavButton
+              to="/level-test"
+              label="Level Test"
+            />
+            <NavButton
+              to="/placement-test"
+              label="Placement Test"
+            />
+            <NavButton
+              to="/grammar"
+              label="Grammar"
+            />
+            <NavButton
+              to="/listening"
+              label="Listening"
+            />
+            <NavButton
+              to="/reading"
+              label="Reading"
+            />
+            <NavButton
+              to="/speaking"
+              label="Speaking"
+            />
+            <NavButton
+              to="/writing"
+              label="Writing"
+            />
+            <NavButton
+              to="/upgrade"
+              label="Upgrade"
+            />
             <NavButton to="/pi" label="Pi" />
           </nav>
         </>
@@ -239,7 +261,7 @@ function App() {
             element={<PlacementTest />}
           />
 
-          {/* ===== GRAMMAR ===== */}
+          {/* ===== GRAMMAR (ORDER FIXED) ===== */}
           <Route
             path="/grammar/:level/:unit"
             element={<GrammarUnitPage />}
@@ -251,16 +273,6 @@ function App() {
           <Route
             path="/grammar"
             element={<GrammarLevels />}
-          />
-
-          {/* ===== VOCABULARY ===== */}
-          <Route
-            path="/vocabulary/:level/:unitId"
-            element={<VocabularyUnitPage />}
-          />
-          <Route
-            path="/vocabulary/:level"
-            element={<VocabularyLevelPage />}
           />
 
           <Route
