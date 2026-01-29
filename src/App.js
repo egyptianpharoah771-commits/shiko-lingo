@@ -87,17 +87,11 @@ function Entry() {
       <h1>Shiko Lingo</h1>
       <p>Learn English the smart way</p>
 
-      <button
-        style={primaryBtn}
-        onClick={() => navigate("/dashboard")}
-      >
+      <button style={primaryBtn} onClick={() => navigate("/dashboard")}>
         🚀 Enter App
       </button>
 
-      <button
-        style={secondaryBtn}
-        onClick={() => navigate("/pi")}
-      >
+      <button style={secondaryBtn} onClick={() => navigate("/pi")}>
         🔐 Continue with Pi
       </button>
     </div>
@@ -120,39 +114,21 @@ function AppLayout({ children }) {
   useEffect(() => {
     const loadUnread = () => {
       const stored =
-        JSON.parse(
-          localStorage.getItem(STORAGE_KEYS.FEEDBACKS)
-        ) || [];
+        JSON.parse(localStorage.getItem(STORAGE_KEYS.FEEDBACKS)) || [];
 
-      setUnreadCount(
-        stored.filter((f) => !f.isRead).length
-      );
+      setUnreadCount(stored.filter((f) => !f.isRead).length);
     };
 
     loadUnread();
 
-    // ❗ IMPORTANT FIX:
-    // Disable storage listener while inside Grammar units
     if (!location.pathname.startsWith("/grammar/")) {
       window.addEventListener("storage", loadUnread);
-
-      return () => {
-        window.removeEventListener(
-          "storage",
-          loadUnread
-        );
-      };
+      return () => window.removeEventListener("storage", loadUnread);
     }
   }, [location.pathname]);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {!hideLayout && <FeedbackButton />}
 
       {!hideLayout && (
@@ -164,73 +140,43 @@ function AppLayout({ children }) {
                 alt="Shiko Lingo"
                 style={{ width: 42, height: 42 }}
               />
-              <strong style={{ fontSize: 20 }}>
-                Shiko Lingo
-              </strong>
+              <strong style={{ fontSize: 20 }}>Shiko Lingo</strong>
             </div>
 
             <Link to="/admin/feedback">
               <div style={feedbackBadgeStyle}>
                 🔔 Feedback
                 {unreadCount > 0 && (
-                  <span style={badgeCountStyle}>
-                    {unreadCount}
-                  </span>
+                  <span style={badgeCountStyle}>{unreadCount}</span>
                 )}
               </div>
             </Link>
           </header>
 
           <nav style={navStyle}>
-            <NavButton
-              to="/dashboard"
-              label="Dashboard"
-            />
-            <NavButton
-              to="/level-test"
-              label="Level Test"
-            />
-            <NavButton
-              to="/placement-test"
-              label="Placement Test"
-            />
-            <NavButton
-              to="/grammar"
-              label="Grammar"
-            />
-            <NavButton
-              to="/listening"
-              label="Listening"
-            />
-            <NavButton
-              to="/reading"
-              label="Reading"
-            />
-            <NavButton
-              to="/speaking"
-              label="Speaking"
-            />
-            <NavButton
-              to="/writing"
-              label="Writing"
-            />
-            <NavButton
-              to="/upgrade"
-              label="Upgrade"
-            />
+            <NavButton to="/dashboard" label="Dashboard" />
+            <NavButton to="/level-test" label="Level Test" />
+            <NavButton to="/placement-test" label="Placement Test" />
+            <NavButton to="/grammar" label="Grammar" />
+
+            {/* ✅ Vocabulary added correctly */}
+            <NavButton to="/vocabulary/A1" label="Vocabulary" />
+
+            <NavButton to="/listening" label="Listening" />
+            <NavButton to="/reading" label="Reading" />
+            <NavButton to="/speaking" label="Speaking" />
+            <NavButton to="/writing" label="Writing" />
+            <NavButton to="/upgrade" label="Upgrade" />
             <NavButton to="/pi" label="Pi" />
           </nav>
         </>
       )}
 
-      <div style={{ padding: 20, flex: 1 }}>
-        {children}
-      </div>
+      <div style={{ padding: 20, flex: 1 }}>{children}</div>
 
       {!hideLayout && (
         <footer style={footerStyle}>
-          <Link to="/privacy">Privacy Policy</Link>{" "}
-          |{" "}
+          <Link to="/privacy">Privacy Policy</Link> |{" "}
           <Link to="/terms">Terms & Conditions</Link>
         </footer>
       )}
@@ -247,91 +193,36 @@ function App() {
       <AppLayout>
         <Routes>
           <Route path="/" element={<Entry />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/level-test" element={<LevelTest />} />
+          <Route path="/placement-test" element={<PlacementTest />} />
 
-          <Route
-            path="/dashboard"
-            element={<Dashboard />}
-          />
-          <Route
-            path="/level-test"
-            element={<LevelTest />}
-          />
-          <Route
-            path="/placement-test"
-            element={<PlacementTest />}
-          />
+          {/* ===== GRAMMAR ===== */}
+          <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
+          <Route path="/grammar/:level" element={<GrammarUnits />} />
+          <Route path="/grammar" element={<GrammarLevels />} />
 
-          {/* ===== GRAMMAR (ORDER FIXED) ===== */}
-          <Route
-            path="/grammar/:level/:unit"
-            element={<GrammarUnitPage />}
-          />
-          <Route
-            path="/grammar/:level"
-            element={<GrammarUnits />}
-          />
-          <Route
-            path="/grammar"
-            element={<GrammarLevels />}
-          />
+          <Route path="/listening" element={<ListeningHome />} />
+          <Route path="/listening/:level" element={<ListeningLevel />} />
+          <Route path="/listening/:level/:lessonId" element={<Listening />} />
 
-          <Route
-            path="/listening"
-            element={<ListeningHome />}
-          />
-          <Route
-            path="/listening/:level"
-            element={<ListeningLevel />}
-          />
-          <Route
-            path="/listening/:level/:lessonId"
-            element={<Listening />}
-          />
+          <Route path="/reading" element={<ReadingHome />} />
+          <Route path="/reading/:level" element={<ReadingLevel />} />
+          <Route path="/reading/:level/:lessonId" element={<ReadingLesson />} />
 
-          <Route
-            path="/reading"
-            element={<ReadingHome />}
-          />
-          <Route
-            path="/reading/:level"
-            element={<ReadingLevel />}
-          />
-          <Route
-            path="/reading/:level/:lessonId"
-            element={<ReadingLesson />}
-          />
-
-          <Route
-            path="/speaking"
-            element={<SpeakingHome />}
-          />
-          <Route
-            path="/speaking/B1/:lessonId"
-            element={<SpeakingLessonB1 />}
-          />
+          <Route path="/speaking" element={<SpeakingHome />} />
+          <Route path="/speaking/B1/:lessonId" element={<SpeakingLessonB1 />} />
           <Route
             path="/speaking/:level/:lessonId"
             element={<SpeakingLesson />}
           />
-          <Route
-            path="/speaking/:level"
-            element={<SpeakingLevel />}
-          />
+          <Route path="/speaking/:level" element={<SpeakingLevel />} />
 
-          <Route
-            path="/writing"
-            element={<Writing />}
-          />
-          <Route
-            path="/upgrade"
-            element={<Upgrade />}
-          />
+          <Route path="/writing" element={<Writing />} />
+          <Route path="/upgrade" element={<Upgrade />} />
           <Route path="/pi" element={<PI />} />
 
-          <Route
-            path="/privacy"
-            element={<Privacy />}
-          />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
 
           <Route
