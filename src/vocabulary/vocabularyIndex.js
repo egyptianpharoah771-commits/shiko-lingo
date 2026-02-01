@@ -7,55 +7,110 @@ const VOCABULARY_INDEX = {
     },
     {
       id: 2,
-      title: "People & Family",
-      description: "Basic words for people and family members"
+      title: "Daily Actions",
+      description: "Common actions you do every day"
     },
     {
       id: 3,
-      title: "Food & Drinks",
-      description: "Common food and drink vocabulary"
+      title: "Places & Directions",
+      description: "Common places and simple directions"
+    },
+    {
+      id: 4,
+      title: "People & Descriptions",
+      description: "Basic words to describe people and things"
     }
   ],
 
   A2: [
     {
       id: 1,
-      title: "Daily Activities",
-      description: "Verbs and nouns for daily routines"
+      title: "Home & Daily Objects",
+      description: "Rooms, furniture, and objects at home"
     },
     {
       id: 2,
-      title: "Places in Town",
-      description: "Vocabulary for common places"
+      title: "Food",
+      description: "Common food items and meals"
+    },
+    {
+      id: 3,
+      title: "Drinks & Ordering",
+      description: "Drinks and ordering politely"
+    },
+    {
+      id: 4,
+      title: "Hobbies & Leisure Time",
+      description: "Free-time activities and hobbies"
     }
   ],
 
   B1: [
     {
       id: 1,
-      title: "Work & Jobs",
-      description: "Vocabulary related to work life"
+      title: "Travel & Transport",
+      description: "Travel situations and transportation"
     },
     {
       id: 2,
-      title: "Travel & Transport",
-      description: "Travel-related words and expressions"
+      title: "Around Town & Directions",
+      description: "Places around town and giving directions"
+    },
+    {
+      id: 3,
+      title: "Describing People (Appearance)",
+      description: "Talking about height, hair, and appearance"
+    },
+    {
+      id: 4,
+      title: "Describing People (Character)",
+      description: "Talking about personality and character"
     }
   ],
 
   B2: [
     {
       id: 1,
-      title: "Health & Lifestyle",
-      description: "Health, fitness, and lifestyle terms"
+      title: "Health & Illness",
+      description: "Health problems, symptoms, and advice"
+    },
+    {
+      id: 2,
+      title: "Work & Daily Responsibilities",
+      description: "Work, responsibilities, and daily duties"
+    },
+    {
+      id: 3,
+      title: "Travel Problems & Solutions",
+      description: "Travel issues and how to solve them"
+    },
+    {
+      id: 4,
+      title: "Opinions & Decisions",
+      description: "Expressing opinions and making decisions"
     }
   ],
 
   C1: [
     {
       id: 1,
-      title: "Abstract Concepts",
-      description: "Advanced abstract vocabulary"
+      title: "Abstract Ideas & Concepts",
+      description: "Advanced abstract ideas and concepts"
+    },
+    {
+      id: 2,
+      title: "Social Issues & Society",
+      description: "Social issues, inequality, and society"
+    },
+    {
+      id: 3,
+      title: "Technology & Its Impact",
+      description: "Technology and its impact on society"
+    },
+    {
+      id: 4,
+      title: "Media, Information & Critical Thinking",
+      description: "Media, information, bias, and critical thinking"
     }
   ]
 };

@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import "./Vocabulary.css";
 
 /* ======================
    Utils
@@ -28,6 +29,10 @@ function VocabularyUnitPage() {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // 🔊 audio ref (single instance)
+  const audioRef = useRef(null);
+  const [playingWord, setPlayingWord] = useState(null);
 
   useEffect(() => {
     const loadUnit = async () => {
@@ -63,15 +68,51 @@ function VocabularyUnitPage() {
     if (normalizedLevel && unitNumber) {
       loadUnit();
     }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, [normalizedLevel, unitNumber]);
 
-  if (loading) return <p>Loading...</p>;
-  if (!content) return <p>Vocabulary unit not found.</p>;
+  const playWordAudio = (word) => {
+    const cleanWord = word.toLowerCase();
+
+    // لو نفس الكلمة شغالة → وقف
+    if (playingWord === cleanWord && audioRef.current) {
+      audioRef.current.pause();
+      setPlayingWord(null);
+      return;
+    }
+
+    // وقف أي صوت شغال
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    const audioPath = `/sounds/vocabulary/${normalizedLevel}/unit${unitNumber}/${cleanWord}.mp3`;
+    const audio = new Audio(audioPath);
+
+    audioRef.current = audio;
+    setPlayingWord(cleanWord);
+
+    audio.play().catch(() => {
+      console.warn("Audio not found:", audioPath);
+      setPlayingWord(null);
+    });
+
+    audio.onended = () => {
+      setPlayingWord(null);
+    };
+  };
+
+  if (loading) return <p className="vocab-loading">Loading...</p>;
+  if (!content) return <p className="vocab-loading">Vocabulary unit not found.</p>;
 
   const question = questions[currentQuestion];
-  if (!question) return <p>Loading question...</p>;
-
-  const isCorrect = selected === question.correctAnswer;
+  const isCorrect = selected === question?.correctAnswer;
   const isLastQuestion = currentQuestion === questions.length - 1;
 
   const saveProgress = () => {
@@ -85,90 +126,141 @@ function VocabularyUnitPage() {
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 720 }}>
-      <h1>
-        {content.level} – Unit {content.unit}: {content.title}
-      </h1>
+    <div className="vocab-page vocab-unit-page">
+      {/* ===== Header ===== */}
+      <div className="vocab-unit-header">
+        <h1>
+          {content.level} – Unit {content.unit}
+        </h1>
+        <h2>{content.title}</h2>
+        <p className="vocab-unit-desc">{content.description}</p>
+      </div>
 
-      <p>{content.description}</p>
-
+      {/* ===== Explanation ===== */}
       {content.explanation && (
-        <>
-          <hr />
-          <h2>Explanation</h2>
+        <div className="vocab-explanation">
+          <h3>Explanation</h3>
           <ul>
             {content.explanation.map((line, i) => (
               <li key={i}>{line}</li>
             ))}
           </ul>
-        </>
+        </div>
       )}
 
-      <hr />
+      {/* ===== Vocabulary Items ===== */}
+      {content.items && (
+        <div className="vocab-items-section">
+          <h3>Vocabulary</h3>
 
-      <h2>
-        Question {currentQuestion + 1} / {questions.length}
-      </h2>
+          <div className="vocab-items">
+            {content.items.map((item, i) => (
+              <div key={i} className="vocab-item-card">
+                <div className="vocab-item-header">
+                  <div>
+                    <div className="vocab-item-word">{item.word}</div>
+                    <div className="vocab-item-phonetic">
+                      {item.phonetic}
+                    </div>
+                  </div>
 
-      <p>{question.question}</p>
+                  <button
+                    className={`vocab-audio-btn ${
+                      playingWord === item.word.toLowerCase()
+                        ? "playing"
+                        : ""
+                    }`}
+                    onClick={() => playWordAudio(item.word)}
+                    title="Play pronunciation"
+                  >
+                    🔊
+                  </button>
+                </div>
 
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {question.shuffledOptions.map((opt) => (
-          <li key={opt} style={{ marginBottom: 8 }}>
+                <div className="vocab-item-meaning">
+                  <strong>Meaning:</strong> {item.meaning}
+                </div>
+
+                <div className="vocab-item-example">
+                  <strong>Example:</strong> {item.example}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ===== Question ===== */}
+      <div className="vocab-question-box">
+        <div className="vocab-question-header">
+          Question {currentQuestion + 1} / {questions.length}
+        </div>
+
+        <p className="vocab-question-text">{question.question}</p>
+
+        <div className="vocab-options">
+          {question.shuffledOptions.map((opt) => {
+            let optionClass = "vocab-option";
+
+            if (showResult && opt === question.correctAnswer)
+              optionClass += " correct";
+            else if (showResult && opt === selected)
+              optionClass += " wrong";
+            else if (selected === opt)
+              optionClass += " selected";
+
+            return (
+              <button
+                key={opt}
+                disabled={showResult}
+                onClick={() => setSelected(opt)}
+                className={optionClass}
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+
+        {showResult && (
+          <p className="vocab-inline-result">
+            {isCorrect ? "Correct ✅" : "Wrong ❌"}
+          </p>
+        )}
+
+        <div className="vocab-actions">
+          {!showResult ? (
             <button
-              disabled={showResult}
-              onClick={() => setSelected(opt)}
-              style={{
-                width: "100%",
-                padding: 12,
-                border: "2px solid #ccc",
-                cursor: "pointer",
-                background:
-                  showResult && opt === question.correctAnswer
-                    ? "#c8f7c5"
-                    : showResult && opt === selected
-                    ? "#f7c5c5"
-                    : selected === opt
-                    ? "#e0eaff"
-                    : "#f7f7f7",
+              className="vocab-btn primary"
+              disabled={!selected}
+              onClick={() => setShowResult(true)}
+            >
+              Check Answer
+            </button>
+          ) : !isLastQuestion ? (
+            <button
+              className="vocab-btn primary"
+              onClick={() => {
+                setSelected(null);
+                setShowResult(false);
+                setCurrentQuestion((q) => q + 1);
               }}
             >
-              {opt}
+              Next Question →
             </button>
-          </li>
-        ))}
-      </ul>
-
-      {showResult && (
-        <p style={{ fontWeight: "bold" }}>
-          {isCorrect ? "Correct ✅" : "Wrong ❌"}
-        </p>
-      )}
-
-      {!showResult ? (
-        <button disabled={!selected} onClick={() => setShowResult(true)}>
-          Check Answer
-        </button>
-      ) : !isLastQuestion ? (
-        <button
-          onClick={() => {
-            setSelected(null);
-            setShowResult(false);
-            setCurrentQuestion((q) => q + 1);
-          }}
-        >
-          Next Question
-        </button>
-      ) : (
-        <button
-          onClick={() => {
-            saveProgress();
-            navigate(`/vocabulary/${normalizedLevel}`);
-          }}
-        >
-          Finish 🎉
-        </button>
-      )}
+          ) : (
+            <button
+              className="vocab-btn success"
+              onClick={() => {
+                saveProgress();
+                navigate(`/vocabulary/${normalizedLevel}`);
+              }}
+            >
+              Finish 🎉
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

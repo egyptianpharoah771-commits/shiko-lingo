@@ -1,7 +1,6 @@
-// src/vocabulary/VocabularyLevelPage.jsx
-
 import { Link, useParams } from "react-router-dom";
 import VOCABULARY_INDEX from "./vocabularyIndex";
+import "./Vocabulary.css";
 
 function VocabularyLevelPage() {
   const { level } = useParams(); // A1 / A2 / B1 / B2 / C1
@@ -20,37 +19,74 @@ function VocabularyLevelPage() {
   };
 
   if (!units) {
-    return <p>Invalid vocabulary level</p>;
+    return <p style={{ padding: 20 }}>Invalid vocabulary level</p>;
   }
 
-  return (
-    <div style={{ padding: 20 }}>
-      <h1>Vocabulary – Level {normalizedLevel}</h1>
+  const completedCount = progress.completedUnits.length;
+  const totalUnits = units.length;
+  const progressPercent = Math.min(
+    Math.round((completedCount / totalUnits) * 100),
+    100
+  );
 
-      <ul style={{ padding: 0 }}>
-        {units.map((unit) => (
-          <li
-            key={unit.id}
-            style={{
-              listStyle: "none",
-              marginBottom: 10,
-            }}
-          >
-            {isUnlocked(unit.id) ? (
+  return (
+    <div className="vocab-page">
+      <div className={`vocab-level level-${normalizedLevel}`}>
+        {/* ===== Header ===== */}
+        <div className="vocab-level-header">
+          <div>
+            <div className="vocab-level-title">
+              {normalizedLevel} Vocabulary
+            </div>
+            <div className="vocab-level-subtitle">
+              {completedCount} of {totalUnits} units completed
+            </div>
+          </div>
+        </div>
+
+        {/* ===== Progress ===== */}
+        <div className="vocab-progress">
+          <div
+            className="vocab-progress-fill"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        {/* ===== Units ===== */}
+        <div className="vocab-units">
+          {units.map((unit) => {
+            const unlocked = isUnlocked(unit.id);
+
+            return unlocked ? (
               <Link
+                key={unit.id}
                 to={`/vocabulary/${normalizedLevel}/${unit.id}`}
-                style={{ textDecoration: "none", fontWeight: "bold" }}
+                style={{ textDecoration: "none" }}
               >
-                Unit {unit.id}: {unit.title}
+                <div className="vocab-card">
+                  <div className="vocab-card-icon">📘</div>
+                  <div className="vocab-card-title">
+                    Unit {unit.id}: {unit.title}
+                  </div>
+                  <div className="vocab-card-desc">
+                    {unit.description}
+                  </div>
+                </div>
               </Link>
             ) : (
-              <span style={{ color: "#999" }}>
-                🔒 Unit {unit.id}: {unit.title}
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
+              <div key={unit.id} className="vocab-card locked">
+                <div className="vocab-card-icon">🔒</div>
+                <div className="vocab-card-title">
+                  Unit {unit.id}: {unit.title}
+                </div>
+                <div className="vocab-card-desc">
+                  Complete previous unit to unlock
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

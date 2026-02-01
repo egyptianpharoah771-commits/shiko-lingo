@@ -1,0 +1,346 @@
+/* =========================
+   Vocabulary Page – Layout
+========================= */
+
+.vocab-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.vocab-page h1 {
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+/* =========================
+   Level Section
+========================= */
+
+.vocab-level {
+  margin-bottom: 48px;
+}
+
+.vocab-level-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.vocab-level-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.vocab-level-subtitle {
+  font-size: 13px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.vocab-progress {
+  height: 6px;
+  background: #eaeaea;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vocab-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* =========================
+   Units Grid
+========================= */
+
+.vocab-units {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* =========================
+   Unit Card
+========================= */
+
+.vocab-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.vocab-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.vocab-card.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.vocab-card-icon {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.vocab-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.vocab-card-desc {
+  font-size: 13px;
+  color: #555;
+}
+
+/* =========================
+   Unit Page (Questions)
+========================= */
+
+.vocab-unit-page {
+  max-width: 720px;
+}
+
+.vocab-unit-header h1 {
+  margin-bottom: 4px;
+}
+
+.vocab-unit-header h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.vocab-unit-desc {
+  color: #555;
+  margin-bottom: 24px;
+}
+
+.vocab-explanation {
+  background: #f7f9ff;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+
+.vocab-explanation h3 {
+  margin-top: 0;
+}
+
+/* =========================
+   Question Box
+========================= */
+
+.vocab-question-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.vocab-question-header {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.vocab-question-text {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+/* =========================
+   Options
+========================= */
+
+.vocab-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vocab-option {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 2px solid #ddd;
+  background: #f9f9f9;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-size: 15px;
+}
+
+/* hover */
+.vocab-option:hover {
+  background: #f0f4ff;
+}
+
+/* selected (before check) */
+.vocab-option.selected {
+  border-color: #4a90e2;
+  background: #eaf2ff;
+}
+
+/* correct */
+.vocab-option.correct {
+  border-color: #2ecc71;
+  background: #e9f8ef;
+}
+
+/* wrong */
+.vocab-option.wrong {
+  border-color: #e74c3c;
+  background: #fdecea;
+}
+
+.vocab-option:disabled {
+  cursor: default;
+}
+
+/* =========================
+   Inline Result
+========================= */
+
+.vocab-inline-result {
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+/* =========================
+   Actions
+========================= */
+
+.vocab-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.vocab-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.vocab-btn.primary {
+  background: #4a90e2;
+  color: #fff;
+}
+
+.vocab-btn.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vocab-btn.success {
+  background: #2ecc71;
+  color: #fff;
+}
+
+/* =========================
+   Level Colors
+========================= */
+
+.level-A1 { --accent: #2ecc71; }
+.level-A2 { --accent: #3498db; }
+.level-B1 { --accent: #9b59b6; }
+.level-B2 { --accent: #e67e22; }
+.level-C1 { --accent: #e74c3c; }
+
+.level-A1 .vocab-progress-fill,
+.level-A2 .vocab-progress-fill,
+.level-B1 .vocab-progress-fill,
+.level-B2 .vocab-progress-fill,
+.level-C1 .vocab-progress-fill {
+  background: var(--accent);
+}
+
+.level-A1 .vocab-card-icon,
+.level-A2 .vocab-card-icon,
+.level-B1 .vocab-card-icon,
+.level-B2 .vocab-card-icon,
+.level-C1 .vocab-card-icon {
+  color: var(--accent);
+}
+
+/* =========================
+   Vocabulary Items
+========================= */
+
+.vocab-items-section {
+  margin-bottom: 40px;
+}
+
+.vocab-items-section h3 {
+  margin-bottom: 16px;
+}
+
+.vocab-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.vocab-item-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.vocab-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.vocab-item-word {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.vocab-item-phonetic {
+  font-size: 13px;
+  color: #666;
+}
+
+/* 🔊 Audio Button – FIXED */
+.vocab-audio-btn {
+  border: none;
+  background: #f0f0f0;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer; /* ✅ هنا الإصلاح */
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vocab-audio-btn:hover {
+  background: #eaf2ff;
+}
+
+.vocab-item-meaning,
+.vocab-item-example {
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* =========================
+   Audio Button (Playing)
+========================= */
+
+.vocab-audio-btn.playing {
+  background: #eaf2ff;
+  box-shadow: 0 0 0 2px #4a90e2 inset;
+}

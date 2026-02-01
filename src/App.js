@@ -54,6 +54,7 @@ import SpeakingLessonB1 from "./speaking/SpeakingLessonB1";
 /* ======================
    Vocabulary
 ====================== */
+import VocabularyPage from "./vocabulary/VocabularyPage"; // الصفحة الرئيسية للمستويات
 import VocabularyLevelPage from "./vocabulary/VocabularyLevelPage";
 import VocabularyUnitPage from "./vocabulary/VocabularyUnitPage";
 
@@ -190,7 +191,7 @@ function AppLayout({ children }) {
             <NavButton to="/level-test" label="Level Test" />
             <NavButton to="/placement-test" label="Placement Test" />
             <NavButton to="/grammar" label="Grammar" />
-            <NavButton to="/vocabulary/A1" label="Vocabulary" />
+            <NavButton to="/vocabulary" label="Vocabulary" />
             <NavButton to="/listening" label="Listening" />
             <NavButton to="/reading" label="Reading" />
             <NavButton to="/speaking" label="Speaking" />
@@ -254,6 +255,10 @@ function App() {
           />
 
           {/* ===== VOCABULARY ===== */}
+          <Route
+            path="/vocabulary"
+            element={<VocabularyPage />}
+          />
           <Route
             path="/vocabulary/:level/:unitId"
             element={<VocabularyUnitPage />}
