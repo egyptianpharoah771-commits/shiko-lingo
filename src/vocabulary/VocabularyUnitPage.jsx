@@ -1,6 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import "./Vocabulary.css";
+import {
+  UNIT_LOADERS,
+  QUESTION_LOADERS,
+} from "./vocabularyIndex";
 
 /* ======================
    Utils
@@ -31,7 +35,7 @@ function VocabularyUnitPage() {
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // 🔊 audio ref
+  // 🔊 audio
   const audioRef = useRef(null);
   const [playingWord, setPlayingWord] = useState(null);
 
@@ -42,7 +46,7 @@ function VocabularyUnitPage() {
       setSelected(null);
       setShowResult(false);
 
-      // ==== Guards على الـ params ====
+      // ==== Guards على params ====
       if (!normalizedLevel || Number.isNaN(unitNumber)) {
         console.error("Invalid vocabulary params:", { level, unitId });
         setContent(null);
@@ -51,27 +55,38 @@ function VocabularyUnitPage() {
         return;
       }
 
+      const loadContent =
+        UNIT_LOADERS?.[normalizedLevel]?.[unitNumber];
+      const loadQuestions =
+        QUESTION_LOADERS?.[normalizedLevel]?.[unitNumber];
+
+      if (!loadContent || !loadQuestions) {
+        console.error(
+          "Unit loader not found:",
+          normalizedLevel,
+          unitNumber
+        );
+        setContent(null);
+        setQuestions([]);
+        setLoading(false);
+        return;
+      }
+
       try {
-        // ==== تحميل المحتوى ====
-        const contentModule = await import(
-          `./${normalizedLevel}/unit${unitNumber}/content.js`
-        );
+        const contentModule = await loadContent();
+        const questionsModule = await loadQuestions();
 
-        // ==== تحميل الأسئلة ====
-        const questionsModule = await import(
-          `./${normalizedLevel}/unit${unitNumber}/questions.js`
-        );
+        const resolvedContent =
+          contentModule.default ?? contentModule.content ?? null;
 
-        const rawQuestions = questionsModule?.default;
+        const rawQuestions =
+          questionsModule.default ?? questionsModule.questions ?? null;
 
-        // ==== Guard مهم جدًا ====
-        if (!Array.isArray(rawQuestions)) {
-          console.error(
-            "Invalid questions export (must be default array):",
-            normalizedLevel,
-            unitNumber,
-            questionsModule
-          );
+        if (!resolvedContent || !Array.isArray(rawQuestions)) {
+          console.error("Invalid unit exports:", {
+            contentModule,
+            questionsModule,
+          });
           setContent(null);
           setQuestions([]);
           setLoading(false);
@@ -85,7 +100,7 @@ function VocabularyUnitPage() {
             : [],
         }));
 
-        setContent(contentModule.default);
+        setContent(resolvedContent);
         setQuestions(preparedQuestions);
       } catch (err) {
         console.error("Vocabulary unit load failed:", err);
@@ -104,7 +119,7 @@ function VocabularyUnitPage() {
         audioRef.current = null;
       }
     };
-  }, [normalizedLevel, unitNumber, level, unitId]);
+  }, [normalizedLevel, unitNumber]);
 
   /* ======================
      Audio
@@ -133,9 +148,7 @@ function VocabularyUnitPage() {
       setPlayingWord(null);
     });
 
-    audio.onended = () => {
-      setPlayingWord(null);
-    };
+    audio.onended = () => setPlayingWord(null);
   };
 
   /* ======================
@@ -169,7 +182,6 @@ function VocabularyUnitPage() {
 
   return (
     <div className="vocab-page vocab-unit-page">
-      {/* ===== Header ===== */}
       <div className="vocab-unit-header">
         <h1>
           {content.level} – Unit {content.unit}
@@ -178,7 +190,6 @@ function VocabularyUnitPage() {
         <p className="vocab-unit-desc">{content.description}</p>
       </div>
 
-      {/* ===== Explanation ===== */}
       {Array.isArray(content.explanation) && (
         <div className="vocab-explanation">
           <h3>Explanation</h3>
@@ -190,11 +201,9 @@ function VocabularyUnitPage() {
         </div>
       )}
 
-      {/* ===== Vocabulary ===== */}
       {Array.isArray(content.items) && (
         <div className="vocab-items-section">
           <h3>Vocabulary</h3>
-
           <div className="vocab-items">
             {content.items.map((item, i) => (
               <div key={i} className="vocab-item-card">
@@ -231,7 +240,6 @@ function VocabularyUnitPage() {
         </div>
       )}
 
-      {/* ===== Questions ===== */}
       <div className="vocab-question-box">
         <div className="vocab-question-header">
           Question {currentQuestion + 1} / {questions.length}

@@ -116,3 +116,81 @@ const VOCABULARY_INDEX = {
 };
 
 export default VOCABULARY_INDEX;
+/* ======================
+   Unit Loaders (Production Safe)
+   DO NOT TOUCH VOCABULARY_INDEX ABOVE
+====================== */
+
+export const UNIT_LOADERS = {
+  A1: {
+    1: () => import("./A1/unit1/content.js"),
+    2: () => import("./A1/unit2/content.js"),
+    3: () => import("./A1/unit3/content.js"),
+    4: () => import("./A1/unit4/content.js"),
+  },
+
+  A2: {
+    1: () => import("./A2/unit1/content.js"),
+    2: () => import("./A2/unit2/content.js"),
+    3: () => import("./A2/unit3/content.js"),
+    4: () => import("./A2/unit4/content.js"),
+  },
+
+  B1: {
+    1: () => import("./B1/unit1/content.js"),
+    2: () => import("./B1/unit2/content.js"),
+    3: () => import("./B1/unit3/content.js"),
+    4: () => import("./B1/unit4/content.js"),
+  },
+
+  B2: {
+    1: () => import("./B2/unit1/content.js"),
+    2: () => import("./B2/unit2/content.js"),
+    3: () => import("./B2/unit3/content.js"),
+    4: () => import("./B2/unit4/content.js"),
+  },
+
+  C1: {
+    1: () => import("./C1/unit1/content.js"),
+    2: () => import("./C1/unit2/content.js"),
+    3: () => import("./C1/unit3/content.js"),
+    4: () => import("./C1/unit4/content.js"),
+  },
+};
+
+export const QUESTION_LOADERS = {
+  A1: {
+    1: () => import("./A1/unit1/questions.js"),
+    2: () => import("./A1/unit2/questions.js"),
+    3: () => import("./A1/unit3/questions.js"),
+    4: () => import("./A1/unit4/questions.js"),
+  },
+
+  A2: {
+    1: () => import("./A2/unit1/questions.js"),
+    2: () => import("./A2/unit2/questions.js"),
+    3: () => import("./A2/unit3/questions.js"),
+    4: () => import("./A2/unit4/questions.js"),
+  },
+
+  B1: {
+    1: () => import("./B1/unit1/questions.js"),
+    2: () => import("./B1/unit2/questions.js"),
+    3: () => import("./B1/unit3/questions.js"),
+    4: () => import("./B1/unit4/questions.js"),
+  },
+
+  B2: {
+    1: () => import("./B2/unit1/questions.js"),
+    2: () => import("./B2/unit2/questions.js"),
+    3: () => import("./B2/unit3/questions.js"),
+    4: () => import("./B2/unit4/questions.js"),
+  },
+
+  C1: {
+    1: () => import("./C1/unit1/questions.js"),
+    2: () => import("./C1/unit2/questions.js"),
+    3: () => import("./C1/unit3/questions.js"),
+    4: () => import("./C1/unit4/questions.js"),
+  },
+};
