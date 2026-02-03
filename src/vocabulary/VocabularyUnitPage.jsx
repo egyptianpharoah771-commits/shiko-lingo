@@ -18,8 +18,9 @@ function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
 
-  const normalizedLevel = level?.toUpperCase();
-  const unitNumber = Number(unitId);
+  const normalizedLevel =
+    typeof level === "string" ? level.trim().toUpperCase() : null;
+  const unitNumber = Number.parseInt(unitId, 10);
 
   const STORAGE_KEY = `vocabularyProgress_${normalizedLevel}`;
 
@@ -30,7 +31,7 @@ function VocabularyUnitPage() {
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // 🔊 audio ref (single instance)
+  // 🔊 audio ref
   const audioRef = useRef(null);
   const [playingWord, setPlayingWord] = useState(null);
 
@@ -41,23 +42,53 @@ function VocabularyUnitPage() {
       setSelected(null);
       setShowResult(false);
 
+      // ==== Guards على الـ params ====
+      if (!normalizedLevel || Number.isNaN(unitNumber)) {
+        console.error("Invalid vocabulary params:", { level, unitId });
+        setContent(null);
+        setQuestions([]);
+        setLoading(false);
+        return;
+      }
+
       try {
+        // ==== تحميل المحتوى ====
         const contentModule = await import(
           `./${normalizedLevel}/unit${unitNumber}/content.js`
         );
+
+        // ==== تحميل الأسئلة ====
         const questionsModule = await import(
           `./${normalizedLevel}/unit${unitNumber}/questions.js`
         );
 
-        const preparedQuestions = questionsModule.default.map((q) => ({
+        const rawQuestions = questionsModule?.default;
+
+        // ==== Guard مهم جدًا ====
+        if (!Array.isArray(rawQuestions)) {
+          console.error(
+            "Invalid questions export (must be default array):",
+            normalizedLevel,
+            unitNumber,
+            questionsModule
+          );
+          setContent(null);
+          setQuestions([]);
+          setLoading(false);
+          return;
+        }
+
+        const preparedQuestions = rawQuestions.map((q) => ({
           ...q,
-          shuffledOptions: shuffle(q.options),
+          shuffledOptions: Array.isArray(q.options)
+            ? shuffle(q.options)
+            : [],
         }));
 
         setContent(contentModule.default);
         setQuestions(preparedQuestions);
       } catch (err) {
-        console.error("Vocabulary unit not found:", err);
+        console.error("Vocabulary unit load failed:", err);
         setContent(null);
         setQuestions([]);
       } finally {
@@ -65,9 +96,7 @@ function VocabularyUnitPage() {
       }
     };
 
-    if (normalizedLevel && unitNumber) {
-      loadUnit();
-    }
+    loadUnit();
 
     return () => {
       if (audioRef.current) {
@@ -75,19 +104,20 @@ function VocabularyUnitPage() {
         audioRef.current = null;
       }
     };
-  }, [normalizedLevel, unitNumber]);
+  }, [normalizedLevel, unitNumber, level, unitId]);
 
+  /* ======================
+     Audio
+  ====================== */
   const playWordAudio = (word) => {
     const cleanWord = word.toLowerCase();
 
-    // لو نفس الكلمة شغالة → وقف
     if (playingWord === cleanWord && audioRef.current) {
       audioRef.current.pause();
       setPlayingWord(null);
       return;
     }
 
-    // وقف أي صوت شغال
     if (audioRef.current) {
       audioRef.current.pause();
     }
@@ -108,11 +138,23 @@ function VocabularyUnitPage() {
     };
   };
 
+  /* ======================
+     Render guards
+  ====================== */
   if (loading) return <p className="vocab-loading">Loading...</p>;
-  if (!content) return <p className="vocab-loading">Vocabulary unit not found.</p>;
+
+  if (!content || questions.length === 0) {
+    return (
+      <p className="vocab-loading">
+        Vocabulary unit not found.
+      </p>
+    );
+  }
 
   const question = questions[currentQuestion];
-  const isCorrect = selected === question?.correctAnswer;
+  if (!question) return null;
+
+  const isCorrect = selected === question.correctAnswer;
   const isLastQuestion = currentQuestion === questions.length - 1;
 
   const saveProgress = () => {
@@ -137,7 +179,7 @@ function VocabularyUnitPage() {
       </div>
 
       {/* ===== Explanation ===== */}
-      {content.explanation && (
+      {Array.isArray(content.explanation) && (
         <div className="vocab-explanation">
           <h3>Explanation</h3>
           <ul>
@@ -148,8 +190,8 @@ function VocabularyUnitPage() {
         </div>
       )}
 
-      {/* ===== Vocabulary Items ===== */}
-      {content.items && (
+      {/* ===== Vocabulary ===== */}
+      {Array.isArray(content.items) && (
         <div className="vocab-items-section">
           <h3>Vocabulary</h3>
 
@@ -171,7 +213,6 @@ function VocabularyUnitPage() {
                         : ""
                     }`}
                     onClick={() => playWordAudio(item.word)}
-                    title="Play pronunciation"
                   >
                     🔊
                   </button>
@@ -190,13 +231,15 @@ function VocabularyUnitPage() {
         </div>
       )}
 
-      {/* ===== Question ===== */}
+      {/* ===== Questions ===== */}
       <div className="vocab-question-box">
         <div className="vocab-question-header">
           Question {currentQuestion + 1} / {questions.length}
         </div>
 
-        <p className="vocab-question-text">{question.question}</p>
+        <p className="vocab-question-text">
+          {question.question}
+        </p>
 
         <div className="vocab-options">
           {question.shuffledOptions.map((opt) => {
