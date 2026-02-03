@@ -119,7 +119,7 @@ function VocabularyUnitPage() {
         audioRef.current = null;
       }
     };
-  }, [normalizedLevel, unitNumber]);
+  }, [normalizedLevel, unitNumber, level, unitId]); // ✅ التعديل الوحيد
 
   /* ======================
      Audio
