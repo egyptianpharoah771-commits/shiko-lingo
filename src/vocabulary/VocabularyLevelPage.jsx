@@ -4,34 +4,65 @@ import "./Vocabulary.css";
 
 function VocabularyLevelPage() {
   const { level } = useParams(); // A1 / A2 / B1 / B2 / C1
-  const normalizedLevel = level?.toUpperCase();
 
-  const units = VOCABULARY_INDEX[normalizedLevel];
+  /* ======================
+     Normalize level (STATIC KEY)
+  ====================== */
+  const normalizedLevel =
+    typeof level === "string"
+      ? level.trim().toUpperCase()
+      : null;
 
-  // 🔑 Progress key per level
+  const units =
+    normalizedLevel && VOCABULARY_INDEX[normalizedLevel];
+
+  /* ======================
+     Guards (NO WHITE PAGE)
+  ====================== */
+  if (!normalizedLevel || !Array.isArray(units)) {
+    return (
+      <p style={{ padding: 20 }}>
+        Invalid vocabulary level
+      </p>
+    );
+  }
+
+  /* ======================
+     Progress (per level)
+  ====================== */
   const STORAGE_KEY = `vocabularyProgress_${normalizedLevel}`;
-  const raw = localStorage.getItem(STORAGE_KEY);
-  const progress = raw ? JSON.parse(raw) : { completedUnits: [] };
+
+  let progress = { completedUnits: [] };
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    progress = raw
+      ? JSON.parse(raw)
+      : { completedUnits: [] };
+  } catch {
+    progress = { completedUnits: [] };
+  }
 
   const isUnlocked = (unitId) => {
     if (unitId === 1) return true;
     return progress.completedUnits.includes(unitId - 1);
   };
 
-  if (!units) {
-    return <p style={{ padding: 20 }}>Invalid vocabulary level</p>;
-  }
-
-  const completedCount = progress.completedUnits.length;
+  const completedCount =
+    progress.completedUnits.length;
   const totalUnits = units.length;
   const progressPercent = Math.min(
     Math.round((completedCount / totalUnits) * 100),
     100
   );
 
+  /* ======================
+     Render
+  ====================== */
   return (
     <div className="vocab-page">
-      <div className={`vocab-level level-${normalizedLevel}`}>
+      <div
+        className={`vocab-level level-${normalizedLevel}`}
+      >
         {/* ===== Header ===== */}
         <div className="vocab-level-header">
           <div>
@@ -39,7 +70,8 @@ function VocabularyLevelPage() {
               {normalizedLevel} Vocabulary
             </div>
             <div className="vocab-level-subtitle">
-              {completedCount} of {totalUnits} units completed
+              {completedCount} of {totalUnits} units
+              completed
             </div>
           </div>
         </div>
@@ -48,7 +80,9 @@ function VocabularyLevelPage() {
         <div className="vocab-progress">
           <div
             className="vocab-progress-fill"
-            style={{ width: `${progressPercent}%` }}
+            style={{
+              width: `${progressPercent}%`,
+            }}
           />
         </div>
 
@@ -64,7 +98,9 @@ function VocabularyLevelPage() {
                 style={{ textDecoration: "none" }}
               >
                 <div className="vocab-card">
-                  <div className="vocab-card-icon">📘</div>
+                  <div className="vocab-card-icon">
+                    📘
+                  </div>
                   <div className="vocab-card-title">
                     Unit {unit.id}: {unit.title}
                   </div>
@@ -74,8 +110,13 @@ function VocabularyLevelPage() {
                 </div>
               </Link>
             ) : (
-              <div key={unit.id} className="vocab-card locked">
-                <div className="vocab-card-icon">🔒</div>
+              <div
+                key={unit.id}
+                className="vocab-card locked"
+              >
+                <div className="vocab-card-icon">
+                  🔒
+                </div>
                 <div className="vocab-card-title">
                   Unit {unit.id}: {unit.title}
                 </div>

@@ -254,19 +254,22 @@ function App() {
             element={<GrammarLevels />}
           />
 
-          {/* ===== VOCABULARY ===== */}
-          <Route
-            path="/vocabulary"
-            element={<VocabularyPage />}
-          />
-          <Route
-            path="/vocabulary/:level/:unitId"
-            element={<VocabularyUnitPage />}
-          />
-          <Route
-            path="/vocabulary/:level"
-            element={<VocabularyLevelPage />}
-          />
+          {/* ===== VOCABULARY (FIXED ORDER) ===== */}
+<Route
+  path="/vocabulary/:level/:unitId"
+  element={<VocabularyUnitPage />}
+/>
+
+<Route
+  path="/vocabulary/:level"
+  element={<VocabularyLevelPage />}
+/>
+
+<Route
+  path="/vocabulary"
+  element={<VocabularyPage />}
+/>
+
 
           <Route
             path="/listening"

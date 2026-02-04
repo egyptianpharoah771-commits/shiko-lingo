@@ -22,24 +22,37 @@ function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
 
+  /* ======================
+     Normalize params (STATIC KEYS)
+  ====================== */
   const normalizedLevel =
-    typeof level === "string" ? level.trim().toUpperCase() : null;
-  const unitNumber = Number.parseInt(unitId, 10);
+    typeof level === "string"
+      ? level.trim().toUpperCase()
+      : null;
+
+  const unitNumber = Number(unitId);
 
   const STORAGE_KEY = `vocabularyProgress_${normalizedLevel}`;
 
   const [content, setContent] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [currentQuestion, setCurrentQuestion] =
+    useState(0);
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // 🔊 audio
   const audioRef = useRef(null);
-  const [playingWord, setPlayingWord] = useState(null);
+  const [playingWord, setPlayingWord] =
+    useState(null);
 
+  /* ======================
+     Load Unit (STATIC)
+  ====================== */
   useEffect(() => {
+    let isMounted = true;
+
     const loadUnit = async () => {
       setLoading(true);
       setCurrentQuestion(0);
@@ -47,10 +60,14 @@ function VocabularyUnitPage() {
       setShowResult(false);
 
       // ==== Guards على params ====
-      if (!normalizedLevel || Number.isNaN(unitNumber)) {
-        console.error("Invalid vocabulary params:", { level, unitId });
-        setContent(null);
-        setQuestions([]);
+      if (
+        !normalizedLevel ||
+        !Number.isInteger(unitNumber)
+      ) {
+        console.error("Invalid vocabulary params:", {
+          level,
+          unitId,
+        });
         setLoading(false);
         return;
       }
@@ -58,68 +75,75 @@ function VocabularyUnitPage() {
       const loadContent =
         UNIT_LOADERS?.[normalizedLevel]?.[unitNumber];
       const loadQuestions =
-        QUESTION_LOADERS?.[normalizedLevel]?.[unitNumber];
+        QUESTION_LOADERS?.[normalizedLevel]?.[
+          unitNumber
+        ];
 
       if (!loadContent || !loadQuestions) {
-        console.error(
-          "Unit loader not found:",
+        console.error("Unit loader not found:", {
           normalizedLevel,
-          unitNumber
-        );
-        setContent(null);
-        setQuestions([]);
+          unitNumber,
+        });
         setLoading(false);
         return;
       }
 
       try {
         const contentModule = await loadContent();
-        const questionsModule = await loadQuestions();
+        const questionsModule =
+          await loadQuestions();
 
         const resolvedContent =
-          contentModule.default ?? contentModule.content ?? null;
+          contentModule.default ??
+          contentModule.content ??
+          null;
 
         const rawQuestions =
-          questionsModule.default ?? questionsModule.questions ?? null;
+          questionsModule.default ??
+          questionsModule.questions ??
+          null;
 
-        if (!resolvedContent || !Array.isArray(rawQuestions)) {
-          console.error("Invalid unit exports:", {
-            contentModule,
-            questionsModule,
-          });
-          setContent(null);
-          setQuestions([]);
-          setLoading(false);
+        if (
+          !resolvedContent ||
+          !Array.isArray(rawQuestions)
+        ) {
+          console.error("Invalid unit exports");
           return;
         }
 
-        const preparedQuestions = rawQuestions.map((q) => ({
-          ...q,
-          shuffledOptions: Array.isArray(q.options)
-            ? shuffle(q.options)
-            : [],
-        }));
+        const preparedQuestions = rawQuestions.map(
+          (q) => ({
+            ...q,
+            shuffledOptions: Array.isArray(q.options)
+              ? shuffle(q.options)
+              : [],
+          })
+        );
+
+        if (!isMounted) return;
 
         setContent(resolvedContent);
         setQuestions(preparedQuestions);
       } catch (err) {
-        console.error("Vocabulary unit load failed:", err);
-        setContent(null);
-        setQuestions([]);
+        console.error(
+          "Vocabulary unit load failed:",
+          err
+        );
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     loadUnit();
 
     return () => {
+      isMounted = false;
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
     };
-  }, [normalizedLevel, unitNumber, level, unitId]); // ✅ التعديل الوحيد
+  }, [normalizedLevel, unitNumber]);
 
   /* ======================
      Audio
@@ -127,7 +151,10 @@ function VocabularyUnitPage() {
   const playWordAudio = (word) => {
     const cleanWord = word.toLowerCase();
 
-    if (playingWord === cleanWord && audioRef.current) {
+    if (
+      playingWord === cleanWord &&
+      audioRef.current
+    ) {
       audioRef.current.pause();
       setPlayingWord(null);
       return;
@@ -154,7 +181,11 @@ function VocabularyUnitPage() {
   /* ======================
      Render guards
   ====================== */
-  if (loading) return <p className="vocab-loading">Loading...</p>;
+  if (loading) {
+    return (
+      <p className="vocab-loading">Loading...</p>
+    );
+  }
 
   if (!content || questions.length === 0) {
     return (
@@ -167,19 +198,30 @@ function VocabularyUnitPage() {
   const question = questions[currentQuestion];
   if (!question) return null;
 
-  const isCorrect = selected === question.correctAnswer;
-  const isLastQuestion = currentQuestion === questions.length - 1;
+  const isCorrect =
+    selected === question.correctAnswer;
+  const isLastQuestion =
+    currentQuestion === questions.length - 1;
 
   const saveProgress = () => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const data = raw ? JSON.parse(raw) : { completedUnits: [] };
+    const raw =
+      localStorage.getItem(STORAGE_KEY);
+    const data = raw
+      ? JSON.parse(raw)
+      : { completedUnits: [] };
 
     if (!data.completedUnits.includes(unitNumber)) {
       data.completedUnits.push(unitNumber);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(data)
+      );
     }
   };
 
+  /* ======================
+     Render
+  ====================== */
   return (
     <div className="vocab-page vocab-unit-page">
       <div className="vocab-unit-header">
@@ -187,7 +229,9 @@ function VocabularyUnitPage() {
           {content.level} – Unit {content.unit}
         </h1>
         <h2>{content.title}</h2>
-        <p className="vocab-unit-desc">{content.description}</p>
+        <p className="vocab-unit-desc">
+          {content.description}
+        </p>
       </div>
 
       {Array.isArray(content.explanation) && (
@@ -206,10 +250,15 @@ function VocabularyUnitPage() {
           <h3>Vocabulary</h3>
           <div className="vocab-items">
             {content.items.map((item, i) => (
-              <div key={i} className="vocab-item-card">
+              <div
+                key={i}
+                className="vocab-item-card"
+              >
                 <div className="vocab-item-header">
                   <div>
-                    <div className="vocab-item-word">{item.word}</div>
+                    <div className="vocab-item-word">
+                      {item.word}
+                    </div>
                     <div className="vocab-item-phonetic">
                       {item.phonetic}
                     </div>
@@ -217,22 +266,27 @@ function VocabularyUnitPage() {
 
                   <button
                     className={`vocab-audio-btn ${
-                      playingWord === item.word.toLowerCase()
+                      playingWord ===
+                      item.word.toLowerCase()
                         ? "playing"
                         : ""
                     }`}
-                    onClick={() => playWordAudio(item.word)}
+                    onClick={() =>
+                      playWordAudio(item.word)
+                    }
                   >
                     🔊
                   </button>
                 </div>
 
                 <div className="vocab-item-meaning">
-                  <strong>Meaning:</strong> {item.meaning}
+                  <strong>Meaning:</strong>{" "}
+                  {item.meaning}
                 </div>
 
                 <div className="vocab-item-example">
-                  <strong>Example:</strong> {item.example}
+                  <strong>Example:</strong>{" "}
+                  {item.example}
                 </div>
               </div>
             ))}
@@ -242,7 +296,8 @@ function VocabularyUnitPage() {
 
       <div className="vocab-question-box">
         <div className="vocab-question-header">
-          Question {currentQuestion + 1} / {questions.length}
+          Question {currentQuestion + 1} /{" "}
+          {questions.length}
         </div>
 
         <p className="vocab-question-text">
@@ -253,9 +308,15 @@ function VocabularyUnitPage() {
           {question.shuffledOptions.map((opt) => {
             let optionClass = "vocab-option";
 
-            if (showResult && opt === question.correctAnswer)
+            if (
+              showResult &&
+              opt === question.correctAnswer
+            )
               optionClass += " correct";
-            else if (showResult && opt === selected)
+            else if (
+              showResult &&
+              opt === selected
+            )
               optionClass += " wrong";
             else if (selected === opt)
               optionClass += " selected";
@@ -275,7 +336,9 @@ function VocabularyUnitPage() {
 
         {showResult && (
           <p className="vocab-inline-result">
-            {isCorrect ? "Correct ✅" : "Wrong ❌"}
+            {isCorrect
+              ? "Correct ✅"
+              : "Wrong ❌"}
           </p>
         )}
 
@@ -284,7 +347,9 @@ function VocabularyUnitPage() {
             <button
               className="vocab-btn primary"
               disabled={!selected}
-              onClick={() => setShowResult(true)}
+              onClick={() =>
+                setShowResult(true)
+              }
             >
               Check Answer
             </button>
@@ -294,7 +359,9 @@ function VocabularyUnitPage() {
               onClick={() => {
                 setSelected(null);
                 setShowResult(false);
-                setCurrentQuestion((q) => q + 1);
+                setCurrentQuestion(
+                  (q) => q + 1
+                );
               }}
             >
               Next Question →
@@ -304,7 +371,9 @@ function VocabularyUnitPage() {
               className="vocab-btn success"
               onClick={() => {
                 saveProgress();
-                navigate(`/vocabulary/${normalizedLevel}`);
+                navigate(
+                  `/vocabulary/${normalizedLevel}`
+                );
               }}
             >
               Finish 🎉
