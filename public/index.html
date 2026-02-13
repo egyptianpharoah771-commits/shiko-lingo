@@ -23,25 +23,7 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
     <!-- Pi Network SDK -->
-    <script
-      src="https://sdk.minepi.com/pi-sdk.js"
-      onload="initPi()"
-    ></script>
-
-    <script>
-      function initPi() {
-        if (window.Pi) {
-          window.Pi.init({
-            version: "2.0",
-            sandbox: false
-          });
-
-          console.log("Pi SDK initialized in production mode");
-        } else {
-          console.error("Pi SDK failed to load");
-        }
-      }
-    </script>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   </head>
 
   <body>

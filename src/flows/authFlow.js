@@ -2,11 +2,13 @@
  * Auth Flow
  * ----------
  * Orchestrates Pi authentication
+ * - Ensures Pi SDK initialization
  * - Authenticates with Pi SDK
  * - Checks subscription from backend
  * - Stores unified Pi user contract
  */
 
+import { initPiSDK } from "../lib/initPi";
 import { authenticateWithPi } from "../pi/piAuth";
 import {
   setPiUser,
@@ -23,11 +25,14 @@ export async function startPiLogin() {
     return existingUser;
   }
 
-  // 1️⃣ Authenticate via Pi SDK
+  // 1️⃣ Ensure Pi SDK initialized
+  initPiSDK();
+
+  // 2️⃣ Authenticate via Pi SDK
   const piUser = await authenticateWithPi();
   const uid = piUser.uid;
 
-  // 2️⃣ Check subscription from backend
+  // 3️⃣ Check subscription from backend
   let isSubscribed = false;
 
   try {
@@ -46,10 +51,11 @@ export async function startPiLogin() {
     );
   }
 
-  // 3️⃣ Store unified user contract
+  // 4️⃣ Store unified user contract
   const storedUser = setPiUser({
     uid,
     username: piUser.username,
+    isAuthenticated: true,
     isSubscribed,
   });
 
