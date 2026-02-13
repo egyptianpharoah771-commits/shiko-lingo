@@ -5,20 +5,34 @@ export default async function handler(req, res) {
 
   const { uid } = req.query;
 
-  if (!uid) {
+  if (!uid || typeof uid !== "string") {
     return res.status(400).json({ error: "UID_REQUIRED" });
   }
 
-  // نفس التخزين المستخدم في complete.js
-  global.subscriptions = global.subscriptions || {};
+  // Ensure global storage exists
+  if (!global.subscriptions) {
+    global.subscriptions = {};
+  }
 
   const sub = global.subscriptions[uid];
 
   if (!sub) {
-    return res.status(200).json({ active: false });
+    return res.status(200).json({
+      active: false,
+      expiresAt: null,
+    });
   }
 
-  const active = Date.now() < sub.expiresAt;
+  // Safety check
+  if (!sub.expiresAt || typeof sub.expiresAt !== "number") {
+    return res.status(200).json({
+      active: false,
+      expiresAt: null,
+    });
+  }
+
+  const now = Date.now();
+  const active = now < sub.expiresAt;
 
   return res.status(200).json({
     active,
