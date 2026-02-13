@@ -7,6 +7,8 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { initPiSDK } from "./lib/initPi";
+
 
 /* ======================
    Utils
@@ -236,9 +238,6 @@ function AppLayout({ children }) {
 /* ======================
    App
 ====================== */
-import { useEffect } from "react";
-import { initPiSDK } from "./lib/initPi";
-
 function App() {
 
   useEffect(() => {
