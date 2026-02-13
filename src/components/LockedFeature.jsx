@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { initPiSDK } from "../lib/initPi";
 import { startPiLogin } from "../flows/authFlow";
 import { startSubscriptionPayment } from "../flows/paymentFlow";
 import { SUBSCRIPTION_PLANS } from "../adapters/subscriptionAdapter";
@@ -14,6 +15,8 @@ function LockedFeature({ title }) {
   const [error, setError] = useState("");
 
   const handleSubscribe = async () => {
+    if (loading) return;
+
     if (!window.Pi) {
       setError("Please open the app inside Pi Browser.");
       return;
@@ -23,16 +26,23 @@ function LockedFeature({ title }) {
     setError("");
 
     try {
-      // 1️⃣ Ensure user authenticated
+      // 1️⃣ Ensure SDK initialized (extra safety)
+      initPiSDK();
+
+      // 2️⃣ Ensure user authenticated
       const user = await startPiLogin();
 
-      // 2️⃣ Start payment flow
+      if (!user || !user.uid) {
+        throw new Error("Authentication failed.");
+      }
+
+      // 3️⃣ Start payment flow
       await startSubscriptionPayment({
         uid: user.uid,
         plan: SUBSCRIPTION_PLANS.MONTHLY,
       });
 
-      // 3️⃣ Refresh app after activation
+      // 4️⃣ Reload after activation
       window.location.reload();
 
     } catch (err) {
