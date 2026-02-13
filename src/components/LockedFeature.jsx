@@ -4,9 +4,44 @@
  * Displayed when user tries to access premium content
  */
 
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { startPiLogin } from "../flows/authFlow";
+import { startSubscriptionPayment } from "../flows/paymentFlow";
+import { SUBSCRIPTION_PLANS } from "../adapters/subscriptionAdapter";
 
 function LockedFeature({ title }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubscribe = async () => {
+    if (!window.Pi) {
+      setError("Please open the app inside Pi Browser.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // 1️⃣ Ensure user authenticated
+      const user = await startPiLogin();
+
+      // 2️⃣ Start payment flow
+      await startSubscriptionPayment({
+        uid: user.uid,
+        plan: SUBSCRIPTION_PLANS.MONTHLY,
+      });
+
+      // 3️⃣ Refresh app after activation
+      window.location.reload();
+
+    } catch (err) {
+      console.error("Subscription error:", err);
+      setError("Subscription failed. Please try again.");
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       style={{
@@ -18,15 +53,19 @@ function LockedFeature({ title }) {
       }}
     >
       <h3>🔒 {title}</h3>
-      <p>
-        This content is available for Premium users only.
-      </p>
+      <p>This content is available for Premium users only.</p>
 
-      <Link to="/upgrade">
-        <button style={{ marginTop: "12px" }}>
-          Upgrade with Pi
-        </button>
-      </Link>
+      <button
+        onClick={handleSubscribe}
+        disabled={loading}
+        style={{ marginTop: "12px" }}
+      >
+        {loading ? "Processing..." : "🔓 Subscribe with Pi (3 Pi)"}
+      </button>
+
+      {error && (
+        <p style={{ color: "red", marginTop: 10 }}>{error}</p>
+      )}
     </div>
   );
 }
