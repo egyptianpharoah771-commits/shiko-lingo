@@ -236,7 +236,15 @@ function AppLayout({ children }) {
 /* ======================
    App
 ====================== */
+import { useEffect } from "react";
+import { initPiSDK } from "./lib/initPi";
+
 function App() {
+
+  useEffect(() => {
+    initPiSDK();
+  }, []);
+
   return (
     <Router>
       <AppLayout>
@@ -357,6 +365,7 @@ function App() {
     </Router>
   );
 }
+
 
 /* ======================
    Helpers
