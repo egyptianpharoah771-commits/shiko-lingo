@@ -1,0 +1,91 @@
+{
+  "lesson": 6,
+  "level": "A2",
+  "title": "A Small Problem at Home",
+  "description": "Thomas talks about a small problem at home and how he solved it.",
+  "speaker": "Thomas",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Thomas.",
+    "Last week, I had a small problem at home that surprised me.",
+    "One morning, I woke up and noticed that the water was not working in the kitchen.",
+    "At first, I felt confused because everything was fine the night before.",
+    "I checked the pipes and tried to fix the problem myself, but it did not work.",
+    "Later that day, I called a plumber and explained the situation.",
+    "He arrived in the afternoon and repaired the problem quickly.",
+    "Now, everything is working well again at home.",
+    "Next time, I am going to call a professional earlier to save time and avoid stress."
+  ],
+  "questions": [
+    {
+      "question": "What problem did Thomas have at home?",
+      "options": [
+        "The electricity stopped working",
+        "The water was not working in the kitchen",
+        "The door was broken",
+        "The internet was slow"
+      ],
+      "correctAnswer": "The water was not working in the kitchen"
+    },
+    {
+      "question": "How did Thomas feel at first?",
+      "options": [
+        "Angry",
+        "Confused",
+        "Happy",
+        "Excited"
+      ],
+      "correctAnswer": "Confused"
+    },
+    {
+      "question": "What did Thomas try to do first?",
+      "options": [
+        "Call a plumber",
+        "Ignore the problem",
+        "Fix the problem himself",
+        "Ask a neighbor"
+      ],
+      "correctAnswer": "Fix the problem himself"
+    },
+    {
+      "question": "Who did Thomas call later?",
+      "options": [
+        "His friend",
+        "His manager",
+        "A plumber",
+        "A neighbor"
+      ],
+      "correctAnswer": "A plumber"
+    },
+    {
+      "question": "When did the plumber arrive?",
+      "options": [
+        "In the morning",
+        "At night",
+        "In the afternoon",
+        "The next day"
+      ],
+      "correctAnswer": "In the afternoon"
+    },
+    {
+      "question": "What is the situation now?",
+      "options": [
+        "The problem is worse",
+        "Nothing changed",
+        "Everything is working well",
+        "The kitchen is closed"
+      ],
+      "correctAnswer": "Everything is working well"
+    },
+    {
+      "question": "What will Thomas do next time?",
+      "options": [
+        "Fix it himself again",
+        "Move to another house",
+        "Call a professional earlier",
+        "Ignore the problem"
+      ],
+      "correctAnswer": "Call a professional earlier"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "lesson": 6,
+  "level": "B1",
+  "title": "Finding a Better Balance",
+  "description": "Thomas talks about learning how to balance work and personal life.",
+  "speaker": "Thomas",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Thomas.",
+    "For a long time, I felt that my life was only about work and deadlines.",
+    "I often stayed late at the office and checked my emails even at home.",
+    "At first, I believed this was the best way to succeed, but slowly I became tired and stressed.",
+    "I noticed that I had less time for my family, friends, and hobbies.",
+    "One weekend, I decided to reflect on my routine and make some changes.",
+    "I started planning my day better and setting clear limits for work hours.",
+    "It was not easy at the beginning, but over time I felt more relaxed and focused.",
+    "Now, I work more efficiently and enjoy my free time without feeling guilty.",
+    "This experience showed me that balance is essential for long-term success."
+  ],
+  "questions": [
+    {
+      "question": "How did Thomas feel about his life at the beginning?",
+      "options": [
+        "Balanced and calm",
+        "Only focused on work",
+        "Bored and unmotivated",
+        "Excited and relaxed"
+      ],
+      "correctAnswer": "Only focused on work"
+    },
+    {
+      "question": "What habits showed that Thomas worked too much?",
+      "options": [
+        "He traveled often",
+        "He stayed late and checked emails at home",
+        "He took many breaks",
+        "He avoided meetings"
+      ],
+      "correctAnswer": "He stayed late and checked emails at home"
+    },
+    {
+      "question": "What problem did Thomas notice over time?",
+      "options": [
+        "He earned less money",
+        "He had less time for personal life",
+        "He changed his job",
+        "He became bored with work"
+      ],
+      "correctAnswer": "He had less time for personal life"
+    },
+    {
+      "question": "When did Thomas decide to make changes?",
+      "options": [
+        "During a meeting",
+        "After a holiday",
+        "One weekend",
+        "At the start of the year"
+      ],
+      "correctAnswer": "One weekend"
+    },
+    {
+      "question": "What changes did Thomas make?",
+      "options": [
+        "He worked more hours",
+        "He set clear limits for work time",
+        "He ignored deadlines",
+        "He changed his manager"
+      ],
+      "correctAnswer": "He set clear limits for work time"
+    },
+    {
+      "question": "How did Thomas feel after some time?",
+      "options": [
+        "More stressed",
+        "More relaxed and focused",
+        "Confused",
+        "Less productive"
+      ],
+      "correctAnswer": "More relaxed and focused"
+    },
+    {
+      "question": "What lesson did Thomas learn?",
+      "options": [
+        "Work should come first",
+        "Balance is important for success",
+        "Free time is not necessary",
+        "Stress helps productivity"
+      ],
+      "correctAnswer": "Balance is important for success"
+    }
+  ]
+}

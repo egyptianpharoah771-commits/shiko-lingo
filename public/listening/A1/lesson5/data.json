@@ -1,0 +1,39 @@
+{
+  "lesson": 5,
+  "level": "A1",
+  "title": "My Hobbies",
+  "description": "Tom talks about his hobbies and free time activities.",
+  "speaker": "Tom",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Tom.",
+    "Today, I want to talk about my hobbies.",
+    "In my free time, I like to read books.",
+    "I also like to watch movies.",
+    "On the weekend, I play football with my friends.",
+    "Football is my favorite sport.",
+    "At home, I listen to music.",
+    "Music helps me relax.",
+    "Sometimes, I play games on my phone.",
+    "I enjoy my hobbies very much.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "What does Tom like to do in his free time?",
+      "options": ["Read books", "Cook food", "Go to work"],
+      "answer": "Read books"
+    },
+    {
+      "q": "What sport does Tom play?",
+      "options": ["Basketball", "Football", "Tennis"],
+      "answer": "Football"
+    },
+    {
+      "q": "What helps Tom relax?",
+      "options": ["Music", "Movies", "Games"],
+      "answer": "Music"
+    }
+  ]
+}

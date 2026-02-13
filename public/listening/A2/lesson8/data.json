@@ -1,0 +1,91 @@
+{
+  "lesson": 8,
+  "level": "A2",
+  "title": "A Visit to the Doctor",
+  "description": "Emma talks about visiting a doctor and how she plans to take better care of her health.",
+  "speaker": "Emma",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Emma.",
+    "Last week, I did not feel very well for a few days.",
+    "I had a headache and felt tired most of the time.",
+    "After work, I decided to visit a doctor to check the problem.",
+    "The doctor asked me some questions and listened carefully.",
+    "He said that I needed more rest and should drink more water.",
+    "He also advised me to sleep earlier and take short breaks during the day.",
+    "After the visit, I felt more relaxed and less worried.",
+    "From now on, I am going to take better care of my health."
+  ],
+  "questions": [
+    {
+      "question": "How did Emma feel last week?",
+      "options": [
+        "Very energetic",
+        "Not very well",
+        "Excited",
+        "Angry"
+      ],
+      "correctAnswer": "Not very well"
+    },
+    {
+      "question": "What problem did Emma have?",
+      "options": [
+        "A stomachache",
+        "A headache and tiredness",
+        "A broken arm",
+        "A cold"
+      ],
+      "correctAnswer": "A headache and tiredness"
+    },
+    {
+      "question": "Why did Emma visit the doctor?",
+      "options": [
+        "To get a job",
+        "To check the problem",
+        "To meet a friend",
+        "To take medicine"
+      ],
+      "correctAnswer": "To check the problem"
+    },
+    {
+      "question": "What did the doctor advise Emma to do?",
+      "options": [
+        "Work more",
+        "Drink less water",
+        "Sleep earlier and rest more",
+        "Exercise all day"
+      ],
+      "correctAnswer": "Sleep earlier and rest more"
+    },
+    {
+      "question": "How did Emma feel after the visit?",
+      "options": [
+        "More worried",
+        "More relaxed",
+        "Angry",
+        "Tired"
+      ],
+      "correctAnswer": "More relaxed"
+    },
+    {
+      "question": "What is Emma going to do from now on?",
+      "options": [
+        "Ignore her health",
+        "Take better care of her health",
+        "Change her doctor",
+        "Stop working"
+      ],
+      "correctAnswer": "Take better care of her health"
+    },
+    {
+      "question": "What is the main lesson of the story?",
+      "options": [
+        "Work harder",
+        "Visit friends often",
+        "Listen to your body and health",
+        "Avoid doctors"
+      ],
+      "correctAnswer": "Listen to your body and health"
+    }
+  ]
+}

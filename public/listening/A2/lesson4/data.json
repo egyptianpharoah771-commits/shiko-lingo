@@ -1,0 +1,90 @@
+{
+  "lesson": 4,
+  "level": "A2",
+  "title": "A Change in Daily Routine",
+  "description": "Laura talks about how she changed her daily routine and her future plans.",
+  "speaker": "Laura",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, I’m Laura.",
+    "A few months ago, my daily routine was very different.",
+    "I used to wake up late and rush to work every morning.",
+    "Last month, I decided to change my routine.",
+    "Now, I wake up early and start my day with a short walk.",
+    "I also prepare my tasks the night before.",
+    "Next week, I am going to join a gym near my house.",
+    "I believe this new routine will help me feel more active and organized."
+  ],
+  "questions": [
+    {
+      "question": "How was Laura’s daily routine before?",
+      "options": [
+        "She woke up early and exercised",
+        "She woke up late and rushed to work",
+        "She worked from home",
+        "She had no routine"
+      ],
+      "correctAnswer": "She woke up late and rushed to work"
+    },
+    {
+      "question": "When did Laura decide to change her routine?",
+      "options": [
+        "Last week",
+        "Last month",
+        "A few years ago",
+        "Yesterday"
+      ],
+      "correctAnswer": "Last month"
+    },
+    {
+      "question": "What does Laura do now in the morning?",
+      "options": [
+        "She sleeps longer",
+        "She starts her day with a walk",
+        "She watches TV",
+        "She works late"
+      ],
+      "correctAnswer": "She starts her day with a walk"
+    },
+    {
+      "question": "Why does Laura prepare her tasks the night before?",
+      "options": [
+        "To sleep more",
+        "To feel more organized",
+        "To finish work early",
+        "To help her family"
+      ],
+      "correctAnswer": "To feel more organized"
+    },
+    {
+      "question": "What is Laura going to do next week?",
+      "options": [
+        "Change her job",
+        "Join a gym",
+        "Travel",
+        "Take a break"
+      ],
+      "correctAnswer": "Join a gym"
+    },
+    {
+      "question": "How does Laura feel about her new routine?",
+      "options": [
+        "She is unsure",
+        "She thinks it is useless",
+        "She believes it will help her",
+        "She wants to stop"
+      ],
+      "correctAnswer": "She believes it will help her"
+    },
+    {
+      "question": "What is the main idea of the lesson?",
+      "options": [
+        "Working late every day",
+        "Changing habits to feel better",
+        "Going on a trip",
+        "Learning new skills"
+      ],
+      "correctAnswer": "Changing habits to feel better"
+    }
+  ]
+}

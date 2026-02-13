@@ -1,0 +1,41 @@
+{
+  "lesson": 6,
+  "level": "A1",
+  "title": "Food and Drinks",
+  "description": "Anna talks about the food and drinks she eats every day.",
+  "speaker": "Anna",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Anna.",
+    "Today, I want to talk about food and drinks.",
+    "In the morning, I eat breakfast at home.",
+    "I eat bread and eggs.",
+    "I drink tea or coffee.",
+    "I like coffee very much.",
+    "For lunch, I eat rice and chicken.",
+    "Sometimes, I eat vegetables.",
+    "In the evening, I eat a light dinner.",
+    "I drink water or juice.",
+    "I like healthy food.",
+    "Food gives me energy.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "What does Anna eat for breakfast?",
+      "options": ["Rice and chicken", "Bread and eggs", "Vegetables"],
+      "answer": "Bread and eggs"
+    },
+    {
+      "q": "What does Anna drink in the morning?",
+      "options": ["Water", "Juice", "Tea or coffee"],
+      "answer": "Tea or coffee"
+    },
+    {
+      "q": "What kind of food does Anna like?",
+      "options": ["Fast food", "Healthy food", "Sweet food"],
+      "answer": "Healthy food"
+    }
+  ]
+}

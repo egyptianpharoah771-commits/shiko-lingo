@@ -1,0 +1,71 @@
+.grammar-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.lesson-card {
+  padding: 15px;
+  background: #f0f4ff;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid #d0daff;
+  transition: 0.2s;
+}
+
+.lesson-card:hover {
+  background: #e2e9ff;
+}
+
+.lesson-content {
+  margin-top: 20px;
+}
+
+.back-btn {
+  background: #ddd;
+  border: none;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.explanation {
+  background: #fafafa;
+  padding: 10px;
+  border-left: 4px solid #3461ff;
+  margin-bottom: 15px;
+}
+
+.question-box {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.option-btn {
+  margin-right: 8px;
+  margin-top: 5px;
+  padding: 8px 12px;
+  border: none;
+  background: #e5e9ff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.option-btn:hover {
+  background: #d3d9ff;
+}
+
+.feedback {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 18px;
+}

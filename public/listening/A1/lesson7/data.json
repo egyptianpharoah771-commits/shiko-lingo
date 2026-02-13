@@ -1,0 +1,40 @@
+{
+  "lesson": 7,
+  "level": "A1",
+  "title": "My City",
+  "description": "Mark talks about the city where he lives.",
+  "speaker": "Mark",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Mark.",
+    "Today, I want to talk about my city.",
+    "I live in a big city.",
+    "My city is busy and beautiful.",
+    "There are many streets and buildings.",
+    "There are shops, schools, and hospitals.",
+    "People in my city are friendly.",
+    "They help each other.",
+    "In my city, there are parks and cafés.",
+    "I like to walk in the park.",
+    "I love my city very much.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "How is Mark’s city?",
+      "options": ["Small and quiet", "Busy and beautiful", "Old and empty"],
+      "answer": "Busy and beautiful"
+    },
+    {
+      "q": "What places are in the city?",
+      "options": ["Only houses", "Shops, schools, and hospitals", "Only parks"],
+      "answer": "Shops, schools, and hospitals"
+    },
+    {
+      "q": "What does Mark like to do?",
+      "options": ["Walk in the park", "Stay at home", "Travel every day"],
+      "answer": "Walk in the park"
+    }
+  ]
+}

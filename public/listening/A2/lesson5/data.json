@@ -1,0 +1,92 @@
+{
+  "lesson": 5,
+  "level": "A2",
+  "title": "Learning Something New",
+  "description": "Kevin talks about learning English in his free time and his future plans.",
+  "speaker": "Kevin",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Kevin.",
+    "Recently, I decided to learn something new in my free time.",
+    "Last month, I started taking online English lessons after work.",
+    "At first, it was difficult to understand everything, and I felt a little frustrated.",
+    "I practiced for about thirty minutes every evening and tried to listen carefully.",
+    "Slowly, I noticed that my listening skills were improving.",
+    "I could understand more words and complete the exercises faster.",
+    "Next month, I am going to join a conversation group to practice speaking.",
+    "I will also watch English videos without subtitles to challenge myself.",
+    "I believe this experience will help me become more confident in English."
+  ],
+  "questions": [
+    {
+      "question": "What did Kevin decide to do recently?",
+      "options": [
+        "Change his job",
+        "Learn something new",
+        "Travel abroad",
+        "Stop studying"
+      ],
+      "correctAnswer": "Learn something new"
+    },
+    {
+      "question": "When did Kevin start taking English lessons?",
+      "options": [
+        "Last week",
+        "Last month",
+        "Last year",
+        "Yesterday"
+      ],
+      "correctAnswer": "Last month"
+    },
+    {
+      "question": "How did Kevin feel at the beginning?",
+      "options": [
+        "Excited",
+        "Confident",
+        "Frustrated",
+        "Relaxed"
+      ],
+      "correctAnswer": "Frustrated"
+    },
+    {
+      "question": "How often did Kevin practice English?",
+      "options": [
+        "Once a week",
+        "Every morning",
+        "Every evening",
+        "Only on weekends"
+      ],
+      "correctAnswer": "Every evening"
+    },
+    {
+      "question": "What improvement did Kevin notice?",
+      "options": [
+        "He spoke faster",
+        "He understood more words",
+        "He wrote better",
+        "He memorized grammar rules"
+      ],
+      "correctAnswer": "He understood more words"
+    },
+    {
+      "question": "What is Kevin going to do next month?",
+      "options": [
+        "Join a conversation group",
+        "Change his lessons",
+        "Take a break",
+        "Teach English"
+      ],
+      "correctAnswer": "Join a conversation group"
+    },
+    {
+      "question": "Why will Kevin watch videos without subtitles?",
+      "options": [
+        "To relax",
+        "To challenge himself",
+        "To save time",
+        "To help others"
+      ],
+      "correctAnswer": "To challenge himself"
+    }
+  ]
+}

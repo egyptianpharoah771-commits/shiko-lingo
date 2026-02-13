@@ -1,0 +1,41 @@
+{
+  "lesson": 10,
+  "level": "A1",
+  "title": "Asking for Directions",
+  "description": "Lucy talks about asking people for directions in the city.",
+  "speaker": "Lucy",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Lucy.",
+    "Today, I want to talk about asking for directions.",
+    "Sometimes, I am lost in the city.",
+    "I ask people for help.",
+    "I say, \"Excuse me.\"",
+    "I ask, \"Where is the bus stop?\"",
+    "People are kind and helpful.",
+    "They give me directions.",
+    "They say, \"Go straight.\"",
+    "They say, \"Turn left or turn right.\"",
+    "I listen carefully and say thank you.",
+    "Now I know where to go.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "Why does Lucy ask for directions?",
+      "options": ["She is lost", "She is tired", "She is shopping"],
+      "answer": "She is lost"
+    },
+    {
+      "q": "What does Lucy ask for?",
+      "options": ["A restaurant", "The bus stop", "A hotel"],
+      "answer": "The bus stop"
+    },
+    {
+      "q": "What do people say?",
+      "options": ["Sit down", "Go straight or turn", "Go home"],
+      "answer": "Go straight or turn"
+    }
+  ]
+}

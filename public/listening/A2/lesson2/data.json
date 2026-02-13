@@ -1,0 +1,91 @@
+{
+  "lesson": 2,
+  "level": "A2",
+  "title": "A New Plan at Work",
+  "description": "Anna talks about a new project at work and her plans for next week.",
+  "speaker": "Anna",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, I’m Anna.",
+    "Last week, my manager asked me to join a new project at work.",
+    "At first, I felt nervous because the project was difficult.",
+    "On Thursday, I had a long meeting with my team.",
+    "We discussed the problems and shared our ideas.",
+    "After the meeting, I felt more confident.",
+    "Next week, I am going to work more hours to finish my tasks.",
+    "I will also learn a new software to help me work faster.",
+    "I believe this project will help me improve my skills."
+  ],
+  "questions": [
+    {
+      "question": "Why did Anna feel nervous at first?",
+      "options": [
+        "Because she didn’t like her manager",
+        "Because the project was difficult",
+        "Because she worked late",
+        "Because she was tired"
+      ],
+      "correctAnswer": "Because the project was difficult"
+    },
+    {
+      "question": "What happened on Thursday?",
+      "options": [
+        "Anna finished the project",
+        "Anna stayed at home",
+        "Anna had a long meeting",
+        "Anna learned new software"
+      ],
+      "correctAnswer": "Anna had a long meeting"
+    },
+    {
+      "question": "What did Anna and her team do in the meeting?",
+      "options": [
+        "They watched a presentation",
+        "They discussed problems and shared ideas",
+        "They met a client",
+        "They planned a holiday"
+      ],
+      "correctAnswer": "They discussed problems and shared ideas"
+    },
+    {
+      "question": "How did Anna feel after the meeting?",
+      "options": [
+        "Angry",
+        "More confident",
+        "Bored",
+        "Confused"
+      ],
+      "correctAnswer": "More confident"
+    },
+    {
+      "question": "What is Anna going to do next week?",
+      "options": [
+        "Work fewer hours",
+        "Change her job",
+        "Work more hours",
+        "Take a break"
+      ],
+      "correctAnswer": "Work more hours"
+    },
+    {
+      "question": "Why will Anna learn new software?",
+      "options": [
+        "To find a new job",
+        "To help her work faster",
+        "To teach her team",
+        "To finish early"
+      ],
+      "correctAnswer": "To help her work faster"
+    },
+    {
+      "question": "What does Anna believe about the project?",
+      "options": [
+        "It will be very easy",
+        "It will end soon",
+        "It will help her improve her skills",
+        "It will fail"
+      ],
+      "correctAnswer": "It will help her improve her skills"
+    }
+  ]
+}

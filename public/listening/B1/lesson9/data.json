@@ -1,0 +1,91 @@
+{
+  "lesson": 9,
+  "level": "B1",
+  "title": "Turning Failure into Motivation",
+  "description": "Omar talks about failing an exam and how he turned it into motivation.",
+  "speaker": "Omar",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Omar.",
+    "A few years ago, I failed an important exam that I had prepared for a long time.",
+    "When I saw the result, I felt disappointed and questioned my abilities.",
+    "For several days, I thought about giving up and avoiding similar challenges in the future.",
+    "However, after talking with a close friend, I realized that failure could be a learning experience.",
+    "I reviewed my mistakes and understood that my study methods were not effective enough.",
+    "I changed my routine, asked for help, and practiced more regularly.",
+    "The next time I took the exam, I passed with much better results.",
+    "This experience taught me that failure does not define who we are, but how we respond to it does."
+  ],
+  "questions": [
+    {
+      "question": "What happened to Omar a few years ago?",
+      "options": [
+        "He changed his job",
+        "He failed an important exam",
+        "He moved to another city",
+        "He won a competition"
+      ],
+      "correctAnswer": "He failed an important exam"
+    },
+    {
+      "question": "How did Omar feel after seeing the result?",
+      "options": [
+        "Excited",
+        "Disappointed",
+        "Confident",
+        "Relaxed"
+      ],
+      "correctAnswer": "Disappointed"
+    },
+    {
+      "question": "What did Omar think about doing at first?",
+      "options": [
+        "Studying harder",
+        "Giving up",
+        "Taking another exam",
+        "Asking for help"
+      ],
+      "correctAnswer": "Giving up"
+    },
+    {
+      "question": "Who helped Omar change his perspective?",
+      "options": [
+        "His teacher",
+        "A close friend",
+        "His parents",
+        "His manager"
+      ],
+      "correctAnswer": "A close friend"
+    },
+    {
+      "question": "What did Omar realize about his study methods?",
+      "options": [
+        "They were perfect",
+        "They were not effective enough",
+        "They were too difficult",
+        "They were unnecessary"
+      ],
+      "correctAnswer": "They were not effective enough"
+    },
+    {
+      "question": "What changes did Omar make?",
+      "options": [
+        "He studied less",
+        "He avoided exams",
+        "He changed his routine and practiced more",
+        "He stopped asking for help"
+      ],
+      "correctAnswer": "He changed his routine and practiced more"
+    },
+    {
+      "question": "What lesson did Omar learn?",
+      "options": [
+        "Failure means the end",
+        "Only success matters",
+        "Failure can lead to growth",
+        "Exams are unfair"
+      ],
+      "correctAnswer": "Failure can lead to growth"
+    }
+  ]
+}

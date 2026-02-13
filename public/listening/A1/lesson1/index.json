@@ -1,0 +1,101 @@
+{
+  "level": "A1",
+  "lessons": [
+    {
+      "id": "lesson1",
+      "lesson": 1,
+      "title": "Greetings – Meeting for the First Time",
+      "description": "A simple conversation between Sarah and Julian meeting for the first time."
+    },
+    {
+      "id": "lesson2",
+      "lesson": 2,
+      "title": "My Daily Routine",
+      "description": "Sarah talks about her daily routine."
+    },
+    {
+      "id": "lesson3",
+      "lesson": 3,
+      "title": "Free Time Activities",
+      "description": "Talking about hobbies and free time."
+    },
+    {
+      "id": "lesson4",
+      "lesson": 4,
+      "title": "Food and Drinks",
+      "description": "A conversation about meals and drinks."
+    },
+    {
+      "id": "lesson5",
+      "lesson": 5,
+      "title": "My Job",
+      "description": "Talking about work and daily tasks."
+    },
+    {
+      "id": "lesson6",
+      "lesson": 6,
+      "title": "At the Supermarket",
+      "description": "Shopping for groceries."
+    },
+    {
+      "id": "lesson7",
+      "lesson": 7,
+      "title": "Weekend Plans",
+      "description": "Making plans for the weekend."
+    },
+    {
+      "id": "lesson8",
+      "lesson": 8,
+      "title": "At the Doctor",
+      "description": "A visit to the doctor."
+    },
+    {
+      "id": "lesson9",
+      "lesson": 9,
+      "title": "In the Classroom",
+      "description": "A conversation at school."
+    },
+    {
+      "id": "lesson10",
+      "lesson": 10,
+      "title": "A Day at the Park",
+      "description": "Spending time outdoors."
+    },
+    {
+      "id": "lesson11",
+      "lesson": 11,
+      "title": "Travel Plans",
+      "description": "Talking about travel arrangements."
+    },
+    {
+      "id": "lesson12",
+      "lesson": 12,
+      "title": "At the Restaurant",
+      "description": "Ordering food at a restaurant."
+    },
+    {
+      "id": "lesson13",
+      "lesson": 13,
+      "title": "Family Gathering",
+      "description": "A conversation during a family event."
+    },
+    {
+      "id": "lesson14",
+      "lesson": 14,
+      "title": "Daily Responsibilities",
+      "description": "Talking about responsibilities at home."
+    },
+    {
+      "id": "lesson15",
+      "lesson": 15,
+      "title": "At the Airport",
+      "description": "Checking in and boarding."
+    },
+    {
+      "id": "lesson16",
+      "lesson": 16,
+      "title": "A Busy Day",
+      "description": "Describing a busy schedule."
+    }
+  ]
+}

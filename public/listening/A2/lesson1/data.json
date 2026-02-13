@@ -1,0 +1,86 @@
+{
+  "lesson": 1,
+  "level": "A2",
+  "title": "A Busy Week",
+  "description": "Mark talks about his busy week and his plans for next week.",
+  "speaker": "Mark",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Mark.",
+    "Last week was very busy for me.",
+    "On Monday, I worked late at the office and finished an important project.",
+    "On Tuesday, I met a client and we talked about future plans.",
+    "On Wednesday, I stayed at home because I was tired.",
+    "I watched a movie and cooked dinner.",
+    "Next week will also be busy.",
+    "I am going to visit my parents on Saturday, and I will help them with some work.",
+    "I hope next week will be better and less stressful."
+  ],
+  "questions": [
+    {
+      "question": "How does Mark describe last week?",
+      "options": ["Relaxing", "Very busy", "Boring", "Easy"],
+      "correctAnswer": "Very busy"
+    },
+    {
+      "question": "What did Mark do on Monday?",
+      "options": [
+        "He visited his parents",
+        "He finished an important project",
+        "He stayed at home",
+        "He watched a movie"
+      ],
+      "correctAnswer": "He finished an important project"
+    },
+    {
+      "question": "Why did Mark stay at home on Wednesday?",
+      "options": [
+        "Because he was sick",
+        "Because he was tired",
+        "Because he had no work",
+        "Because it was a holiday"
+      ],
+      "correctAnswer": "Because he was tired"
+    },
+    {
+      "question": "What is Mark going to do next Saturday?",
+      "options": [
+        "Meet a client",
+        "Work late",
+        "Visit his parents",
+        "Watch a movie"
+      ],
+      "correctAnswer": "Visit his parents"
+    },
+    {
+      "question": "What will Mark do for his parents?",
+      "options": [
+        "Cook dinner",
+        "Help them with some work",
+        "Stay with them all week",
+        "Fix their house"
+      ],
+      "correctAnswer": "Help them with some work"
+    },
+    {
+      "question": "How does Mark feel about next week?",
+      "options": [
+        "He is worried",
+        "He hopes it will be better",
+        "He thinks it will be worse",
+        "He is not sure"
+      ],
+      "correctAnswer": "He hopes it will be better"
+    },
+    {
+      "question": "Which tense is used to talk about Mark’s plans?",
+      "options": [
+        "Present Simple",
+        "Past Simple",
+        "Future (will / going to)",
+        "Present Perfect"
+      ],
+      "correctAnswer": "Future (will / going to)"
+    }
+  ]
+}

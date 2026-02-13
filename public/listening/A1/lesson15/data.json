@@ -1,0 +1,39 @@
+{
+  "lesson": 15,
+  "level": "A1",
+  "title": "My Plans",
+  "description": "Alex talks about his plans for the day.",
+  "speaker": "Alex",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Alex.",
+    "Today, I want to talk about my plans.",
+    "Tomorrow, I will wake up early.",
+    "I will go to work.",
+    "In the afternoon, I will meet my friend.",
+    "We will have lunch together.",
+    "In the evening, I will stay at home.",
+    "I will watch TV or read a book.",
+    "I like to make simple plans.",
+    "Plans help me organize my day.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "When will Alex wake up early?",
+      "options": ["Tomorrow", "Yesterday", "At night"],
+      "answer": "Tomorrow"
+    },
+    {
+      "q": "Who will Alex meet?",
+      "options": ["His boss", "His friend", "His family"],
+      "answer": "His friend"
+    },
+    {
+      "q": "What will Alex do in the evening?",
+      "options": ["Go out", "Stay at home", "Go to work"],
+      "answer": "Stay at home"
+    }
+  ]
+}

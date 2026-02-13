@@ -1,0 +1,93 @@
+{
+  "lesson": 12,
+  "level": "A2",
+  "title": "Looking Back and Moving Forward",
+  "description": "Daniel reviews his experience, progress, and future learning plans.",
+  "speaker": "Daniel",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Daniel.",
+    "Over the past few months, I have learned many new things in my daily life.",
+    "At the beginning, some tasks felt difficult and sometimes stressful.",
+    "With time, I practiced more and started to understand things better.",
+    "I became more organized at work and more confident in my decisions.",
+    "I also learned how to manage my time and handle small problems calmly.",
+    "Now, I feel more comfortable using English in simple situations.",
+    "I can understand conversations more easily and follow short stories.",
+    "In the future, I want to keep improving step by step.",
+    "I am going to practice listening and speaking regularly.",
+    "I believe this progress will help me reach the next level with confidence."
+  ],
+  "questions": [
+    {
+      "question": "How did Daniel feel at the beginning?",
+      "options": [
+        "Very confident",
+        "Relaxed",
+        "Difficult and stressful",
+        "Bored"
+      ],
+      "correctAnswer": "Difficult and stressful"
+    },
+    {
+      "question": "What helped Daniel improve?",
+      "options": [
+        "Luck",
+        "Practicing more",
+        "Changing jobs",
+        "Taking long breaks"
+      ],
+      "correctAnswer": "Practicing more"
+    },
+    {
+      "question": "What did Daniel become better at?",
+      "options": [
+        "Managing time and decisions",
+        "Cooking",
+        "Traveling",
+        "Teaching others"
+      ],
+      "correctAnswer": "Managing time and decisions"
+    },
+    {
+      "question": "How does Daniel feel about using English now?",
+      "options": [
+        "Uncomfortable",
+        "Nervous",
+        "More comfortable",
+        "Confused"
+      ],
+      "correctAnswer": "More comfortable"
+    },
+    {
+      "question": "What can Daniel understand better now?",
+      "options": [
+        "Long movies",
+        "Complex lectures",
+        "Conversations and short stories",
+        "Technical books"
+      ],
+      "correctAnswer": "Conversations and short stories"
+    },
+    {
+      "question": "What does Daniel plan to do in the future?",
+      "options": [
+        "Stop learning",
+        "Practice listening and speaking",
+        "Change languages",
+        "Take a long break"
+      ],
+      "correctAnswer": "Practice listening and speaking"
+    },
+    {
+      "question": "What is the main message of the lesson?",
+      "options": [
+        "Learning is stressful",
+        "Progress comes step by step",
+        "English is too difficult",
+        "Only talent matters"
+      ],
+      "correctAnswer": "Progress comes step by step"
+    }
+  ]
+}

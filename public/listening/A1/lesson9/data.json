@@ -1,0 +1,41 @@
+{
+  "lesson": 9,
+  "level": "A1",
+  "title": "At the Restaurant",
+  "description": "David talks about eating at a restaurant.",
+  "speaker": "David",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is David.",
+    "Today, I want to talk about the restaurant.",
+    "I go to a restaurant with my friends.",
+    "We sit at a table.",
+    "I look at the menu.",
+    "I choose my food.",
+    "I order chicken and rice.",
+    "I drink water.",
+    "The food is good and hot.",
+    "I like the restaurant.",
+    "After the meal, I pay the bill.",
+    "I say thank you.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "Who does David go to the restaurant with?",
+      "options": ["His family", "His friends", "Alone"],
+      "answer": "His friends"
+    },
+    {
+      "q": "What does David order?",
+      "options": ["Pizza", "Chicken and rice", "Fish"],
+      "answer": "Chicken and rice"
+    },
+    {
+      "q": "What does David do after the meal?",
+      "options": ["He leaves quickly", "He pays the bill", "He cooks food"],
+      "answer": "He pays the bill"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "lesson": 13,
+  "level": "B1",
+  "title": "Looking Back and Moving Forward",
+  "description": "David reflects on past experiences and how they prepared him for the future.",
+  "speaker": "David",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is David.",
+    "When I look back at the past few years, I see many small experiences that shaped who I am today.",
+    "Some of them were positive, while others were challenging and uncomfortable.",
+    "In the beginning, I tried to avoid difficult situations because I feared failure and criticism.",
+    "However, over time, I learned that these moments often brought the most valuable lessons.",
+    "I made mistakes, changed my habits, and learned how to manage my time better.",
+    "I also learned to communicate more clearly and take responsibility for my choices.",
+    "Now, I feel more confident about facing new challenges.",
+    "I know that growth does not happen overnight, but step by step.",
+    "Looking forward, I am ready to continue learning and improving myself."
+  ],
+  "questions": [
+    {
+      "question": "What does David see when he looks back at the past?",
+      "options": [
+        "Only success",
+        "Only failures",
+        "Many experiences that shaped him",
+        "Nothing important"
+      ],
+      "correctAnswer": "Many experiences that shaped him"
+    },
+    {
+      "question": "How did David feel about difficult situations at first?",
+      "options": [
+        "Excited",
+        "Confident",
+        "Afraid",
+        "Curious"
+      ],
+      "correctAnswer": "Afraid"
+    },
+    {
+      "question": "What did David learn over time?",
+      "options": [
+        "Difficult moments bring valuable lessons",
+        "Mistakes should be avoided",
+        "Habits never change",
+        "Time management is unimportant"
+      ],
+      "correctAnswer": "Difficult moments bring valuable lessons"
+    },
+    {
+      "question": "Which skills did David improve?",
+      "options": [
+        "Only technical skills",
+        "Communication and responsibility",
+        "Cooking skills",
+        "Sports skills"
+      ],
+      "correctAnswer": "Communication and responsibility"
+    },
+    {
+      "question": "How does David feel now?",
+      "options": [
+        "Uncertain",
+        "More confident",
+        "Worried",
+        "Confused"
+      ],
+      "correctAnswer": "More confident"
+    },
+    {
+      "question": "What does David believe about growth?",
+      "options": [
+        "It happens quickly",
+        "It never ends",
+        "It happens step by step",
+        "It is unnecessary"
+      ],
+      "correctAnswer": "It happens step by step"
+    },
+    {
+      "question": "What is David ready to do next?",
+      "options": [
+        "Stop learning",
+        "Avoid challenges",
+        "Continue learning and improving",
+        "Change his past"
+      ],
+      "correctAnswer": "Continue learning and improving"
+    }
+  ]
+}

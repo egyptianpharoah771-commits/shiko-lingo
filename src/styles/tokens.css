@@ -1,0 +1,28 @@
+:root {
+  /* ===== Colors ===== */
+  --bg-app: #f8f9fb;
+  --bg-card: #ffffff;
+  --bg-soft: #f1f3f5;
+
+  --primary: #4c6ef5;
+  --primary-hover: #3b5bdb;
+
+  --success: #2f9e44;
+  --danger: #e03131;
+  --warning: #f08c00;
+
+  --text-main: #212529;
+  --text-muted: #6c757d;
+
+  /* ===== Radius ===== */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  /* ===== Shadow ===== */
+  --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+  /* ===== Motion ===== */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -1,0 +1,290 @@
+/* =========================
+   Vocabulary Page – Layout
+========================= */
+
+.vocab-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.vocab-page h1 {
+  font-size: 28px;
+  margin-bottom: 24px;
+  color: var(--text-main);
+}
+
+/* =========================
+   Level Section
+========================= */
+
+.vocab-level {
+  margin-bottom: 48px;
+}
+
+.vocab-level-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.vocab-level-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.vocab-level-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.vocab-progress {
+  height: 6px;
+  background: var(--bg-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vocab-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--primary);
+}
+
+/* =========================
+   Units Grid
+========================= */
+
+.vocab-units {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* =========================
+   Unit Card
+========================= */
+
+.vocab-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
+  cursor: pointer;
+}
+
+.vocab-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.vocab-card.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+  box-shadow: var(--shadow-soft);
+}
+
+.vocab-card-icon {
+  font-size: 22px;
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+
+.vocab-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-main);
+}
+
+.vocab-card-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* =========================
+   Unit Page
+========================= */
+
+.vocab-unit-page {
+  max-width: 720px;
+}
+
+.vocab-unit-header h1 {
+  margin-bottom: 4px;
+}
+
+.vocab-unit-header h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+
+.vocab-unit-desc {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* =========================
+   Question Box
+========================= */
+
+.vocab-question-box {
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.vocab-question-header {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.vocab-question-text {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: var(--text-main);
+}
+
+/* =========================
+   Options
+========================= */
+
+.vocab-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* (الألوان الفعلية في AnswerOption) */
+
+/* =========================
+   Actions
+========================= */
+
+.vocab-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.vocab-btn {
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s var(--ease),
+    transform 0.15s var(--ease);
+}
+
+.vocab-btn.primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.vocab-btn.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.vocab-btn.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vocab-btn.success {
+  background: var(--success);
+  color: #fff;
+}
+
+/* =========================
+   Vocabulary Items
+========================= */
+
+.vocab-items-section {
+  margin-bottom: 40px;
+}
+
+.vocab-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.vocab-item-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
+}
+
+.vocab-item-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.vocab-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.vocab-item-word {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.vocab-item-phonetic {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 🔊 Audio Button */
+
+.vocab-audio-btn {
+  border: none;
+  background: var(--bg-soft);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  transition: background 0.15s var(--ease),
+    transform 0.15s var(--ease);
+}
+
+.vocab-audio-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.vocab-audio-btn:focus-visible {
+  outline: 2px solid var(--primary);
+}
+
+.vocab-audio-btn.playing {
+  background: var(--primary);
+  color: #fff;
+}
+
+.vocab-item-meaning,
+.vocab-item-example {
+  font-size: 14px;
+  margin-top: 8px;
+  color: var(--text-main);
+}

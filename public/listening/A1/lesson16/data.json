@@ -1,0 +1,40 @@
+{
+  "lesson": 16,
+  "level": "A1",
+  "title": "Talking About Yourself",
+  "description": "Sarah talks about herself, her work, and her free time.",
+  "speaker": "Sarah",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Sarah.",
+    "Today, I want to talk about myself.",
+    "I am twenty-five years old.",
+    "I live in the city.",
+    "I work in an office.",
+    "I like my job.",
+    "In my free time, I listen to music.",
+    "I also like walking and meeting friends.",
+    "I am friendly and calm.",
+    "I like learning new things.",
+    "This is a little about me.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "How old is Sarah?",
+      "options": ["Twenty", "Twenty-five", "Thirty"],
+      "answer": "Twenty-five"
+    },
+    {
+      "q": "Where does Sarah work?",
+      "options": ["At home", "In an office", "In a school"],
+      "answer": "In an office"
+    },
+    {
+      "q": "What does Sarah like to do in her free time?",
+      "options": ["Watch TV only", "Listen to music and walk", "Play games"],
+      "answer": "Listen to music and walk"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "lesson": 11,
+  "level": "B1",
+  "title": "Taking Responsibility",
+  "description": "Noah talks about taking responsibility during a team project and what he learned from it.",
+  "speaker": "Noah",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Noah.",
+    "A few months ago, I was part of a team working on an important project at work.",
+    "Each person had a clear role, and the deadline was very tight.",
+    "One week before the deadline, a teammate became sick and could not continue his tasks.",
+    "At first, we felt stressed and unsure how to manage the situation.",
+    "After discussing the problem, I decided to take responsibility for some of his work.",
+    "I worked extra hours and asked other team members for support when needed.",
+    "Although it was challenging, we managed to finish the project on time.",
+    "Our manager appreciated our teamwork and commitment.",
+    "This experience taught me that taking responsibility and helping others can strengthen a team."
+  ],
+  "questions": [
+    {
+      "question": "What was Noah working on?",
+      "options": [
+        "A personal task",
+        "An important team project",
+        "A training course",
+        "A presentation alone"
+      ],
+      "correctAnswer": "An important team project"
+    },
+    {
+      "question": "What problem did the team face?",
+      "options": [
+        "The deadline was changed",
+        "A teammate became sick",
+        "The project was cancelled",
+        "They lost important files"
+      ],
+      "correctAnswer": "A teammate became sick"
+    },
+    {
+      "question": "How did the team feel at first?",
+      "options": [
+        "Relaxed",
+        "Confident",
+        "Stressed and unsure",
+        "Excited"
+      ],
+      "correctAnswer": "Stressed and unsure"
+    },
+    {
+      "question": "What did Noah decide to do?",
+      "options": [
+        "Leave the project",
+        "Take responsibility for extra tasks",
+        "Wait for instructions",
+        "Work alone"
+      ],
+      "correctAnswer": "Take responsibility for extra tasks"
+    },
+    {
+      "question": "How did Noah handle the extra work?",
+      "options": [
+        "By working extra hours and asking for support",
+        "By ignoring other tasks",
+        "By complaining to the manager",
+        "By delaying the deadline"
+      ],
+      "correctAnswer": "By working extra hours and asking for support"
+    },
+    {
+      "question": "What was the result?",
+      "options": [
+        "The project failed",
+        "The project was delayed",
+        "The project finished on time",
+        "The team broke apart"
+      ],
+      "correctAnswer": "The project finished on time"
+    },
+    {
+      "question": "What lesson did Noah learn?",
+      "options": [
+        "Teamwork is unnecessary",
+        "Responsibility strengthens a team",
+        "Deadlines are unimportant",
+        "Working alone is better"
+      ],
+      "correctAnswer": "Responsibility strengthens a team"
+    }
+  ]
+}
