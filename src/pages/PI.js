@@ -17,12 +17,20 @@ export default function PI() {
     setError("");
     setMessage("");
 
+    let uid = null;
+
     try {
       // ✅ AUTHENTICATION IS REQUIRED BEFORE PAYMENT
-      await window.Pi.authenticate(
+      const auth = await window.Pi.authenticate(
         ["username", "payments"],
         () => {}
       );
+
+      uid = auth?.user?.uid;
+
+      if (!uid) {
+        throw new Error("Missing UID from Pi authentication");
+      }
     } catch (err) {
       console.error("Pi authentication failed", err);
       setError("❌ Pi authentication failed");
@@ -60,14 +68,16 @@ export default function PI() {
           return fetch("/api/pi/complete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paymentId, txid }),
+            body: JSON.stringify({ paymentId, txid, uid }),
           }).then((res) => {
             if (!res.ok) {
               throw new Error("Complete failed");
             }
+            return res.json();
+          }).then((data) => {
             setMessage("✅ Payment completed successfully");
             setLoading(false);
-            return res.json();
+            return data;
           });
         },
 

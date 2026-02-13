@@ -4,6 +4,7 @@
  * Centralized subscription-based access logic
  * - No free levels
  * - All content requires active PRO subscription
+ * - Subscription state comes from backend (not localStorage)
  */
 
 import {
@@ -11,23 +12,12 @@ import {
   getPiUser,
 } from "../utils/userIdentity";
 
-/**
- * Temporary package resolution
- * Later replaced with real Pi subscription validation
- */
-function getUserPackage() {
-  return localStorage.getItem("user_package") === "PRO"
-    ? "PRO"
-    : "FREE";
-}
-
 export function useFeatureAccess() {
   const piUser = getPiUser();
   const userId = getUserId();
-  const userPackage = getUserPackage();
 
   const isAuthenticated = !!piUser;
-  const isPro = isAuthenticated && userPackage === "PRO";
+  const isPro = isAuthenticated && piUser?.isSubscribed === true;
 
   return {
     // 🔐 Full access only for PRO users

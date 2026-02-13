@@ -16,6 +16,7 @@ import {
  * Starts Pi authentication flow
  * - Authenticates with Pi SDK
  * - Stores Pi user contract
+ * - Checks subscription from backend
  * - Migrates guest progress
  */
 export async function startPiLogin() {
@@ -25,17 +26,33 @@ export async function startPiLogin() {
     return existingUser;
   }
 
-  // 1. Authenticate via Pi SDK
+  // 1️⃣ Authenticate via Pi SDK
   const piUser = await authenticateWithPi();
   // piUser = { uid, username }
 
-  // 2. Save Pi user contract
+  const uid = piUser.uid;
+
+  // 2️⃣ Check subscription from backend
+  let isSubscribed = false;
+
+  try {
+    const res = await fetch(`/api/check-subscription?uid=${uid}`);
+    if (res.ok) {
+      const data = await res.json();
+      isSubscribed = data.active;
+    }
+  } catch (err) {
+    console.error("Subscription check failed:", err);
+  }
+
+  // 3️⃣ Save Pi user contract (with subscription state)
   const storedUser = setPiUser({
-    uid: piUser.uid,
+    uid,
     username: piUser.username,
+    isSubscribed,
   });
 
-  // 3. Migrate guest progress (if any)
+  // 4️⃣ Migrate guest progress (if any)
   migrateGuestProgressToPiUser(storedUser.uid);
 
   return storedUser;
