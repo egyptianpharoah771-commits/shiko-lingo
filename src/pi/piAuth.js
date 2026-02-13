@@ -3,7 +3,7 @@ export async function authenticateWithPi() {
     throw new Error("Pi SDK not available");
   }
 
-  // ✅ REQUIRED scopes for payments
+  // REQUIRED scopes for payments
   const scopes = ["username", "payments"];
 
   const auth = await window.Pi.authenticate(
@@ -13,12 +13,11 @@ export async function authenticateWithPi() {
         "⚠️ Incomplete payment found:",
         payment
       );
-      // لاحقًا نكمّلها لو احتجنا
     }
   );
 
   return {
-    pi_uid: auth.user.uid,
+    uid: auth.user.uid,
     username: auth.user.username,
   };
 }
