@@ -75,7 +75,7 @@ function SubscriptionGuard({ children }) {
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    const check = async () => {
+    const checkSubscription = async () => {
       try {
         const uid = localStorage.getItem("pi_uid");
 
@@ -97,11 +97,12 @@ function SubscriptionGuard({ children }) {
       }
     };
 
-    check();
+    checkSubscription();
   }, []);
 
   if (loading) return null;
 
+  // منع redirect loop
   if (!active && location.pathname !== "/upgrade") {
     return <Navigate to="/upgrade" replace />;
   }
@@ -190,14 +191,14 @@ function App() {
     <Router>
       <AppLayout>
         <Routes>
-          {/* Free */}
+          {/* Free Routes */}
           <Route path="/" element={<Entry />} />
           <Route path="/assessment" element={<AssessmentPage />} />
           <Route path="/upgrade" element={<Upgrade />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
 
-          {/* Protected */}
+          {/* Protected Routes */}
           <Route
             path="/dashboard"
             element={
@@ -208,7 +209,7 @@ function App() {
           />
 
           <Route
-            path="/grammar/*"
+            path="/grammar"
             element={
               <SubscriptionGuard>
                 <GrammarLevels />
@@ -217,7 +218,7 @@ function App() {
           />
 
           <Route
-            path="/vocabulary/*"
+            path="/vocabulary"
             element={
               <SubscriptionGuard>
                 <VocabularyPage />
@@ -226,7 +227,7 @@ function App() {
           />
 
           <Route
-            path="/listening/*"
+            path="/listening"
             element={
               <SubscriptionGuard>
                 <ListeningHome />
@@ -235,7 +236,7 @@ function App() {
           />
 
           <Route
-            path="/reading/*"
+            path="/reading"
             element={
               <SubscriptionGuard>
                 <ReadingHome />
@@ -244,7 +245,7 @@ function App() {
           />
 
           <Route
-            path="/speaking/*"
+            path="/speaking"
             element={
               <SubscriptionGuard>
                 <SpeakingHome />
