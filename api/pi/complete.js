@@ -14,16 +14,6 @@ function piHeaders() {
   };
 }
 
-function addOneMonth(date) {
-  const d = new Date(date);
-  const originalDay = d.getDate();
-  d.setMonth(d.getMonth() + 1);
-  if (d.getDate() < originalDay) {
-    d.setDate(0);
-  }
-  return d;
-}
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "METHOD_NOT_ALLOWED" });
@@ -38,9 +28,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    let piConfirmed = false;
-
-    // 1️⃣ Confirm payment with Pi
+    /* =========================
+       STEP 1 — Confirm with Pi
+    ========================= */
     const response = await fetch(
       `${PI_API_BASE}/v2/payments/${paymentId}/complete`,
       {
@@ -52,123 +42,45 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (response.ok) {
-      piConfirmed = true;
-    } else {
-      // 🔥 Recovery: لو الدفع already completed
+    if (!response.ok) {
+      // Allow recovery if already completed
       if (
         data?.error?.code === "PAYMENT_ALREADY_COMPLETED" ||
         data?.error?.message?.toLowerCase()?.includes("already")
       ) {
-        console.log("Payment already completed on Pi. Continuing recovery...");
-        piConfirmed = true;
+        console.log("Payment already completed on Pi. Continuing...");
       } else {
         console.error("PI API ERROR:", data);
         return res.status(response.status).json(data);
       }
     }
 
-    if (!piConfirmed) {
+    /* =========================
+       STEP 2 — Process Payment via RPC
+       (Single DB Round Trip)
+    ========================= */
+    const { error: rpcError } = await supabase.rpc(
+      "process_payment",
+      {
+        p_payment_id: paymentId,
+        p_uid: uid,
+        p_months: 1,
+      }
+    );
+
+    if (rpcError) {
+      console.error("RPC ERROR:", rpcError);
       return res.status(500).json({
         success: false,
-        error: "PI_CONFIRMATION_FAILED",
+        error: "RPC_PROCESS_FAILED",
       });
     }
 
-    const now = new Date();
-
-    // 2️⃣ Check if payment already processed (IDEMPOTENCY)
-    const { data: existingPayment, error: paymentCheckError } =
-      await supabase
-        .from("payments")
-        .select("payment_id")
-        .eq("payment_id", paymentId)
-        .maybeSingle();
-
-    if (paymentCheckError) {
-      console.error("PAYMENT CHECK ERROR:", paymentCheckError);
-      return res.status(500).json({
-        success: false,
-        error: "PAYMENT_CHECK_FAILED",
-      });
-    }
-
-    if (existingPayment) {
-      return res.status(200).json({
-        success: true,
-        note: "PAYMENT_ALREADY_PROCESSED",
-      });
-    }
-
-    // 3️⃣ Record payment
-    const { error: insertPaymentError } = await supabase
-      .from("payments")
-      .insert({
-        payment_id: paymentId,
-        uid,
-        plan: "MONTHLY",
-        status: "completed",
-      });
-
-    if (insertPaymentError) {
-      console.error("PAYMENT INSERT ERROR:", insertPaymentError);
-      return res.status(500).json({
-        success: false,
-        error: "PAYMENT_RECORD_FAILED",
-      });
-    }
-
-    // 4️⃣ Get existing subscription
-    const { data: existingSub, error: fetchError } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("uid", uid)
-      .maybeSingle();
-
-    if (fetchError) {
-      console.error("DB READ ERROR:", fetchError);
-      return res.status(500).json({
-        success: false,
-        error: "DB_READ_FAILED",
-      });
-    }
-
-    let baseDate;
-
-    if (existingSub && new Date(existingSub.expires_at) > now) {
-      baseDate = new Date(existingSub.expires_at);
-    } else {
-      baseDate = now;
-    }
-
-    const newExpiry = addOneMonth(baseDate);
-
-    // 5️⃣ Upsert subscription
-    const { error: upsertError } = await supabase
-      .from("subscriptions")
-      .upsert(
-        {
-          uid,
-          plan: "MONTHLY",
-          expires_at: newExpiry.toISOString(),
-          updated_at: now.toISOString(),
-        },
-        { onConflict: "uid" }
-      );
-
-    if (upsertError) {
-      console.error("SUBSCRIPTION UPSERT ERROR:", upsertError);
-      return res.status(500).json({
-        success: false,
-        error: "DB_WRITE_FAILED",
-      });
-    }
-
-    console.log("Payment + Subscription processed for:", uid);
-
+    /* =========================
+       SUCCESS RESPONSE
+    ========================= */
     return res.status(200).json({
       success: true,
-      expiresAt: newExpiry.toISOString(),
     });
 
   } catch (err) {
