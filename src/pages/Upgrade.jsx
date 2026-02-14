@@ -1,12 +1,78 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function Upgrade() {
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubscribe = async () => {
+    if (!window.Pi) {
+      setError("Please open this app inside Pi Browser");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const auth = await window.Pi.authenticate(
+        ["username", "payments"],
+        () => {}
+      );
+
+      const uid = auth?.user?.uid;
+
+      if (!uid) {
+        throw new Error("Authentication failed");
+      }
+
+      localStorage.setItem("pi_uid", uid);
+
+      window.Pi.createPayment(
+        {
+          amount: 3,
+          memo: "Shiko Lingo Monthly Subscription",
+          metadata: { type: "monthly_subscription" },
+        },
+        {
+          onReadyForServerApproval: (paymentId) => {
+            return fetch("/api/pi/approve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId }),
+            });
+          },
+
+          onReadyForServerCompletion: (paymentId, txid) => {
+            return fetch("/api/pi/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId, txid, uid }),
+            }).then(() => {
+              window.location.href = "/dashboard";
+            });
+          },
+
+          onCancel: () => {
+            setError("Payment cancelled");
+            setLoading(false);
+          },
+
+          onError: () => {
+            setError("Payment failed");
+            setLoading(false);
+          },
+        }
+      );
+    } catch (err) {
+      setError("Authentication failed");
+      setLoading(false);
+    }
+  };
 
   return (
     <div
       style={{
-        maxWidth: "720px",
+        maxWidth: "600px",
         margin: "0 auto",
         padding: "40px 20px",
         textAlign: "center",
@@ -18,21 +84,24 @@ function Upgrade() {
         Access to Shiko Lingo requires an active PRO subscription.
       </p>
 
-      <p style={{ marginTop: "8px", color: "#777" }}>
-        Please subscribe to unlock all lessons and features.
-      </p>
-
       <button
+        onClick={handleSubscribe}
+        disabled={loading}
         style={{
-          marginTop: "20px",
-          padding: "10px 20px",
+          marginTop: "25px",
+          padding: "12px 20px",
           fontWeight: "bold",
           cursor: "pointer",
         }}
-        onClick={() => navigate("/pi")}
       >
-        Subscribe Now
+        {loading ? "Processing…" : "Subscribe Now"}
       </button>
+
+      {error && (
+        <p style={{ marginTop: "15px", color: "red" }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }
