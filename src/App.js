@@ -5,6 +5,7 @@ import {
   Link,
   useLocation,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { initPiSDK } from "./lib/initPi";
@@ -234,6 +235,49 @@ function AppLayout({ children }) {
     </div>
   );
 }
+/* ======================
+   Subscription Guard
+====================== */
+function SubscriptionGuard({ children }) {
+  const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        const res = await fetch("/api/check-subscription");
+        const data = await res.json();
+
+        if (res.ok && data.active) {
+          setActive(true);
+        } else {
+          setActive(false);
+        }
+      } catch {
+        setActive(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSubscription();
+  }, []);
+
+  if (loading) return null;
+
+  if (!active) {
+    return (
+      <Navigate
+        to="/upgrade"
+        state={{ from: location }}
+        replace
+      />
+    );
+  }
+
+  return children;
+}
 
 /* ======================
    App
@@ -246,125 +290,77 @@ function App() {
 
   return (
     <Router>
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<Entry />} />
+  <AppLayout>
+    <Routes>
+      {/* ===== FREE ROUTES ===== */}
+      <Route path="/" element={<Entry />} />
+      <Route path="/assessment" element={<AssessmentPage />} />
+      <Route path="/upgrade" element={<Upgrade />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
 
-          <Route
-            path="/dashboard"
-            element={<Dashboard />}
-          />
+      {/* ===== PROTECTED ROUTES ===== */}
+      <Route
+        path="*"
+        element={
+          <SubscriptionGuard>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
 
-          {/* ===== LEVEL ASSESSMENT ===== */}
-          <Route
-            path="/assessment"
-            element={<AssessmentPage />}
-          />
+              {/* Grammar */}
+              <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
+              <Route path="/grammar/:level" element={<GrammarUnits />} />
+              <Route path="/grammar" element={<GrammarLevels />} />
 
-          {/* ===== GRAMMAR ===== */}
-          <Route
-            path="/grammar/:level/:unit"
-            element={<GrammarUnitPage />}
-          />
-          <Route
-            path="/grammar/:level"
-            element={<GrammarUnits />}
-          />
-          <Route
-            path="/grammar"
-            element={<GrammarLevels />}
-          />
+              {/* Vocabulary */}
+              <Route path="/vocabulary/:level/:unitId" element={<VocabularyUnitPage />} />
+              <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
+              <Route path="/vocabulary" element={<VocabularyPage />} />
 
-          {/* ===== VOCABULARY ===== */}
-          <Route
-            path="/vocabulary/:level/:unitId"
-            element={<VocabularyUnitPage />}
-          />
-          <Route
-            path="/vocabulary/:level"
-            element={<VocabularyLevelPage />}
-          />
-          <Route
-            path="/vocabulary"
-            element={<VocabularyPage />}
-          />
+              {/* Listening */}
+              <Route path="/listening" element={<ListeningHome />} />
+              <Route path="/listening/:level" element={<ListeningLevel />} />
+              <Route path="/listening/:level/:lessonId" element={<Listening />} />
 
-          {/* ===== LISTENING ===== */}
-          <Route
-            path="/listening"
-            element={<ListeningHome />}
-          />
-          <Route
-            path="/listening/:level"
-            element={<ListeningLevel />}
-          />
-          <Route
-            path="/listening/:level/:lessonId"
-            element={<Listening />}
-          />
+              {/* Reading */}
+              <Route path="/reading" element={<ReadingHome />} />
+              <Route path="/reading/:level" element={<ReadingLevel />} />
+              <Route path="/reading/:level/:lessonId" element={<ReadingLesson />} />
 
-          {/* ===== READING ===== */}
-          <Route
-            path="/reading"
-            element={<ReadingHome />}
-          />
-          <Route
-            path="/reading/:level"
-            element={<ReadingLevel />}
-          />
-          <Route
-            path="/reading/:level/:lessonId"
-            element={<ReadingLesson />}
-          />
+              {/* Speaking */}
+              <Route path="/speaking" element={<SpeakingHome />} />
+              <Route path="/speaking/B1/:lessonId" element={<SpeakingLessonB1 />} />
+              <Route path="/speaking/:level/:lessonId" element={<SpeakingLesson />} />
+              <Route path="/speaking/:level" element={<SpeakingLevel />} />
 
-          {/* ===== SPEAKING ===== */}
-          <Route
-            path="/speaking"
-            element={<SpeakingHome />}
-          />
-          <Route
-            path="/speaking/B1/:lessonId"
-            element={<SpeakingLessonB1 />}
-          />
-          <Route
-            path="/speaking/:level/:lessonId"
-            element={<SpeakingLesson />}
-          />
-          <Route
-            path="/speaking/:level"
-            element={<SpeakingLevel />}
-          />
+              <Route path="/writing" element={<Writing />} />
 
-          <Route path="/writing" element={<Writing />} />
-
-          {/* ===== PI (ADMIN ONLY) ===== */}
-          <Route
-            path="/pi"
-            element={
-              <AdminGuard>
-                <PI />
-              </AdminGuard>
-            }
-          />
-
-          <Route path="/upgrade" element={<Upgrade />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-
-          <Route
-            path="/admin/feedback"
-            element={
-              <AdminGuard>
-                <AdminFeedback />
-              </AdminGuard>
-            }
-          />
-        </Routes>
-      </AppLayout>
-    </Router>
+              {/* Admin */}
+              <Route
+                path="/pi"
+                element={
+                  <AdminGuard>
+                    <PI />
+                  </AdminGuard>
+                }
+              />
+              <Route
+                path="/admin/feedback"
+                element={
+                  <AdminGuard>
+                    <AdminFeedback />
+                  </AdminGuard>
+                }
+              />
+            </Routes>
+          </SubscriptionGuard>
+        }
+      />
+    </Routes>
+  </AppLayout>
+</Router>
   );
 }
-
 
 /* ======================
    Helpers
