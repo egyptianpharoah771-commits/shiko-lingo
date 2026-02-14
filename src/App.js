@@ -67,42 +67,71 @@ function Entry() {
 }
 
 /* ======================
-   Subscription Guard
+   Subscription Guard (Production Version)
 ====================== */
 function SubscriptionGuard({ children }) {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
-  const [active, setActive] = useState(false);
+  const [subscription, setSubscription] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkSubscription = async () => {
       try {
         const uid = localStorage.getItem("pi_uid");
 
         if (!uid) {
-          setActive(false);
+          if (isMounted) setSubscription(null);
           return;
         }
 
         const res = await fetch(
-          `/api/check-subscription?uid=${encodeURIComponent(uid)}`
+          `/api/check-subscription?uid=${encodeURIComponent(uid)}`,
+          { cache: "no-store" }
         );
 
+        if (!res.ok) {
+          throw new Error("Subscription check failed");
+        }
+
         const data = await res.json();
-        setActive(res.ok && data.active);
-      } catch {
-        setActive(false);
+
+        if (isMounted) {
+          if (data.active) {
+            setSubscription({
+              active: true,
+              plan: data.plan || null,
+              expiresAt: data.expiresAt || null,
+            });
+          } else {
+            setSubscription(null);
+          }
+        }
+      } catch (err) {
+        console.error("Subscription check error:", err);
+        if (isMounted) setSubscription(null);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     checkSubscription();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div style={{ padding: 40, textAlign: "center" }}>
+        Checking subscription...
+      </div>
+    );
+  }
 
-  if (!active) {
+  if (!subscription?.active) {
     return (
       <Navigate
         to="/upgrade"

@@ -1,12 +1,10 @@
 const PI_API_BASE = "https://api.minepi.com";
+import { createClient } from "@supabase/supabase-js";
 
-/**
- * ⚠️ Temporary in-memory subscription store
- * NOTE:
- * This will reset if the server restarts.
- * Later we can move this to DB or Vercel KV.
- */
-global.subscriptions = global.subscriptions || {};
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 function piHeaders() {
   return {
@@ -16,21 +14,13 @@ function piHeaders() {
   };
 }
 
-/**
- * Add one calendar month safely
- * Handles edge cases like Jan 31 → Feb
- */
 function addOneMonth(date) {
   const d = new Date(date);
   const originalDay = d.getDate();
-
   d.setMonth(d.getMonth() + 1);
-
-  // Handle month overflow (e.g. Jan 31 → Feb 28/29)
   if (d.getDate() < originalDay) {
     d.setDate(0);
   }
-
   return d;
 }
 
@@ -42,9 +32,9 @@ export default async function handler(req, res) {
   const { paymentId, txid, uid } = req.body;
 
   if (!paymentId || !txid || !uid) {
-    return res
-      .status(400)
-      .json({ error: "PAYMENT_ID_TXID_UID_REQUIRED" });
+    return res.status(400).json({
+      error: "PAYMENT_ID_TXID_UID_REQUIRED",
+    });
   }
 
   try {
@@ -65,37 +55,98 @@ export default async function handler(req, res) {
       return res.status(response.status).json(data);
     }
 
-    // 2️⃣ Subscription calculation (Rolling Monthly)
-
     const now = new Date();
 
-    const existing = global.subscriptions[uid];
-    const currentExpiry = existing
-      ? new Date(existing.expiresAt)
-      : null;
+    // 2️⃣ Check if payment already processed (IDEMPOTENCY)
+    const { data: existingPayment, error: paymentCheckError } =
+      await supabase
+        .from("payments")
+        .select("payment_id")
+        .eq("payment_id", paymentId)
+        .maybeSingle();
+
+    if (paymentCheckError) {
+      console.error("PAYMENT CHECK ERROR:", paymentCheckError);
+      return res.status(500).json({
+        success: false,
+        error: "PAYMENT_CHECK_FAILED",
+      });
+    }
+
+    if (existingPayment) {
+      // Payment already recorded → don't extend again
+      return res.status(200).json({
+        success: true,
+        note: "PAYMENT_ALREADY_PROCESSED",
+      });
+    }
+
+    // 3️⃣ Record payment FIRST (critical step)
+    const { error: insertPaymentError } = await supabase
+      .from("payments")
+      .insert({
+        payment_id: paymentId,
+        uid,
+        plan: "MONTHLY",
+        status: "completed",
+      });
+
+    if (insertPaymentError) {
+      console.error("PAYMENT INSERT ERROR:", insertPaymentError);
+      return res.status(500).json({
+        success: false,
+        error: "PAYMENT_RECORD_FAILED",
+      });
+    }
+
+    // 4️⃣ Get existing subscription
+    const { data: existingSub, error: fetchError } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("uid", uid)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error("DB READ ERROR:", fetchError);
+      return res.status(500).json({
+        success: false,
+        error: "DB_READ_FAILED",
+      });
+    }
 
     let baseDate;
 
-    if (currentExpiry && now < currentExpiry) {
-      // Renew before expiration → extend from expiry
-      baseDate = currentExpiry;
+    if (existingSub && new Date(existingSub.expires_at) > now) {
+      baseDate = new Date(existingSub.expires_at);
     } else {
-      // New subscription OR expired → start from now
       baseDate = now;
     }
 
     const newExpiry = addOneMonth(baseDate);
 
-    global.subscriptions[uid] = {
-      plan: "MONTHLY",
-      expiresAt: newExpiry.getTime(),
-      paymentId,
-    };
+    // 5️⃣ Upsert subscription
+    const { error: upsertError } = await supabase
+      .from("subscriptions")
+      .upsert(
+        {
+          uid,
+          plan: "MONTHLY",
+          expires_at: newExpiry.toISOString(),
+          updated_at: now.toISOString(),
+        },
+        { onConflict: "uid" }
+      );
 
-    console.log("Subscription activated/extended for:", uid);
-    console.log("New expiry:", newExpiry.toISOString());
+    if (upsertError) {
+      console.error("SUBSCRIPTION UPSERT ERROR:", upsertError);
+      return res.status(500).json({
+        success: false,
+        error: "DB_WRITE_FAILED",
+      });
+    }
 
-    // ⚠️ CRITICAL: Pi expects success:true
+    console.log("Payment + Subscription processed for:", uid);
+
     return res.status(200).json({
       success: true,
       expiresAt: newExpiry.toISOString(),
