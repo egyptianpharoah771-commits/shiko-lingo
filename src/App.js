@@ -10,7 +10,6 @@ import {
 import { useEffect, useState } from "react";
 import { initPiSDK } from "./lib/initPi";
 
-
 /* ======================
    Utils
 ====================== */
@@ -31,51 +30,23 @@ import PI from "./pages/PI";
 import Writing from "./pages/Writing";
 import AdminFeedback from "./pages/AdminFeedback";
 import Upgrade from "./pages/Upgrade";
-
-/* ======================
-   Assessment (NEW)
-====================== */
 import AssessmentPage from "./assessment/AssessmentPage";
-
-/* ======================
-   Listening
-====================== */
 import ListeningHome from "./pages/ListeningHome";
 import ListeningLevel from "./pages/ListeningLevel";
 import Listening from "./pages/Listening";
-
-/* ======================
-   Reading
-====================== */
 import ReadingHome from "./reading/ReadingHome";
 import ReadingLevel from "./reading/ReadingLevel";
 import ReadingLesson from "./reading/ReadingLesson";
-
-/* ======================
-   Speaking
-====================== */
 import SpeakingHome from "./speaking/SpeakingHome";
 import SpeakingLevel from "./speaking/SpeakingLevel";
 import SpeakingLesson from "./speaking/SpeakingLesson";
 import SpeakingLessonB1 from "./speaking/SpeakingLessonB1";
-
-/* ======================
-   Vocabulary
-====================== */
 import VocabularyPage from "./vocabulary/vocabularypage";
 import VocabularyLevelPage from "./vocabulary/vocabularylevelpage";
 import VocabularyUnitPage from "./vocabulary/vocabularyunitpage";
-
-/* ======================
-   Grammar
-====================== */
 import GrammarLevels from "./grammar/GrammarLevels";
 import GrammarUnits from "./grammar/GrammarUnits";
 import GrammarUnitPage from "./grammar/GrammarUnitPage";
-
-/* ======================
-   Legal Pages
-====================== */
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 
@@ -92,21 +63,14 @@ function Entry() {
         alt="Shiko Lingo"
         style={{ width: 120, marginBottom: 20 }}
       />
-
       <h1>Shiko Lingo</h1>
       <p>Learn English the smart way</p>
 
-      <button
-        style={primaryBtn}
-        onClick={() => navigate("/dashboard")}
-      >
+      <button style={primaryBtn} onClick={() => navigate("/dashboard")}>
         🚀 Enter App
       </button>
 
-      <button
-        style={secondaryBtn}
-        onClick={() => navigate("/assessment")}
-      >
+      <button style={secondaryBtn} onClick={() => navigate("/assessment")}>
         🎯 Know your level
       </button>
     </div>
@@ -114,35 +78,46 @@ function Entry() {
 }
 
 /* ======================
-   Announcement Bar
+   Subscription Guard
 ====================== */
-function AnnouncementBar() {
-  const [visible, setVisible] = useState(false);
+function SubscriptionGuard({ children }) {
+  const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
-    const dismissed =
-      localStorage.getItem("announcement_dismissed");
-    if (!dismissed) setVisible(true);
+    const check = async () => {
+      try {
+        const uid = localStorage.getItem("pi_uid");
+
+        if (!uid) {
+          setActive(false);
+          return;
+        }
+
+        const res = await fetch(
+          `/api/check-subscription?uid=${encodeURIComponent(uid)}`
+        );
+
+        const data = await res.json();
+        setActive(res.ok && data.active);
+      } catch {
+        setActive(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    check();
   }, []);
 
-  if (!visible) return null;
+  if (loading) return null;
 
-  const close = () => {
-    localStorage.setItem("announcement_dismissed", "1");
-    setVisible(false);
-  };
+  if (!active && location.pathname !== "/upgrade") {
+    return <Navigate to="/upgrade" replace />;
+  }
 
-  return (
-    <div style={announcementStyle}>
-      <span>
-        🔔 Update coming soon – New content & improvements are
-        on the way
-      </span>
-      <button onClick={close} style={announceCloseBtn}>
-        ✕
-      </button>
-    </div>
-  );
+  return children;
 }
 
 /* ======================
@@ -151,10 +126,7 @@ function AnnouncementBar() {
 function AppLayout({ children }) {
   const location = useLocation();
   const hideLayout = location.pathname === "/";
-
-  const isAdmin =
-    sessionStorage.getItem("admin_authed") === "true";
-
+  const isAdmin = sessionStorage.getItem("admin_authed") === "true";
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -164,19 +136,13 @@ function AppLayout({ children }) {
   useEffect(() => {
     const loadUnread = () => {
       const stored =
-        JSON.parse(
-          localStorage.getItem(STORAGE_KEYS.FEEDBACKS)
-        ) || [];
-
-      setUnreadCount(
-        stored.filter((f) => !f.isRead).length
-      );
+        JSON.parse(localStorage.getItem(STORAGE_KEYS.FEEDBACKS)) || [];
+      setUnreadCount(stored.filter((f) => !f.isRead).length);
     };
 
     loadUnread();
     window.addEventListener("storage", loadUnread);
-    return () =>
-      window.removeEventListener("storage", loadUnread);
+    return () => window.removeEventListener("storage", loadUnread);
   }, []);
 
   return (
@@ -185,27 +151,21 @@ function AppLayout({ children }) {
 
       {!hideLayout && (
         <>
-          <AnnouncementBar />
-
           <header style={headerStyle}>
             <div style={{ display: "flex", gap: 12 }}>
               <img
                 src="/shiko-logo.png"
                 alt="Shiko Lingo"
-                style={{ width: 42, height: 42 }}
+                style={{ width: 42 }}
               />
-              <strong style={{ fontSize: 20 }}>
-                Shiko Lingo
-              </strong>
+              <strong style={{ fontSize: 20 }}>Shiko Lingo</strong>
             </div>
 
             <Link to="/admin/feedback">
               <div style={feedbackBadgeStyle}>
                 🔔 Feedback
                 {unreadCount > 0 && (
-                  <span style={badgeCountStyle}>
-                    {unreadCount}
-                  </span>
+                  <span style={badgeCountStyle}>{unreadCount}</span>
                 )}
               </div>
             </Link>
@@ -225,157 +185,113 @@ function AppLayout({ children }) {
       )}
 
       <div style={{ padding: 20 }}>{children}</div>
-
-      {!hideLayout && (
-        <footer style={footerStyle}>
-          <Link to="/privacy">Privacy Policy</Link> |{" "}
-          <Link to="/terms">Terms & Conditions</Link>
-        </footer>
-      )}
     </div>
   );
-}
-/* ======================
-   Subscription Guard
-====================== */
-function SubscriptionGuard({ children }) {
-  const location = useLocation();
-  const [loading, setLoading] = useState(true);
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    const checkSubscription = async () => {
-      try {
-const uid = localStorage.getItem("pi_uid");
-
-if (!uid) {
-  setActive(false);
-  setLoading(false);
-  return;
-}
-
-const res = await fetch(
-  `/api/check-subscription?uid=${encodeURIComponent(uid)}`
-);
-
-const data = await res.json();
-
-if (res.ok && data.active) {
-  setActive(true);
-} else {
-  setActive(false);
-}
-
-        if (res.ok && data.active) {
-          setActive(true);
-        } else {
-          setActive(false);
-        }
-      } catch {
-        setActive(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkSubscription();
-  }, []);
-
-  if (loading) return null;
-
-  if (!active) {
-    return (
-      <Navigate
-        to="/upgrade"
-        state={{ from: location }}
-        replace
-      />
-    );
-  }
-
-  return children;
 }
 
 /* ======================
    App
 ====================== */
 function App() {
-
   useEffect(() => {
     initPiSDK();
   }, []);
 
   return (
     <Router>
-  <AppLayout>
-    <Routes>
-      {/* ===== FREE ROUTES ===== */}
-      <Route path="/" element={<Entry />} />
-      <Route path="/assessment" element={<AssessmentPage />} />
-      <Route path="/upgrade" element={<Upgrade />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/terms" element={<Terms />} />
+      <AppLayout>
+        <Routes>
+          {/* Free */}
+          <Route path="/" element={<Entry />} />
+          <Route path="/assessment" element={<AssessmentPage />} />
+          <Route path="/upgrade" element={<Upgrade />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
 
-      {/* ===== PROTECTED ROUTES ===== */}
-      <Route
-        path="*"
-        element={
-          <SubscriptionGuard>
-            <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
+          {/* Protected */}
+          <Route
+            path="/dashboard"
+            element={
+              <SubscriptionGuard>
+                <Dashboard />
+              </SubscriptionGuard>
+            }
+          />
 
-              {/* Grammar */}
-              <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
-              <Route path="/grammar/:level" element={<GrammarUnits />} />
-              <Route path="/grammar" element={<GrammarLevels />} />
+          <Route
+            path="/grammar/*"
+            element={
+              <SubscriptionGuard>
+                <GrammarLevels />
+              </SubscriptionGuard>
+            }
+          />
 
-              {/* Vocabulary */}
-              <Route path="/vocabulary/:level/:unitId" element={<VocabularyUnitPage />} />
-              <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
-              <Route path="/vocabulary" element={<VocabularyPage />} />
+          <Route
+            path="/vocabulary/*"
+            element={
+              <SubscriptionGuard>
+                <VocabularyPage />
+              </SubscriptionGuard>
+            }
+          />
 
-              {/* Listening */}
-              <Route path="/listening" element={<ListeningHome />} />
-              <Route path="/listening/:level" element={<ListeningLevel />} />
-              <Route path="/listening/:level/:lessonId" element={<Listening />} />
+          <Route
+            path="/listening/*"
+            element={
+              <SubscriptionGuard>
+                <ListeningHome />
+              </SubscriptionGuard>
+            }
+          />
 
-              {/* Reading */}
-              <Route path="/reading" element={<ReadingHome />} />
-              <Route path="/reading/:level" element={<ReadingLevel />} />
-              <Route path="/reading/:level/:lessonId" element={<ReadingLesson />} />
+          <Route
+            path="/reading/*"
+            element={
+              <SubscriptionGuard>
+                <ReadingHome />
+              </SubscriptionGuard>
+            }
+          />
 
-              {/* Speaking */}
-              <Route path="/speaking" element={<SpeakingHome />} />
-              <Route path="/speaking/B1/:lessonId" element={<SpeakingLessonB1 />} />
-              <Route path="/speaking/:level/:lessonId" element={<SpeakingLesson />} />
-              <Route path="/speaking/:level" element={<SpeakingLevel />} />
+          <Route
+            path="/speaking/*"
+            element={
+              <SubscriptionGuard>
+                <SpeakingHome />
+              </SubscriptionGuard>
+            }
+          />
 
-              <Route path="/writing" element={<Writing />} />
+          <Route
+            path="/writing"
+            element={
+              <SubscriptionGuard>
+                <Writing />
+              </SubscriptionGuard>
+            }
+          />
 
-              {/* Admin */}
-              <Route
-                path="/pi"
-                element={
-                  <AdminGuard>
-                    <PI />
-                  </AdminGuard>
-                }
-              />
-              <Route
-                path="/admin/feedback"
-                element={
-                  <AdminGuard>
-                    <AdminFeedback />
-                  </AdminGuard>
-                }
-              />
-            </Routes>
-          </SubscriptionGuard>
-        }
-      />
-    </Routes>
-  </AppLayout>
-</Router>
+          <Route
+            path="/pi"
+            element={
+              <AdminGuard>
+                <PI />
+              </AdminGuard>
+            }
+          />
+
+          <Route
+            path="/admin/feedback"
+            element={
+              <AdminGuard>
+                <AdminFeedback />
+              </AdminGuard>
+            }
+          />
+        </Routes>
+      </AppLayout>
+    </Router>
   );
 }
 
@@ -393,25 +309,6 @@ function NavButton({ to, label }) {
 /* ======================
    Styles
 ====================== */
-const announcementStyle = {
-  background: "#f3eef8",
-  borderBottom: "1px solid #4a2f6e",
-  color: "#4a2f6e",
-  padding: "8px 16px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  fontSize: "0.9rem",
-};
-
-const announceCloseBtn = {
-  border: "none",
-  background: "transparent",
-  cursor: "pointer",
-  fontSize: 16,
-  color: "#4a2f6e",
-};
-
 const headerStyle = {
   backgroundColor: "#ffffff",
   padding: 15,
@@ -448,13 +345,6 @@ const badgeCountStyle = {
   borderRadius: 12,
   padding: "2px 8px",
   fontSize: 12,
-};
-
-const footerStyle = {
-  textAlign: "center",
-  padding: 20,
-  fontSize: 14,
-  opacity: 0.7,
 };
 
 const entryStyle = {
