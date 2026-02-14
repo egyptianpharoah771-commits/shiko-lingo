@@ -10,10 +10,13 @@ function Upgrade() {
       return;
     }
 
+    if (loading) return;
+
     setLoading(true);
     setError("");
 
     try {
+      // 1️⃣ Authenticate
       const auth = await window.Pi.authenticate(
         ["username", "payments"],
         () => {}
@@ -27,44 +30,79 @@ function Upgrade() {
 
       localStorage.setItem("pi_uid", uid);
 
-      window.Pi.createPayment(
-        {
-          amount: 3,
-          memo: "Shiko Lingo Monthly Subscription",
-          metadata: { type: "monthly_subscription" },
-        },
-        {
-          onReadyForServerApproval: (paymentId) => {
-            return fetch("/api/pi/approve", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId }),
-            });
+      // 2️⃣ Wrap Pi.createPayment in Promise (important)
+      await new Promise((resolve, reject) => {
+        window.Pi.createPayment(
+          {
+            amount: 3,
+            memo: "Shiko Lingo Monthly Subscription",
+            metadata: { plan: "MONTHLY" },
           },
+          {
+            /* ===== Server Approval ===== */
+            onReadyForServerApproval: async (paymentId) => {
+              try {
+                const res = await fetch("/api/pi/approve", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ paymentId }),
+                });
 
-          onReadyForServerCompletion: (paymentId, txid) => {
-            return fetch("/api/pi/complete", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId, txid, uid }),
-            }).then(() => {
-              window.location.href = "/dashboard";
-            });
-          },
+                if (!res.ok) {
+                  const err = await res.text();
+                  reject(new Error("Approve failed: " + err));
+                }
+              } catch (err) {
+                reject(err);
+              }
+            },
 
-          onCancel: () => {
-            setError("Payment cancelled");
-            setLoading(false);
-          },
+            /* ===== Server Completion ===== */
+            onReadyForServerCompletion: async (paymentId, txid) => {
+              try {
+                const res = await fetch("/api/pi/complete", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ paymentId, txid, uid }),
+                });
 
-          onError: () => {
-            setError("Payment failed");
-            setLoading(false);
-          },
-        }
-      );
+                if (!res.ok) {
+                  const err = await res.text();
+                  reject(new Error("Complete failed: " + err));
+                  return;
+                }
+
+                const data = await res.json();
+
+                if (!data.success) {
+                  reject(new Error("Subscription activation failed"));
+                  return;
+                }
+
+                resolve(data);
+              } catch (err) {
+                reject(err);
+              }
+            },
+
+            onCancel: () => {
+              reject(new Error("Payment cancelled"));
+            },
+
+            onError: (err) => {
+              reject(err || new Error("Payment failed"));
+            },
+          }
+        );
+      });
+
+      // 3️⃣ Redirect only AFTER full success
+      window.location.href = "/dashboard";
+
     } catch (err) {
-      setError("Authentication failed");
+      console.error("Subscription error:", err);
+      setError(err.message || "Payment failed");
+    } finally {
       setLoading(false);
     }
   };
