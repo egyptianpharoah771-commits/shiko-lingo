@@ -102,9 +102,14 @@ function SubscriptionGuard({ children }) {
 
   if (loading) return null;
 
-  // منع redirect loop
-  if (!active && location.pathname !== "/upgrade") {
-    return <Navigate to="/upgrade" replace />;
+  if (!active) {
+    return (
+      <Navigate
+        to="/upgrade"
+        state={{ from: location }}
+        replace
+      />
+    );
   }
 
   return children;
@@ -189,98 +194,52 @@ function App() {
 
   return (
     <Router>
-      <AppLayout>
-        <Routes>
-          {/* Free Routes */}
-          <Route path="/" element={<Entry />} />
-          <Route path="/assessment" element={<AssessmentPage />} />
-          <Route path="/upgrade" element={<Upgrade />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Entry />} />
+        <Route path="/assessment" element={<AssessmentPage />} />
+        <Route path="/upgrade" element={<Upgrade />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <SubscriptionGuard>
-                <Dashboard />
-              </SubscriptionGuard>
-            }
-          />
+        {/* Protected Area */}
+        <Route
+          path="/*"
+          element={
+            <SubscriptionGuard>
+              <AppLayout>
+                <Routes>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/grammar" element={<GrammarLevels />} />
+                  <Route path="/vocabulary" element={<VocabularyPage />} />
+                  <Route path="/listening" element={<ListeningHome />} />
+                  <Route path="/reading" element={<ReadingHome />} />
+                  <Route path="/speaking" element={<SpeakingHome />} />
+                  <Route path="/writing" element={<Writing />} />
 
-          <Route
-            path="/grammar"
-            element={
-              <SubscriptionGuard>
-                <GrammarLevels />
-              </SubscriptionGuard>
-            }
-          />
+                  <Route
+                    path="/pi"
+                    element={
+                      <AdminGuard>
+                        <PI />
+                      </AdminGuard>
+                    }
+                  />
 
-          <Route
-            path="/vocabulary"
-            element={
-              <SubscriptionGuard>
-                <VocabularyPage />
-              </SubscriptionGuard>
-            }
-          />
-
-          <Route
-            path="/listening"
-            element={
-              <SubscriptionGuard>
-                <ListeningHome />
-              </SubscriptionGuard>
-            }
-          />
-
-          <Route
-            path="/reading"
-            element={
-              <SubscriptionGuard>
-                <ReadingHome />
-              </SubscriptionGuard>
-            }
-          />
-
-          <Route
-            path="/speaking"
-            element={
-              <SubscriptionGuard>
-                <SpeakingHome />
-              </SubscriptionGuard>
-            }
-          />
-
-          <Route
-            path="/writing"
-            element={
-              <SubscriptionGuard>
-                <Writing />
-              </SubscriptionGuard>
-            }
-          />
-
-          <Route
-            path="/pi"
-            element={
-              <AdminGuard>
-                <PI />
-              </AdminGuard>
-            }
-          />
-
-          <Route
-            path="/admin/feedback"
-            element={
-              <AdminGuard>
-                <AdminFeedback />
-              </AdminGuard>
-            }
-          />
-        </Routes>
-      </AppLayout>
+                  <Route
+                    path="/admin/feedback"
+                    element={
+                      <AdminGuard>
+                        <AdminFeedback />
+                      </AdminGuard>
+                    }
+                  />
+                </Routes>
+              </AppLayout>
+            </SubscriptionGuard>
+          }
+        />
+      </Routes>
     </Router>
   );
 }
