@@ -3,21 +3,24 @@ export async function authenticateWithPi() {
     throw new Error("Pi SDK not available");
   }
 
-  // REQUIRED scopes for payments
   const scopes = ["username", "payments"];
 
   const auth = await window.Pi.authenticate(
     scopes,
     (payment) => {
-      console.warn(
-        "⚠️ Incomplete payment found:",
-        payment
-      );
+      console.warn("⚠️ Incomplete payment found:", payment);
     }
   );
 
+  const uid = auth.user.uid;
+  const username = auth.user.username;
+
+  // 🔐 Persist identity for subscription checks
+  localStorage.setItem("pi_uid", uid);
+  localStorage.setItem("pi_username", username);
+
   return {
-    uid: auth.user.uid,
-    username: auth.user.username,
+    uid,
+    username,
   };
 }

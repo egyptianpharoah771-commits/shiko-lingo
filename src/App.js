@@ -246,8 +246,25 @@ function SubscriptionGuard({ children }) {
   useEffect(() => {
     const checkSubscription = async () => {
       try {
-        const res = await fetch("/api/check-subscription");
-        const data = await res.json();
+const uid = localStorage.getItem("pi_uid");
+
+if (!uid) {
+  setActive(false);
+  setLoading(false);
+  return;
+}
+
+const res = await fetch(
+  `/api/check-subscription?uid=${encodeURIComponent(uid)}`
+);
+
+const data = await res.json();
+
+if (res.ok && data.active) {
+  setActive(true);
+} else {
+  setActive(false);
+}
 
         if (res.ok && data.active) {
           setActive(true);
