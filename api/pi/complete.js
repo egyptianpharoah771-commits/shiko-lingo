@@ -38,6 +38,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    let piConfirmed = false;
+
     // 1️⃣ Confirm payment with Pi
     const response = await fetch(
       `${PI_API_BASE}/v2/payments/${paymentId}/complete`,
@@ -50,9 +52,27 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error("PI API ERROR:", data);
-      return res.status(response.status).json(data);
+    if (response.ok) {
+      piConfirmed = true;
+    } else {
+      // 🔥 Recovery: لو الدفع already completed
+      if (
+        data?.error?.code === "PAYMENT_ALREADY_COMPLETED" ||
+        data?.error?.message?.toLowerCase()?.includes("already")
+      ) {
+        console.log("Payment already completed on Pi. Continuing recovery...");
+        piConfirmed = true;
+      } else {
+        console.error("PI API ERROR:", data);
+        return res.status(response.status).json(data);
+      }
+    }
+
+    if (!piConfirmed) {
+      return res.status(500).json({
+        success: false,
+        error: "PI_CONFIRMATION_FAILED",
+      });
     }
 
     const now = new Date();
@@ -74,14 +94,13 @@ export default async function handler(req, res) {
     }
 
     if (existingPayment) {
-      // Payment already recorded → don't extend again
       return res.status(200).json({
         success: true,
         note: "PAYMENT_ALREADY_PROCESSED",
       });
     }
 
-    // 3️⃣ Record payment FIRST (critical step)
+    // 3️⃣ Record payment
     const { error: insertPaymentError } = await supabase
       .from("payments")
       .insert({
