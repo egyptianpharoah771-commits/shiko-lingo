@@ -30,79 +30,52 @@ function Upgrade() {
 
       localStorage.setItem("pi_uid", uid);
 
-      // 2️⃣ Wrap Pi.createPayment in Promise (important)
-      await new Promise((resolve, reject) => {
-        window.Pi.createPayment(
-          {
-            amount: 3,
-            memo: "Shiko Lingo Monthly Subscription",
-            metadata: { plan: "MONTHLY" },
+      // 2️⃣ Start payment (NO wrapping Promise)
+      window.Pi.createPayment(
+        {
+          amount: 3,
+          memo: "Shiko Lingo Monthly Subscription",
+          metadata: { plan: "MONTHLY" },
+        },
+        {
+          /* ===== Server Approval ===== */
+          onReadyForServerApproval: async (paymentId) => {
+            await fetch("/api/pi/approve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId }),
+            });
           },
-          {
-            /* ===== Server Approval ===== */
-            onReadyForServerApproval: async (paymentId) => {
-              try {
-                const res = await fetch("/api/pi/approve", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ paymentId }),
-                });
 
-                if (!res.ok) {
-                  const err = await res.text();
-                  reject(new Error("Approve failed: " + err));
-                }
-              } catch (err) {
-                reject(err);
-              }
-            },
+          /* ===== Server Completion ===== */
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            // 🔥 Just call complete — don't block SDK
+            fetch("/api/pi/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId, txid, uid }),
+            });
 
-            /* ===== Server Completion ===== */
-            onReadyForServerCompletion: async (paymentId, txid) => {
-              try {
-                const res = await fetch("/api/pi/complete", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ paymentId, txid, uid }),
-                });
+            // 🔥 Redirect immediately
+            window.location.href = "/dashboard";
+          },
 
-                if (!res.ok) {
-                  const err = await res.text();
-                  reject(new Error("Complete failed: " + err));
-                  return;
-                }
+          onCancel: () => {
+            setError("Payment cancelled");
+            setLoading(false);
+          },
 
-                const data = await res.json();
-
-                if (!data.success) {
-                  reject(new Error("Subscription activation failed"));
-                  return;
-                }
-
-                resolve(data);
-              } catch (err) {
-                reject(err);
-              }
-            },
-
-            onCancel: () => {
-              reject(new Error("Payment cancelled"));
-            },
-
-            onError: (err) => {
-              reject(err || new Error("Payment failed"));
-            },
-          }
-        );
-      });
-
-      // 3️⃣ Redirect only AFTER full success
-      window.location.href = "/dashboard";
+          onError: (err) => {
+            console.error("Payment error:", err);
+            setError("Payment failed");
+            setLoading(false);
+          },
+        }
+      );
 
     } catch (err) {
       console.error("Subscription error:", err);
       setError(err.message || "Payment failed");
-    } finally {
       setLoading(false);
     }
   };

@@ -1,11 +1,4 @@
-/**
- * Pi Payments Integration
- * -----------------------
- * Handles Pi SDK payment flow only.
- * Checklist-compliant & Production-ready
- */
-
-export function createPiPayment({ amount, memo }) {
+export async function createPiPayment({ amount, memo }) {
   if (!window.Pi) {
     throw new Error("Pi SDK not available");
   }
@@ -14,96 +7,74 @@ export function createPiPayment({ amount, memo }) {
     throw new Error("Invalid payment amount");
   }
 
-  try {
-    // ❗ Pi.createPayment is NOT async by design
+  // 1️⃣ Authenticate first
+  const auth = await window.Pi.authenticate(
+    ["username", "payments"],
+    () => {}
+  );
+
+  const uid = auth?.user?.uid;
+
+  if (!uid) {
+    throw new Error("Authentication failed");
+  }
+
+  localStorage.setItem("pi_uid", uid);
+
+  return new Promise((resolve, reject) => {
     window.Pi.createPayment(
       {
         amount,
         memo,
+        metadata: { plan: "MONTHLY" },
       },
       {
-        /* =========================
-           STEP 1 — Server Approval
-        ========================= */
+        /* ===== Approval ===== */
         onReadyForServerApproval: async (paymentId) => {
-          console.log("✅ Ready for approval:", paymentId);
-
-          const res = await fetch(
-            "/api/pi?action=approve",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ paymentId }),
-            }
-          );
+          const res = await fetch("/api/pi/approve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId }),
+          });
 
           if (!res.ok) {
             const err = await res.text();
-            throw new Error(
-              "Server approval failed: " + err
-            );
+            reject(new Error("Approve failed: " + err));
           }
         },
 
-        /* =========================
-           STEP 2 — Server Completion
-        ========================= */
-        onReadyForServerCompletion: async (
-          paymentId,
-          txid
-        ) => {
-          console.log(
-            "✅ Ready for completion:",
-            paymentId,
-            txid
-          );
-
-          const res = await fetch(
-            "/api/pi?action=complete",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ paymentId, txid }),
-            }
-          );
+        /* ===== Completion ===== */
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          const res = await fetch("/api/pi/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paymentId, txid, uid }),
+          });
 
           if (!res.ok) {
             const err = await res.text();
-            throw new Error(
-              "Server completion failed: " + err
-            );
+            reject(new Error("Complete failed: " + err));
+            return;
           }
 
-          console.log(
-            "🏁 Pi payment flow completed successfully"
-          );
+          const data = await res.json();
+
+          if (!data.success) {
+            reject(new Error("Subscription activation failed"));
+            return;
+          }
+
+          resolve(data);
         },
 
-        /* =========================
-           User Actions / Errors
-        ========================= */
-        onCancel: (paymentId) => {
-          console.warn(
-            "❌ Payment cancelled:",
-            paymentId
-          );
+        onCancel: () => {
+          reject(new Error("Payment cancelled"));
         },
 
-        onError: (error, payment) => {
-          console.error(
-            "❌ Pi payment error:",
-            error,
-            payment
-          );
+        onError: (err) => {
+          reject(err);
         },
       }
     );
-  } catch (err) {
-    console.error("❌ createPiPayment failed:", err);
-    throw err;
-  }
+  });
 }

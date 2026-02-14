@@ -19,104 +19,94 @@ export default function PI() {
     setError("");
     setMessage("");
 
-    let uid = null;
-
     try {
-      // ✅ Authenticate first
+      // 1️⃣ Authenticate
       const auth = await window.Pi.authenticate(
         ["username", "payments"],
         () => {}
       );
 
-      uid = auth?.user?.uid;
+      const uid = auth?.user?.uid;
 
       if (!uid) {
         throw new Error("Missing UID from Pi authentication");
       }
 
-      // ✅ Save UID for subscription checks
       localStorage.setItem("pi_uid", uid);
-    } catch (err) {
-      console.error("Pi authentication failed", err);
-      setError("❌ Pi authentication failed");
-      setLoading(false);
-      return;
-    }
 
-    try {
-      window.Pi.createPayment(
-        {
-          amount: 3, // ✅ Monthly subscription price
-          memo: "Shiko Lingo - Monthly Subscription",
-          metadata: {
-            plan: "MONTHLY",
+      // 2️⃣ Wrap createPayment in Promise (important)
+      await new Promise((resolve, reject) => {
+        window.Pi.createPayment(
+          {
+            amount: 3,
+            memo: "Shiko Lingo - Monthly Subscription",
+            metadata: { plan: "MONTHLY" },
           },
-        },
-        {
-          /* =========================
-             STEP 1 — Server Approval
-          ========================= */
-          onReadyForServerApproval: (paymentId) => {
-            return fetch("/api/pi/approve", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId }),
-            }).then((res) => {
-              if (!res.ok) {
-                throw new Error("Approve failed");
-              }
-              return res.json();
-            });
-          },
+          {
+            /* ===== Server Approval ===== */
+            onReadyForServerApproval: async (paymentId) => {
+              try {
+                const res = await fetch("/api/pi/approve", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ paymentId }),
+                });
 
-          /* =========================
-             STEP 2 — Server Completion
-          ========================= */
-          onReadyForServerCompletion: (paymentId, txid) => {
-            return fetch("/api/pi/complete", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                paymentId,
-                txid,
-                uid,
-              }),
-            })
-              .then((res) => {
                 if (!res.ok) {
-                  throw new Error("Complete failed");
+                  const err = await res.text();
+                  reject(new Error("Approve failed: " + err));
                 }
-                return res.json();
-              })
-              .then((data) => {
-                if (data.success) {
-                  setMessage("✅ Subscription activated successfully!");
-                } else {
-                  throw new Error("Subscription activation failed");
+              } catch (err) {
+                reject(err);
+              }
+            },
+
+            /* ===== Server Completion ===== */
+            onReadyForServerCompletion: async (paymentId, txid) => {
+              try {
+                const res = await fetch("/api/pi/complete", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ paymentId, txid, uid }),
+                });
+
+                if (!res.ok) {
+                  const err = await res.text();
+                  reject(new Error("Complete failed: " + err));
+                  return;
                 }
-                setLoading(false);
-                return data;
-              });
-          },
 
-          /* =========================
-             Cancel / Error
-          ========================= */
-          onCancel: () => {
-            setError("⚠️ Payment cancelled");
-            setLoading(false);
-          },
+                const data = await res.json();
 
-          onError: (err) => {
-            console.error("Pi Payment Error", err);
-            setError("❌ Payment failed");
-            setLoading(false);
-          },
-        }
-      );
+                if (!data.success) {
+                  reject(new Error("Subscription activation failed"));
+                  return;
+                }
+
+                resolve(data);
+              } catch (err) {
+                reject(err);
+              }
+            },
+
+            onCancel: () => {
+              reject(new Error("Payment cancelled"));
+            },
+
+            onError: (err) => {
+              reject(err || new Error("Payment failed"));
+            },
+          }
+        );
+      });
+
+      // 3️⃣ Success UI
+      setMessage("✅ Subscription activated successfully!");
+
     } catch (err) {
-      console.error("Payment initialization failed", err);
-      setError("❌ Payment initialization failed");
+      console.error("Pi payment error:", err);
+      setError(err.message || "❌ Payment failed");
+    } finally {
       setLoading(false);
     }
   };
