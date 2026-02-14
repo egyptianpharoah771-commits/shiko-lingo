@@ -1,16 +1,7 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Upgrade() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // 🔒 Upgrade page deprecated
-    // App now uses a single subscription (3 Pi)
-    // AI is a built-in lesson feedback enhancement
-
-    navigate("/dashboard", { replace: true });
-  }, [navigate]);
 
   return (
     <div
@@ -21,15 +12,27 @@ function Upgrade() {
         textAlign: "center",
       }}
     >
-      <h2>ℹ️ Subscription Update</h2>
+      <h2>🔒 Subscription Required</h2>
 
       <p style={{ marginTop: "12px", color: "#555" }}>
-        Shiko Lingo now uses a single simple subscription.
+        Access to Shiko Lingo requires an active PRO subscription.
       </p>
 
       <p style={{ marginTop: "8px", color: "#777" }}>
-        You are being redirected…
+        Please subscribe to unlock all lessons and features.
       </p>
+
+      <button
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          fontWeight: "bold",
+          cursor: "pointer",
+        }}
+        onClick={() => navigate("/pi")}
+      >
+        Subscribe Now
+      </button>
     </div>
   );
 }

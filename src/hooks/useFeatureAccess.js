@@ -1,35 +1,42 @@
-/**
- * Feature Access Hook
- * -------------------
- * Centralized subscription-based access logic
- * - No free levels
- * - All content requires active PRO subscription
- * - Subscription state comes from backend (not localStorage)
- */
-
-import {
-  getUserId,
-  getPiUser,
-} from "../utils/userIdentity";
+import { useEffect, useState } from "react";
+import { getUserId } from "../utils/userIdentity";
 
 export function useFeatureAccess() {
-  const piUser = getPiUser();
   const userId = getUserId();
+  const [loading, setLoading] = useState(true);
+  const [isPro, setIsPro] = useState(false);
 
-  const isAuthenticated = !!piUser;
-  const isPro = isAuthenticated && piUser?.isSubscribed === true;
+  useEffect(() => {
+    const check = async () => {
+      try {
+        if (!userId) {
+          setIsPro(false);
+          return;
+        }
+
+        const res = await fetch(
+          `/api/check-subscription?uid=${encodeURIComponent(userId)}`
+        );
+
+        const data = await res.json();
+        setIsPro(res.ok && data.active);
+      } catch {
+        setIsPro(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    check();
+  }, [userId]);
 
   return {
-    // 🔐 Full access only for PRO users
     canAccess: isPro,
-
-    // 🤖 AI also requires PRO
     canGetAIFeedback: isPro,
-
     requiresUpgrade: !isPro,
-
-    isAuthenticated,
+    isAuthenticated: !!userId,
     userId,
+    loading,
     packageName: isPro ? "PRO" : "FREE",
   };
 }
