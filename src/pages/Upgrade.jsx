@@ -16,7 +16,11 @@ function Upgrade() {
     setError("");
 
     try {
-      // 1️⃣ Authenticate
+      /* ==============================
+         1️⃣ Authenticate
+      ============================== */
+      console.log("🔐 Starting Pi authentication...");
+
       const auth = await window.Pi.authenticate(
         ["username", "payments"],
         () => {}
@@ -28,53 +32,84 @@ function Upgrade() {
         throw new Error("Authentication failed");
       }
 
+      console.log("✅ Authenticated UID:", uid);
       localStorage.setItem("pi_uid", uid);
 
-      // 2️⃣ Start payment (NO wrapping Promise)
+      /* ==============================
+         2️⃣ Create Payment (Official Flow)
+      ============================== */
+      const orderId = `order_${Date.now()}`;
+
+      console.log("💳 Creating payment with orderId:", orderId);
+
       window.Pi.createPayment(
         {
           amount: 3,
           memo: "Shiko Lingo Monthly Subscription",
-          metadata: { plan: "MONTHLY" },
+          metadata: {
+            orderId,
+            plan: "MONTHLY",
+          },
         },
         {
           /* ===== Server Approval ===== */
           onReadyForServerApproval: async (paymentId) => {
-            await fetch("/api/pi/approve", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId }),
-            });
+            console.log("🔥 APPROVAL CALLBACK FIRED:", paymentId);
+
+            try {
+              const res = await fetch("/api/pi/approve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ paymentId }),
+              });
+
+              const data = await res.json();
+              console.log("✅ Approve response:", data);
+            } catch (err) {
+              console.error("❌ Approve request failed:", err);
+            }
           },
 
           /* ===== Server Completion ===== */
           onReadyForServerCompletion: async (paymentId, txid) => {
-            // 🔥 Just call complete — don't block SDK
-            fetch("/api/pi/complete", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId, txid, uid }),
-            });
+            console.log("🔥 COMPLETION CALLBACK FIRED:", paymentId, txid);
 
-            // 🔥 Redirect immediately
+            try {
+              await fetch("/api/pi/complete", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  paymentId,
+                  txid,
+                  uid,
+                }),
+              });
+
+              console.log("✅ Complete request sent");
+            } catch (err) {
+              console.error("❌ Complete request failed:", err);
+            }
+
+            // Redirect after lifecycle reached completion stage
             window.location.href = "/dashboard";
           },
 
-          onCancel: () => {
-            setError("Payment cancelled");
+          onCancel: (paymentId) => {
+            console.warn("⚠️ Payment cancelled:", paymentId);
+            setError("Payment was cancelled");
             setLoading(false);
           },
 
           onError: (err) => {
-            console.error("Payment error:", err);
-            setError("Payment failed");
+            console.error("❌ Payment error:", err);
+            setError("Payment failed. Please try again.");
             setLoading(false);
           },
         }
       );
 
     } catch (err) {
-      console.error("Subscription error:", err);
+      console.error("❌ Subscription error:", err);
       setError(err.message || "Payment failed");
       setLoading(false);
     }
@@ -102,7 +137,7 @@ function Upgrade() {
           marginTop: "25px",
           padding: "12px 20px",
           fontWeight: "bold",
-          cursor: "pointer",
+          cursor: loading ? "not-allowed" : "pointer",
         }}
       >
         {loading ? "Processing…" : "Subscribe Now"}
