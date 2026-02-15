@@ -6,17 +6,16 @@ export async function initPiSDK() {
     return;
   }
 
+  // 🚫 Prevent double execution
   if (initialized) return;
 
-  window.Pi.init({
-    version: "2.0",
-    sandbox: false,
-  });
-
-  console.log("Pi SDK initialized");
+  console.log("Pi SDK detected (init handled in index.html)");
 
   try {
-    // 🔐 Authenticate + Recovery Gate
+    /* ==============================
+       🔐 Authenticate + Recovery Gate
+    ============================== */
+
     const auth = await window.Pi.authenticate(
       ["username", "payments"],
       async (payment) => {
@@ -36,7 +35,7 @@ export async function initPiSDK() {
 
           console.log("✅ Incomplete payment recovered");
         } catch (err) {
-          console.error("Recovery failed:", err);
+          console.error("❌ Recovery failed:", err);
         }
       }
     );
@@ -45,11 +44,13 @@ export async function initPiSDK() {
 
     if (uid) {
       localStorage.setItem("pi_uid", uid);
-      console.log("User authenticated:", uid);
+      console.log("✅ User authenticated:", uid);
+    } else {
+      console.warn("⚠ Authentication returned no UID");
     }
 
   } catch (err) {
-    console.error("Authentication failed:", err);
+    console.error("❌ Authentication failed:", err);
   }
 
   initialized = true;
