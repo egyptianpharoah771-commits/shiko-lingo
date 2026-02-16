@@ -1,18 +1,9 @@
-const PI_API_BASE = "https://api.minepi.com";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-
-function piHeaders() {
-  return {
-    Authorization: `Key ${process.env.PI_API_KEY}`,
-    "Content-Type": "application/json",
-    "X-Pi-Platform": "true",
-  };
-}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -29,40 +20,15 @@ export default async function handler(req, res) {
 
   try {
     /* =========================
-       STEP 1 — Confirm with Pi
+       DEBUG MODE — BYPASS PI
+       Direct insert into payments
     ========================= */
-    const response = await fetch(
-      `${PI_API_BASE}/v2/payments/${paymentId}/complete`,
-      {
-        method: "POST",
-        headers: piHeaders(),
-        body: JSON.stringify({ txid }),
-      }
-    );
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      if (
-        data?.error?.code === "PAYMENT_ALREADY_COMPLETED" ||
-        data?.error?.message?.toLowerCase()?.includes("already")
-      ) {
-        console.log("Payment already completed on Pi. Continuing...");
-      } else {
-        console.error("PI API ERROR:", data);
-        return res.status(response.status).json(data);
-      }
-    }
-
-    /* =========================
-       STEP 2 — DIRECT INSERT TEST
-       (Bypass RPC completely)
-    ========================= */
-    const { data: insertData, error } = await supabase
+    const { data, error } = await supabase
       .from("payments")
       .insert({
         payment_id: "killer_test_" + Date.now(),
-        uid: "debug_user",
+        uid: uid,
         plan: "MONTHLY",
         status: "completed",
       });
@@ -71,11 +37,11 @@ export default async function handler(req, res) {
       console.error("DIRECT INSERT ERROR:", error);
       return res.status(500).json({
         success: false,
-        error,
+        error: error.message,
       });
     }
 
-    console.log("DIRECT INSERT SUCCESS:", insertData);
+    console.log("DIRECT INSERT SUCCESS:", data);
 
     return res.status(200).json({
       success: true,
@@ -83,10 +49,10 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error("PI COMPLETE ERROR:", err);
+    console.error("SERVER ERROR:", err);
     return res.status(500).json({
       success: false,
-      error: "PI_COMPLETE_ERROR",
+      error: "SERVER_ERROR",
     });
   }
 }
