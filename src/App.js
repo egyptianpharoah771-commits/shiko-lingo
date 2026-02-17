@@ -81,10 +81,13 @@ function SubscriptionGuard({ children }) {
       try {
         const uid = localStorage.getItem("pi_uid");
 
-        if (!uid) {
-          if (isMounted) setSubscription(null);
-          return;
-        }
+       if (!uid) {
+  if (isMounted) {
+    setSubscription(null);
+    setLoading(false);
+  }
+  return;
+}
 
         const res = await fetch(
           `/api/check-subscription?uid=${encodeURIComponent(uid)}`,
