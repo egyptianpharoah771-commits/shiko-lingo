@@ -1,3 +1,4 @@
+import { AuthProvider } from "./context/AuthContext";
 import {
   BrowserRouter as Router,
   Routes,
@@ -220,52 +221,54 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Entry />} />
-        <Route path="/assessment" element={<AssessmentPage />} />
-        <Route path="/upgrade" element={<Upgrade />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Entry />} />
+          <Route path="/assessment" element={<AssessmentPage />} />
+          <Route path="/upgrade" element={<Upgrade />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
 
-        <Route
-          path="/*"
-          element={
-            <SubscriptionGuard>
-              <AppLayout>
-                <Routes>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/grammar" element={<GrammarLevels />} />
-                  <Route path="/vocabulary" element={<VocabularyPage />} />
-                  <Route path="/listening" element={<ListeningHome />} />
-                  <Route path="/reading" element={<ReadingHome />} />
-                  <Route path="/speaking" element={<SpeakingHome />} />
-                  <Route path="/writing" element={<Writing />} />
+          <Route
+            path="/*"
+            element={
+              <SubscriptionGuard>
+                <AppLayout>
+                  <Routes>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/grammar" element={<GrammarLevels />} />
+                    <Route path="/vocabulary" element={<VocabularyPage />} />
+                    <Route path="/listening" element={<ListeningHome />} />
+                    <Route path="/reading" element={<ReadingHome />} />
+                    <Route path="/speaking" element={<SpeakingHome />} />
+                    <Route path="/writing" element={<Writing />} />
 
-                  <Route
-                    path="/pi"
-                    element={
-                      <AdminGuard>
-                        <PI />
-                      </AdminGuard>
-                    }
-                  />
+                    <Route
+                      path="/pi"
+                      element={
+                        <AdminGuard>
+                          <PI />
+                        </AdminGuard>
+                      }
+                    />
 
-                  <Route
-                    path="/admin/feedback"
-                    element={
-                      <AdminGuard>
-                        <AdminFeedback />
-                      </AdminGuard>
-                    }
-                  />
-                </Routes>
-              </AppLayout>
-            </SubscriptionGuard>
-          }
-        />
-      </Routes>
-    </Router>
+                    <Route
+                      path="/admin/feedback"
+                      element={
+                        <AdminGuard>
+                          <AdminFeedback />
+                        </AdminGuard>
+                      }
+                    />
+                  </Routes>
+                </AppLayout>
+              </SubscriptionGuard>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
