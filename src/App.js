@@ -67,7 +67,7 @@ function Entry() {
 }
 
 /* ======================
-   Subscription Guard (Production Version)
+   Subscription Guard
 ====================== */
 function SubscriptionGuard({ children }) {
   const location = useLocation();
@@ -81,13 +81,14 @@ function SubscriptionGuard({ children }) {
       try {
         const uid = localStorage.getItem("pi_uid");
 
-       if (!uid) {
-  if (isMounted) {
-    setSubscription(null);
-    setLoading(false);
-  }
-  return;
-}
+        // Hybrid mode: no UID = guest
+        if (!uid) {
+          if (isMounted) {
+            setSubscription(null);
+            setLoading(false);
+          }
+          return;
+        }
 
         const res = await fetch(
           `/api/check-subscription?uid=${encodeURIComponent(uid)}`,
@@ -135,13 +136,7 @@ function SubscriptionGuard({ children }) {
   }
 
   if (!subscription?.active) {
-    return (
-      <Navigate
-        to="/upgrade"
-        state={{ from: location }}
-        replace
-      />
-    );
+    return <Navigate to="/upgrade" state={{ from: location }} replace />;
   }
 
   return children;
@@ -227,14 +222,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<Entry />} />
         <Route path="/assessment" element={<AssessmentPage />} />
         <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
 
-        {/* Protected Area */}
         <Route
           path="/*"
           element={

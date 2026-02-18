@@ -22,23 +22,34 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Pi Network SDK -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
-    <!-- Pi SDK Initialization (Single Source of Truth) -->
+    <!-- Pi Network SDK (Loaded only outside localhost) -->
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        if (window.Pi) {
-          window.Pi.init({
-            version: "2.0",
-            sandbox: false, // 🔴 Production Mode
-          });
+      (function () {
+        const isLocal =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1";
 
-          console.log("✅ Pi SDK initialized from index.html");
+        if (!isLocal) {
+          const script = document.createElement("script");
+          script.src = "https://sdk.minepi.com/pi-sdk.js";
+          script.async = true;
+
+          script.onload = function () {
+            if (window.Pi) {
+              window.Pi.init({
+                version: "2.0",
+                sandbox: false, // 🔴 Production Mode
+              });
+
+              console.log("✅ Pi SDK initialized (production domain)");
+            }
+          };
+
+          document.head.appendChild(script);
         } else {
-          console.error("❌ Pi SDK failed to load");
+          console.log("🟡 Pi SDK disabled on localhost (Hybrid Dev Mode)");
         }
-      });
+      })();
     </script>
   </head>
 
