@@ -1,4 +1,7 @@
 import { AuthProvider } from "./context/AuthContext";
+import { SubscriptionProvider } from "./context/SubscriptionContext";
+import { useSubscription } from "./hooks/useSubscription";
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -8,6 +11,7 @@ import {
   useNavigate,
   Navigate,
 } from "react-router-dom";
+
 import { useEffect, useState } from "react";
 import { initPiSDK } from "./lib/initPi";
 
@@ -39,6 +43,7 @@ import VocabularyPage from "./vocabulary/vocabularypage";
 import GrammarLevels from "./grammar/GrammarLevels";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Login from "./pages/Login";
 
 /* ======================
    Entry Page
@@ -63,70 +68,21 @@ function Entry() {
       <button style={secondaryBtn} onClick={() => navigate("/assessment")}>
         🎯 Know your level
       </button>
+
+      <br />
+      <br />
+
+      <button onClick={() => navigate("/login")}>🔐 Login</button>
     </div>
   );
 }
 
 /* ======================
-   Subscription Guard
+   Subscription Guard (NEW)
 ====================== */
 function SubscriptionGuard({ children }) {
   const location = useLocation();
-  const [loading, setLoading] = useState(true);
-  const [subscription, setSubscription] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const checkSubscription = async () => {
-      try {
-        const uid = localStorage.getItem("pi_uid");
-
-        // Hybrid mode: no UID = guest
-        if (!uid) {
-          if (isMounted) {
-            setSubscription(null);
-            setLoading(false);
-          }
-          return;
-        }
-
-        const res = await fetch(
-          `/api/check-subscription?uid=${encodeURIComponent(uid)}`,
-          { cache: "no-store" }
-        );
-
-        if (!res.ok) {
-          throw new Error("Subscription check failed");
-        }
-
-        const data = await res.json();
-
-        if (isMounted) {
-          if (data.active) {
-            setSubscription({
-              active: true,
-              plan: data.plan || null,
-              expiresAt: data.expiresAt || null,
-            });
-          } else {
-            setSubscription(null);
-          }
-        }
-      } catch (err) {
-        console.error("Subscription check error:", err);
-        if (isMounted) setSubscription(null);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    checkSubscription();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { isActive, loading } = useSubscription();
 
   if (loading) {
     return (
@@ -136,7 +92,7 @@ function SubscriptionGuard({ children }) {
     );
   }
 
-  if (!subscription?.active) {
+  if (!isActive) {
     return <Navigate to="/upgrade" state={{ from: location }} replace />;
   }
 
@@ -222,52 +178,57 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Entry />} />
-          <Route path="/assessment" element={<AssessmentPage />} />
-          <Route path="/upgrade" element={<Upgrade />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
+      <SubscriptionProvider>
+        <Router>
+          <Routes>
+            {/* Public */}
+            <Route path="/" element={<Entry />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/assessment" element={<AssessmentPage />} />
+            <Route path="/upgrade" element={<Upgrade />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
 
-          <Route
-            path="/*"
-            element={
-              <SubscriptionGuard>
-                <AppLayout>
-                  <Routes>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/grammar" element={<GrammarLevels />} />
-                    <Route path="/vocabulary" element={<VocabularyPage />} />
-                    <Route path="/listening" element={<ListeningHome />} />
-                    <Route path="/reading" element={<ReadingHome />} />
-                    <Route path="/speaking" element={<SpeakingHome />} />
-                    <Route path="/writing" element={<Writing />} />
+            {/* Protected */}
+            <Route
+              path="/*"
+              element={
+                <SubscriptionGuard>
+                  <AppLayout>
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/grammar" element={<GrammarLevels />} />
+                      <Route path="/vocabulary" element={<VocabularyPage />} />
+                      <Route path="/listening" element={<ListeningHome />} />
+                      <Route path="/reading" element={<ReadingHome />} />
+                      <Route path="/speaking" element={<SpeakingHome />} />
+                      <Route path="/writing" element={<Writing />} />
 
-                    <Route
-                      path="/pi"
-                      element={
-                        <AdminGuard>
-                          <PI />
-                        </AdminGuard>
-                      }
-                    />
+                      <Route
+                        path="/pi"
+                        element={
+                          <AdminGuard>
+                            <PI />
+                          </AdminGuard>
+                        }
+                      />
 
-                    <Route
-                      path="/admin/feedback"
-                      element={
-                        <AdminGuard>
-                          <AdminFeedback />
-                        </AdminGuard>
-                      }
-                    />
-                  </Routes>
-                </AppLayout>
-              </SubscriptionGuard>
-            }
-          />
-        </Routes>
-      </Router>
+                      <Route
+                        path="/admin/feedback"
+                        element={
+                          <AdminGuard>
+                            <AdminFeedback />
+                          </AdminGuard>
+                        }
+                      />
+                    </Routes>
+                  </AppLayout>
+                </SubscriptionGuard>
+              }
+            />
+          </Routes>
+        </Router>
+      </SubscriptionProvider>
     </AuthProvider>
   );
 }
