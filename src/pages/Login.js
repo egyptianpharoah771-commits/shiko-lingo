@@ -1,18 +1,49 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const { user, logout, loading } = useAuth();
 
+  const isPiBrowser = useMemo(() => {
+    return typeof window !== "undefined" && window.Pi;
+  }, []);
+
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [step, setStep] = useState("EMAIL"); // EMAIL | CODE
+  const [step, setStep] = useState("EMAIL");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
   /* =========================
-     STEP 1 — SEND OTP CODE
+     PI LOGIN (Inside Pi Browser)
+  ========================= */
+  const handlePiLogin = async () => {
+    if (!window.Pi) return;
+
+    try {
+      setMessage("Authenticating with Pi...");
+      setSending(true);
+
+      const scopes = ["username", "payments"];
+
+      const auth = await window.Pi.authenticate(scopes, (payment) => {
+        console.log("Incomplete payment found:", payment);
+      });
+
+      console.log("Pi Auth Success:", auth);
+
+      setMessage("✅ Pi authentication successful.");
+    } catch (err) {
+      console.error("PI AUTH ERROR:", err);
+      setMessage("Pi authentication failed.");
+    }
+
+    setSending(false);
+  };
+
+  /* =========================
+     EMAIL OTP FLOW (Outside Pi)
   ========================= */
   const handleSendCode = async () => {
     if (!email) {
@@ -42,9 +73,6 @@ export default function Login() {
     setStep("CODE");
   };
 
-  /* =========================
-     STEP 2 — VERIFY CODE
-  ========================= */
   const handleVerifyCode = async () => {
     if (!code) {
       setMessage("Please enter the verification code.");
@@ -82,12 +110,40 @@ export default function Login() {
       {user ? (
         <>
           <p>Logged in as:</p>
-          <strong>{user.email}</strong>
+          <strong>{user.email || user.id}</strong>
           <br /><br />
           <button onClick={logout}>Logout</button>
         </>
       ) : (
         <>
+          {/* ===== PI LOGIN ===== */}
+          {isPiBrowser && (
+            <>
+              <button
+                onClick={handlePiLogin}
+                disabled={sending}
+                style={{
+                  padding: 12,
+                  width: "100%",
+                  marginBottom: 20,
+                  backgroundColor: "#6C5CE7",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  fontWeight: "bold",
+                }}
+              >
+                {sending ? "Connecting..." : "Continue with Pi"}
+              </button>
+
+              <hr style={{ margin: "20px 0" }} />
+              <p style={{ fontSize: 14, color: "#666" }}>
+                Or login with email
+              </p>
+            </>
+          )}
+
+          {/* ===== EMAIL OTP ===== */}
           {step === "EMAIL" && (
             <>
               <input
@@ -110,7 +166,7 @@ export default function Login() {
 
           {step === "CODE" && (
             <>
-              <p>Enter the 6-digit code sent to:</p>
+              <p>Enter the verification code sent to:</p>
               <strong>{email}</strong>
               <br /><br />
 
