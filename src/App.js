@@ -41,6 +41,8 @@ import ReadingHome from "./reading/ReadingHome";
 import SpeakingHome from "./speaking/SpeakingHome";
 import VocabularyPage from "./vocabulary/vocabularypage";
 import GrammarLevels from "./grammar/GrammarLevels";
+import GrammarUnits from "./grammar/GrammarUnits";
+import GrammarUnitPage from "./grammar/GrammarUnitPage";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
@@ -78,7 +80,7 @@ function Entry() {
 }
 
 /* ======================
-   Subscription Guard (NEW)
+   Subscription Guard
 ====================== */
 function SubscriptionGuard({ children }) {
   const location = useLocation();
@@ -197,7 +199,18 @@ function App() {
                   <AppLayout>
                     <Routes>
                       <Route path="/dashboard" element={<Dashboard />} />
+
+                      {/* Grammar Routes */}
                       <Route path="/grammar" element={<GrammarLevels />} />
+                      <Route
+                        path="/grammar/:level"
+                        element={<GrammarUnits />}
+                      />
+                      <Route
+                        path="/grammar/:level/:unit"
+                        element={<GrammarUnitPage />}
+                      />
+
                       <Route path="/vocabulary" element={<VocabularyPage />} />
                       <Route path="/listening" element={<ListeningHome />} />
                       <Route path="/reading" element={<ReadingHome />} />
