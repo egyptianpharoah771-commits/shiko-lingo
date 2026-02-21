@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const { user, logout, loading } = useAuth();
 
-  const [isPiBrowser, setIsPiBrowser] = useState(false);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState("EMAIL");
@@ -13,23 +12,14 @@ export default function Login() {
   const [sending, setSending] = useState(false);
 
   /* =========================
-     Detect Pi SDK after load
-  ========================= */
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (window.Pi) {
-        setIsPiBrowser(true);
-        clearInterval(interval);
-      }
-    }, 300);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  /* =========================
      PI LOGIN
   ========================= */
   const handlePiLogin = async () => {
+    if (!window.Pi) {
+      setMessage("Pi Browser not detected.");
+      return;
+    }
+
     try {
       setSending(true);
       setMessage("Authenticating with Pi...");
@@ -63,9 +53,7 @@ export default function Login() {
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        shouldCreateUser: true,
-      },
+      options: { shouldCreateUser: true },
     });
 
     setSending(false);
@@ -121,34 +109,29 @@ export default function Login() {
         </>
       ) : (
         <>
-          {/* Pi Login */}
-          {isPiBrowser && (
-            <>
-              <button
-                onClick={handlePiLogin}
-                disabled={sending}
-                style={{
-                  padding: 12,
-                  width: "100%",
-                  marginBottom: 20,
-                  backgroundColor: "#6C5CE7",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 8,
-                  fontWeight: "bold",
-                }}
-              >
-                {sending ? "Connecting..." : "Continue with Pi"}
-              </button>
+          {/* ===== PI BUTTON ALWAYS VISIBLE ===== */}
+          <button
+            onClick={handlePiLogin}
+            disabled={sending}
+            style={{
+              padding: 12,
+              width: "100%",
+              marginBottom: 20,
+              backgroundColor: "#6C5CE7",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              fontWeight: "bold",
+            }}
+          >
+            {sending ? "Connecting..." : "Continue with Pi"}
+          </button>
 
-              <hr style={{ margin: "20px 0" }} />
-              <p style={{ fontSize: 14, color: "#666" }}>
-                Or login with email
-              </p>
-            </>
-          )}
+          <hr style={{ margin: "20px 0" }} />
+          <p style={{ fontSize: 14, color: "#666" }}>
+            Or login with email
+          </p>
 
-          {/* Email Flow */}
           {step === "EMAIL" && (
             <>
               <input
