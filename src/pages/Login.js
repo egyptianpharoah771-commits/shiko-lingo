@@ -1,14 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const { user, logout, loading } = useAuth();
 
-  const isPiBrowser = useMemo(() => {
-    return typeof window !== "undefined" && window.Pi;
-  }, []);
-
+  const [isPiBrowser, setIsPiBrowser] = useState(false);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState("EMAIL");
@@ -16,20 +13,30 @@ export default function Login() {
   const [sending, setSending] = useState(false);
 
   /* =========================
-     PI LOGIN (Inside Pi Browser)
+     Detect Pi SDK after load
+  ========================= */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (window.Pi) {
+        setIsPiBrowser(true);
+        clearInterval(interval);
+      }
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  /* =========================
+     PI LOGIN
   ========================= */
   const handlePiLogin = async () => {
-    if (!window.Pi) return;
-
     try {
-      setMessage("Authenticating with Pi...");
       setSending(true);
+      setMessage("Authenticating with Pi...");
 
       const scopes = ["username", "payments"];
 
-      const auth = await window.Pi.authenticate(scopes, (payment) => {
-        console.log("Incomplete payment found:", payment);
-      });
+      const auth = await window.Pi.authenticate(scopes);
 
       console.log("Pi Auth Success:", auth);
 
@@ -43,7 +50,7 @@ export default function Login() {
   };
 
   /* =========================
-     EMAIL OTP FLOW (Outside Pi)
+     EMAIL OTP FLOW
   ========================= */
   const handleSendCode = async () => {
     if (!email) {
@@ -64,7 +71,6 @@ export default function Login() {
     setSending(false);
 
     if (error) {
-      console.error("OTP SEND ERROR:", error);
       setMessage(error.message);
       return;
     }
@@ -91,7 +97,6 @@ export default function Login() {
     setSending(false);
 
     if (error) {
-      console.error("OTP VERIFY ERROR:", error);
       setMessage(error.message);
       return;
     }
@@ -116,7 +121,7 @@ export default function Login() {
         </>
       ) : (
         <>
-          {/* ===== PI LOGIN ===== */}
+          {/* Pi Login */}
           {isPiBrowser && (
             <>
               <button
@@ -143,7 +148,7 @@ export default function Login() {
             </>
           )}
 
-          {/* ===== EMAIL OTP ===== */}
+          {/* Email Flow */}
           {step === "EMAIL" && (
             <>
               <input
@@ -151,13 +156,8 @@ export default function Login() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                style={{
-                  padding: 10,
-                  width: "100%",
-                  marginBottom: 10,
-                }}
+                style={{ padding: 10, width: "100%", marginBottom: 10 }}
               />
-
               <button onClick={handleSendCode} disabled={sending}>
                 {sending ? "Sending..." : "Send Verification Code"}
               </button>
@@ -166,10 +166,6 @@ export default function Login() {
 
           {step === "CODE" && (
             <>
-              <p>Enter the verification code sent to:</p>
-              <strong>{email}</strong>
-              <br /><br />
-
               <input
                 type="text"
                 placeholder="Enter code"
@@ -180,32 +176,15 @@ export default function Login() {
                   width: "100%",
                   marginBottom: 10,
                   textAlign: "center",
-                  letterSpacing: 2,
                 }}
               />
-
               <button onClick={handleVerifyCode} disabled={sending}>
                 {sending ? "Verifying..." : "Verify & Login"}
-              </button>
-
-              <br /><br />
-
-              <button
-                onClick={() => {
-                  setStep("EMAIL");
-                  setCode("");
-                  setMessage("");
-                }}
-                style={{ fontSize: 12 }}
-              >
-                ← Change Email
               </button>
             </>
           )}
 
-          {message && (
-            <p style={{ marginTop: 15 }}>{message}</p>
-          )}
+          {message && <p style={{ marginTop: 15 }}>{message}</p>}
         </>
       )}
     </div>
