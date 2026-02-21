@@ -8,13 +8,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get current session on load
+    // Load existing session
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user || null);
       setLoading(false);
     });
 
-    // Listen for auth state changes
+    // Listen for auth changes
     const { data: listener } =
       supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user || null);
@@ -25,11 +25,12 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  // 🔥 OTP ONLY LOGIN (NO MAGIC LINK)
   const login = async (email) => {
     return await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin,
+        shouldCreateUser: true,
       },
     });
   };
