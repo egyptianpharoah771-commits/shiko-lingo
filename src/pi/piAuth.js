@@ -14,13 +14,11 @@ export async function authenticateWithPi() {
 
   const uid = auth.user.uid;
   const username = auth.user.username;
-
-  // 🔐 Persist identity for subscription checks
-  localStorage.setItem("pi_uid", uid);
-  localStorage.setItem("pi_username", username);
+  const accessToken = auth.accessToken;
 
   return {
     uid,
     username,
+    accessToken,
   };
 }
