@@ -2,6 +2,10 @@ import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 
+function isPiBrowser() {
+  return typeof window !== "undefined" && !!window.Pi;
+}
+
 export default function Login() {
   const { user, logout, loading } = useAuth();
 
@@ -11,37 +15,15 @@ export default function Login() {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
-  /* =========================
-     PI LOGIN
-  ========================= */
-  const handlePiLogin = async () => {
-    if (!window.Pi) {
-      setMessage("Pi Browser not detected.");
-      return;
-    }
-
-    try {
-      setSending(true);
-      setMessage("Authenticating with Pi...");
-
-      const scopes = ["username", "payments"];
-
-      const auth = await window.Pi.authenticate(scopes);
-
-      console.log("Pi Auth Success:", auth);
-
-      setMessage("✅ Pi authentication successful.");
-    } catch (err) {
-      console.error("PI AUTH ERROR:", err);
-      setMessage("Pi authentication failed.");
-    }
-
-    setSending(false);
-  };
+  // 🔒 Prevent Login UI inside Pi Browser completely
+  if (isPiBrowser()) {
+    return null;
+  }
 
   /* =========================
      EMAIL OTP FLOW
   ========================= */
+
   const handleSendCode = async () => {
     if (!email) {
       setMessage("Please enter your email.");
@@ -109,27 +91,8 @@ export default function Login() {
         </>
       ) : (
         <>
-          {/* ===== PI BUTTON ALWAYS VISIBLE ===== */}
-          <button
-            onClick={handlePiLogin}
-            disabled={sending}
-            style={{
-              padding: 12,
-              width: "100%",
-              marginBottom: 20,
-              backgroundColor: "#6C5CE7",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: "bold",
-            }}
-          >
-            {sending ? "Connecting..." : "Continue with Pi"}
-          </button>
-
-          <hr style={{ margin: "20px 0" }} />
           <p style={{ fontSize: 14, color: "#666" }}>
-            Or login with email
+            Login with email
           </p>
 
           {step === "EMAIL" && (
