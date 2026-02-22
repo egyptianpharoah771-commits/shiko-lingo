@@ -12,15 +12,25 @@ export const SubscriptionProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchSubscription = async () => {
-      if (!user) {
-        setSubscription(null);
-        setIsActive(false);
-        setLoading(false);
+      // 🛑 لا تبدأ قبل انتهاء auth بالكامل
+      if (authLoading) {
         return;
       }
 
-      setLoading(true);
+      // لو بعد انتهاء auth مفيش user فعليًا
+      if (!user) {
+        if (isMounted) {
+          setSubscription(null);
+          setIsActive(false);
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (isMounted) setLoading(true);
 
       const { data, error } = await supabase
         .from("subscriptions")
@@ -30,11 +40,17 @@ export const SubscriptionProvider = ({ children }) => {
         .limit(1)
         .maybeSingle();
 
+      if (!isMounted) return;
+
       if (error) {
         console.error("Subscription fetch error:", error);
         setSubscription(null);
         setIsActive(false);
-      } else if (data) {
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
         setSubscription(data);
 
         const now = new Date();
@@ -49,9 +65,11 @@ export const SubscriptionProvider = ({ children }) => {
       setLoading(false);
     };
 
-    if (!authLoading) {
-      fetchSubscription();
-    }
+    fetchSubscription();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user, authLoading]);
 
   return (
