@@ -1,4 +1,4 @@
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
 import { useSubscription } from "./hooks/useSubscription";
 
@@ -91,6 +91,30 @@ function Entry() {
 }
 
 /* ======================
+   Auth Guard
+====================== */
+function AuthGate({ children }) {
+  const { user, loading } = useAuth();
+  const insidePi = isPiBrowser();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div style={{ padding: 40, textAlign: "center" }}>
+        Initializing session...
+      </div>
+    );
+  }
+
+  // Chrome → لا يوجد user → اذهب إلى login
+  if (!insidePi && !user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+}
+
+/* ======================
    Subscription Guard
 ====================== */
 function SubscriptionGuard({ children }) {
@@ -145,11 +169,7 @@ function AppLayout({ children }) {
         <>
           <header style={headerStyle}>
             <div style={{ display: "flex", gap: 12 }}>
-              <img
-                src="/shiko-logo.png"
-                alt="Shiko Lingo"
-                style={{ width: 42 }}
-              />
+              <img src="/shiko-logo.png" alt="Shiko Lingo" style={{ width: 42 }} />
               <strong style={{ fontSize: 20 }}>Shiko Lingo</strong>
             </div>
 
@@ -198,10 +218,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Entry />} />
 
-            {!insidePi && (
-              <Route path="/login" element={<Login />} />
-            )}
-
+            {!insidePi && <Route path="/login" element={<Login />} />}
             {insidePi && (
               <Route path="/login" element={<Navigate to="/" replace />} />
             )}
@@ -214,45 +231,41 @@ function App() {
             <Route
               path="/*"
               element={
-                <SubscriptionGuard>
-                  <AppLayout>
-                    <Routes>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/grammar" element={<GrammarLevels />} />
-                      <Route
-                        path="/grammar/:level"
-                        element={<GrammarUnits />}
-                      />
-                      <Route
-                        path="/grammar/:level/:unit"
-                        element={<GrammarUnitPage />}
-                      />
-                      <Route path="/vocabulary" element={<VocabularyPage />} />
-                      <Route path="/listening" element={<ListeningHome />} />
-                      <Route path="/reading" element={<ReadingHome />} />
-                      <Route path="/speaking" element={<SpeakingHome />} />
-                      <Route path="/writing" element={<Writing />} />
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <Routes>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/grammar" element={<GrammarLevels />} />
+                        <Route path="/grammar/:level" element={<GrammarUnits />} />
+                        <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
+                        <Route path="/vocabulary" element={<VocabularyPage />} />
+                        <Route path="/listening" element={<ListeningHome />} />
+                        <Route path="/reading" element={<ReadingHome />} />
+                        <Route path="/speaking" element={<SpeakingHome />} />
+                        <Route path="/writing" element={<Writing />} />
 
-                      <Route
-                        path="/pi"
-                        element={
-                          <AdminGuard>
-                            <PI />
-                          </AdminGuard>
-                        }
-                      />
+                        <Route
+                          path="/pi"
+                          element={
+                            <AdminGuard>
+                              <PI />
+                            </AdminGuard>
+                          }
+                        />
 
-                      <Route
-                        path="/admin/feedback"
-                        element={
-                          <AdminGuard>
-                            <AdminFeedback />
-                          </AdminGuard>
-                        }
-                      />
-                    </Routes>
-                  </AppLayout>
-                </SubscriptionGuard>
+                        <Route
+                          path="/admin/feedback"
+                          element={
+                            <AdminGuard>
+                              <AdminFeedback />
+                            </AdminGuard>
+                          }
+                        />
+                      </Routes>
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
               }
             />
           </Routes>
