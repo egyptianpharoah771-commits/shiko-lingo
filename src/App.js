@@ -48,10 +48,18 @@ import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
 
 /* ======================
+   Helpers
+====================== */
+function isPiBrowser() {
+  return typeof window !== "undefined" && !!window.Pi;
+}
+
+/* ======================
    Entry Page
 ====================== */
 function Entry() {
   const navigate = useNavigate();
+  const insidePi = isPiBrowser();
 
   return (
     <div style={entryStyle}>
@@ -71,10 +79,13 @@ function Entry() {
         🎯 Know your level
       </button>
 
-      <br />
-      <br />
-
-      <button onClick={() => navigate("/login")}>🔐 Login</button>
+      {!insidePi && (
+        <>
+          <br />
+          <br />
+          <button onClick={() => navigate("/login")}>🔐 Login</button>
+        </>
+      )}
     </div>
   );
 }
@@ -178,20 +189,28 @@ function App() {
     initPiSDK();
   }, []);
 
+  const insidePi = isPiBrowser();
+
   return (
     <AuthProvider>
       <SubscriptionProvider>
         <Router>
           <Routes>
-            {/* Public */}
             <Route path="/" element={<Entry />} />
-            <Route path="/login" element={<Login />} />
+
+            {!insidePi && (
+              <Route path="/login" element={<Login />} />
+            )}
+
+            {insidePi && (
+              <Route path="/login" element={<Navigate to="/" replace />} />
+            )}
+
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
 
-            {/* Protected */}
             <Route
               path="/*"
               element={
@@ -199,8 +218,6 @@ function App() {
                   <AppLayout>
                     <Routes>
                       <Route path="/dashboard" element={<Dashboard />} />
-
-                      {/* Grammar Routes */}
                       <Route path="/grammar" element={<GrammarLevels />} />
                       <Route
                         path="/grammar/:level"
@@ -210,7 +227,6 @@ function App() {
                         path="/grammar/:level/:unit"
                         element={<GrammarUnitPage />}
                       />
-
                       <Route path="/vocabulary" element={<VocabularyPage />} />
                       <Route path="/listening" element={<ListeningHome />} />
                       <Route path="/reading" element={<ReadingHome />} />
@@ -246,9 +262,6 @@ function App() {
   );
 }
 
-/* ======================
-   Helpers
-====================== */
 function NavButton({ to, label }) {
   return (
     <Link to={to}>
@@ -260,6 +273,7 @@ function NavButton({ to, label }) {
 /* ======================
    Styles
 ====================== */
+
 const headerStyle = {
   backgroundColor: "#ffffff",
   padding: 15,
