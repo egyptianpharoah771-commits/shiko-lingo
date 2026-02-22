@@ -37,27 +37,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "MISSING_REQUIRED_FIELDS" });
     }
 
-    // 1️⃣ Verify Pi token with Pi server
+    // 1️⃣ Verify Pi token with Pi servers
     const piUser = await verifyPiAccessToken(accessToken);
 
     if (piUser.uid !== pi_uid) {
       return res.status(401).json({ error: "PI_UID_MISMATCH" });
     }
 
-    // 2️⃣ Check if profile exists
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
-      .eq("pi_uid", pi_uid)
-      .maybeSingle();
-
-    let userId;
     const email = generateInternalEmail(pi_uid);
 
-    if (profile) {
-      userId = profile.id;
-    } else {
-      // 3️⃣ Create new Supabase user (confirmed)
+    // 2️⃣ Check if user exists
+    const { data: existingUsers } =
+      await supabaseAdmin.auth.admin.listUsers();
+
+    let user =
+      existingUsers.users.find((u) => u.email === email);
+
+    // 3️⃣ Create user if not exists
+    if (!user) {
       const { data: createdUser, error: createError } =
         await supabaseAdmin.auth.admin.createUser({
           email,
@@ -65,27 +62,16 @@ export default async function handler(req, res) {
         });
 
       if (createError) {
-        console.error("CREATE USER ERROR:", createError);
-        return res.status(500).json({ error: "USER_CREATION_FAILED" });
-      }
-
-      userId = createdUser.user.id;
-
-      // 4️⃣ Create profile mapping
-      const { error: profileError } = await supabaseAdmin
-        .from("profiles")
-        .insert({
-          id: userId,
-          pi_uid,
+        console.error("USER CREATION ERROR:", createError);
+        return res.status(500).json({
+          error: "USER_CREATION_FAILED",
         });
-
-      if (profileError) {
-        console.error("PROFILE INSERT ERROR:", profileError);
-        return res.status(500).json({ error: "PROFILE_CREATION_FAILED" });
       }
+
+      user = createdUser.user;
     }
 
-    // 5️⃣ Generate Supabase session via admin link
+    // 4️⃣ Generate session (NO PASSWORD)
     const { data: linkData, error: linkError } =
       await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
@@ -93,11 +79,20 @@ export default async function handler(req, res) {
       });
 
     if (linkError) {
-      console.error("GENERATE LINK ERROR:", linkError);
-      return res.status(500).json({ error: "SESSION_GENERATION_FAILED" });
+      console.error("SESSION GENERATION ERROR:", linkError);
+      return res.status(500).json({
+        error: "SESSION_GENERATION_FAILED",
+      });
     }
 
-    const { access_token, refresh_token } = linkData.properties;
+    const { access_token, refresh_token } =
+      linkData.properties;
+
+    if (!access_token || !refresh_token) {
+      return res.status(500).json({
+        error: "INVALID_SESSION_TOKENS",
+      });
+    }
 
     return res.status(200).json({
       access_token,
@@ -106,6 +101,8 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error("PI AUTH ERROR:", err);
-    return res.status(500).json({ error: "SERVER_ERROR" });
+    return res.status(500).json({
+      error: "SERVER_ERROR",
+    });
   }
 }
