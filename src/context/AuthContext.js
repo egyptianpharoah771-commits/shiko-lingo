@@ -5,20 +5,11 @@ import { authenticateWithPi } from "../pi/piAuth";
 const AuthContext = createContext();
 
 /* ======================
-   Robust Pi Detection
+   Simple & Correct Pi Detection
 ====================== */
-function isRealPiBrowser() {
+function isPiEnvironment() {
   if (typeof window === "undefined") return false;
-  if (!window.Pi) return false;
-
-  // Must be inside real Pi domain
-  const host = window.location.hostname;
-
-  const isMinePiDomain =
-    host.includes("minepi.com") ||
-    host.includes("pi-browser");
-
-  return isMinePiDomain;
+  return !!window.Pi;
 }
 
 export function AuthProvider({ children }) {
@@ -31,11 +22,19 @@ export function AuthProvider({ children }) {
     async function initAuth() {
       try {
         /* ======================
-           REAL PI BROWSER FLOW
+           PI BROWSER AUTO AUTH
         ======================= */
-        if (isRealPiBrowser()) {
+        if (isPiEnvironment()) {
           try {
+            console.log("🟣 Pi environment detected — starting auto-auth");
+
             const { uid, accessToken } = await authenticateWithPi();
+
+            if (!uid || !accessToken) {
+              throw new Error("PI_AUTH_DATA_MISSING");
+            }
+
+            console.log("🟢 Pi authenticated:", uid);
 
             const response = await fetch("/api/pi/auth", {
               method: "POST",
@@ -47,19 +46,28 @@ export function AuthProvider({ children }) {
             });
 
             if (!response.ok) {
+              const errText = await response.text();
+              console.error("🔴 /api/pi/auth failed:", errText);
               throw new Error("PI_AUTH_SERVER_FAILED");
             }
 
             const result = await response.json();
 
-            const { access_token, refresh_token } = result.session;
+            const { access_token, refresh_token } = result;
+
+            if (!access_token || !refresh_token) {
+              throw new Error("INVALID_SESSION_TOKENS");
+            }
 
             const { error } = await supabase.auth.setSession({
               access_token,
               refresh_token,
             });
 
-            if (error) throw error;
+            if (error) {
+              console.error("🔴 setSession error:", error);
+              throw error;
+            }
 
             const { data } = await supabase.auth.getSession();
 
@@ -68,10 +76,14 @@ export function AuthProvider({ children }) {
               setLoading(false);
             }
 
+            console.log("🟢 Supabase session established");
             return;
           } catch (err) {
-            console.error("PI AUTH ERROR:", err);
-            if (isMounted) setLoading(false);
+            console.error("🔴 PI AUTO AUTH ERROR:", err);
+            if (isMounted) {
+              setUser(null);
+              setLoading(false);
+            }
             return;
           }
         }
@@ -86,8 +98,11 @@ export function AuthProvider({ children }) {
           setLoading(false);
         }
       } catch (err) {
-        console.error("AUTH INIT ERROR:", err);
-        if (isMounted) setLoading(false);
+        console.error("🔴 AUTH INIT ERROR:", err);
+        if (isMounted) {
+          setUser(null);
+          setLoading(false);
+        }
       }
     }
 
