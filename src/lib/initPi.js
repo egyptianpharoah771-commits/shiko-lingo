@@ -1,6 +1,8 @@
 let initialized = false;
 
-export async function initPiSDK() {
+export function initPiSDK() {
+  if (typeof window === "undefined") return;
+
   if (!window.Pi) {
     console.warn("Pi SDK not detected");
     return;
@@ -8,32 +10,11 @@ export async function initPiSDK() {
 
   if (initialized) return;
 
-  console.log("Pi SDK detected (no auth here)");
+  console.log("✅ Pi SDK detected (init only, no auth)");
 
-  try {
-    // 🔥 Only handle incomplete payments
-    window.Pi.onIncompletePaymentFound(async (payment) => {
-      console.log("⚠ Incomplete payment detected:", payment);
-
-      try {
-        await fetch("/api/pi/complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            paymentId: payment.identifier,
-            txid: payment.transaction?.txid,
-            uid: payment.user_uid || payment.user_id,
-          }),
-        });
-
-        console.log("✅ Incomplete payment recovered");
-      } catch (err) {
-        console.error("❌ Recovery failed:", err);
-      }
-    });
-  } catch (err) {
-    console.error("Pi init error:", err);
-  }
+  // ❗ No authenticate here
+  // ❗ No incomplete payment handler here
+  // ❗ No Pi API calls here
 
   initialized = true;
 }
