@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { authenticateWithPi } from "../pi/authenticateWithPi"; // عدل المسار حسب مشروعك
+import { authenticateWithPi } from "../pi/piAuth";
 
 const AuthContext = createContext();
 
@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
 
     async function initAuth() {
       try {
-        // 🔥 Case 1: Inside Pi Browser
+        // 🟣 Case 1: Inside Pi Browser
         if (isPiBrowser()) {
           try {
             const { uid, accessToken } = await authenticateWithPi();
@@ -48,6 +48,7 @@ export function AuthProvider({ children }) {
             }
 
             const { data } = await supabase.auth.getSession();
+
             if (isMounted) {
               setUser(data.session?.user || null);
               setLoading(false);
@@ -61,8 +62,9 @@ export function AuthProvider({ children }) {
           }
         }
 
-        // 🌍 Case 2: Normal Browser (OTP flow)
+        // 🌍 Case 2: Normal Browser (Email OTP flow)
         const { data } = await supabase.auth.getSession();
+
         if (isMounted) {
           setUser(data.session?.user || null);
           setLoading(false);
@@ -88,7 +90,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // 🔥 OTP LOGIN (Chrome only)
   const login = async (email) => {
     return await supabase.auth.signInWithOtp({
       email,
