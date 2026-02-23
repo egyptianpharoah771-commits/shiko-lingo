@@ -84,6 +84,35 @@ function Entry() {
 }
 
 /* ======================
+   Pi Login Screen
+====================== */
+function PiLoginScreen() {
+  const { loginWithPi, loading } = useAuth();
+
+  return (
+    <div style={{ padding: 40, textAlign: "center" }}>
+      <h2>🔐 Login Required</h2>
+      <p style={{ marginTop: 10 }}>
+        Please authenticate with Pi to continue.
+      </p>
+
+      <button
+        onClick={loginWithPi}
+        disabled={loading}
+        style={{
+          marginTop: 20,
+          padding: "12px 20px",
+          fontWeight: "bold",
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "Authenticating…" : "Login with Pi"}
+      </button>
+    </div>
+  );
+}
+
+/* ======================
    Auth Gate
 ====================== */
 function AuthGate({ children }) {
@@ -99,8 +128,14 @@ function AuthGate({ children }) {
     );
   }
 
+  // Chrome → redirect to login
   if (!insidePi && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Pi → require manual login
+  if (insidePi && !user) {
+    return <PiLoginScreen />;
   }
 
   return children;
@@ -194,7 +229,7 @@ function AppLayout({ children }) {
 }
 
 /* ======================
-   App
+   App Root
 ====================== */
 function App() {
   useEffect(() => {
@@ -214,147 +249,25 @@ function App() {
             <Route path="/terms" element={<Terms />} />
 
             <Route
-              path="/dashboard"
+              path="/*"
               element={
                 <AuthGate>
                   <SubscriptionGuard>
                     <AppLayout>
-                      <Dashboard />
+                      <Routes>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/grammar" element={<GrammarLevels />} />
+                        <Route path="/grammar/:level" element={<GrammarUnits />} />
+                        <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
+                        <Route path="/vocabulary" element={<VocabularyPage />} />
+                        <Route path="/listening" element={<ListeningHome />} />
+                        <Route path="/reading" element={<ReadingHome />} />
+                        <Route path="/speaking" element={<SpeakingHome />} />
+                        <Route path="/writing" element={<Writing />} />
+                        <Route path="/pi" element={<AdminGuard><PI /></AdminGuard>} />
+                        <Route path="/admin/feedback" element={<AdminGuard><AdminFeedback /></AdminGuard>} />
+                      </Routes>
                     </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/grammar"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <GrammarLevels />
-                    </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/grammar/:level"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <GrammarUnits />
-                    </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/grammar/:level/:unit"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <GrammarUnitPage />
-                    </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/vocabulary"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <VocabularyPage />
-                    </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/listening"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <ListeningHome />
-                    </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/reading"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <ReadingHome />
-                    </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/speaking"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <SpeakingHome />
-                    </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/writing"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <Writing />
-                    </AppLayout>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/pi"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AdminGuard>
-                      <AppLayout>
-                        <PI />
-                      </AppLayout>
-                    </AdminGuard>
-                  </SubscriptionGuard>
-                </AuthGate>
-              }
-            />
-
-            <Route
-              path="/admin/feedback"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard>
-                    <AdminGuard>
-                      <AppLayout>
-                        <AdminFeedback />
-                      </AppLayout>
-                    </AdminGuard>
                   </SubscriptionGuard>
                 </AuthGate>
               }
