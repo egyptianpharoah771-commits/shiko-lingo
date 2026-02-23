@@ -1,22 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /**
-   * Detect if running inside Pi Browser
-   */
   const isPiBrowser = () => {
     return typeof window !== "undefined" && typeof window.Pi !== "undefined";
   };
 
-  /**
-   * Initialize Supabase session (for Chrome / OTP users)
-   */
   useEffect(() => {
     const initializeSession = async () => {
       try {
@@ -37,10 +31,6 @@ export const AuthProvider = ({ children }) => {
     initializeSession();
   }, []);
 
-  /**
-   * Manual Pi Login
-   * No auto-execution
-   */
   const loginWithPi = async () => {
     if (!isPiBrowser()) {
       console.warn("Pi SDK not available.");
@@ -56,18 +46,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error("Invalid Pi authentication response");
       }
 
-      console.log("Pi Auth Success:", auth);
-
-      /**
-       * IMPORTANT:
-       * In stabilization phase we DO NOT:
-       * - Call backend
-       * - Sync Supabase
-       * - Set session
-       *
-       * We only confirm Pi.authenticate stability.
-       */
-
       setUser({
         id: auth.user.uid,
         username: auth.user.username,
@@ -80,9 +58,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Logout
-   */
   const logout = async () => {
     try {
       if (!isPiBrowser()) {
@@ -108,6 +83,8 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  return useContext(AuthContext);
+}
