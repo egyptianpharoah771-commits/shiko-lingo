@@ -76,7 +76,7 @@ function Upgrade() {
                 body: JSON.stringify({
                   paymentId,
                   txid,
-                  uid: user.id,   // 🔥 FIX هنا
+                  uid: user.id,
                 }),
               });
 
@@ -84,10 +84,10 @@ function Upgrade() {
                 throw new Error("Completion request failed");
               }
 
-              // ندي فرصة للسيرفر يحدث الاشتراك قبل التوجيه
+              // ننتظر شوية علشان السيرفر يحدّث الاشتراك
               setTimeout(() => {
                 window.location.href = "/dashboard";
-              }, 800);
+              }, 1000);
 
             } catch (err) {
               console.error("Completion error:", err);
