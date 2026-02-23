@@ -1,21 +1,18 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * Strict Pi Environment Check
  */
 function isInsideRealPi() {
   if (typeof window === "undefined") return false;
-
-  // Pi SDK must exist
   if (!window.Pi) return false;
-
-  // Must be inside iframe container (Pi Browser behavior)
   if (window.self === window.top) return false;
-
   return true;
 }
 
 function Upgrade() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,9 +21,6 @@ function Upgrade() {
 
     setError("");
 
-    /* ==============================
-       1️⃣ Hard Environment Guard
-    ============================== */
     if (!isInsideRealPi()) {
       setError(
         "Subscriptions are only available inside the official Pi Browser."
@@ -34,13 +28,14 @@ function Upgrade() {
       return;
     }
 
+    if (!user?.id) {
+      setError("Authentication required before subscription.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      /* ==============================
-         2️⃣ Create Payment ONLY
-         (No authenticate here)
-      ============================== */
       const orderId = `order_${Date.now()}`;
 
       console.log("💳 Creating Pi payment:", orderId);
@@ -75,16 +70,25 @@ function Upgrade() {
 
           onReadyForServerCompletion: async (paymentId, txid) => {
             try {
-              await fetch("/api/pi/complete", {
+              const res = await fetch("/api/pi/complete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   paymentId,
                   txid,
+                  uid: user.id,   // 🔥 FIX هنا
                 }),
               });
 
-              window.location.href = "/dashboard";
+              if (!res.ok) {
+                throw new Error("Completion request failed");
+              }
+
+              // ندي فرصة للسيرفر يحدث الاشتراك قبل التوجيه
+              setTimeout(() => {
+                window.location.href = "/dashboard";
+              }, 800);
+
             } catch (err) {
               console.error("Completion error:", err);
               setError("Payment completion failed.");
