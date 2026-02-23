@@ -1,11 +1,23 @@
-const PI_API_BASE = "https://api.minepi.com";
 import { createClient } from "@supabase/supabase-js";
 
+const PI_API_BASE = "https://api.minepi.com";
+
+/* =========================
+   Supabase Admin Client
+========================= */
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+    },
+  }
 );
 
+/* =========================
+   Pi Headers
+========================= */
 function piHeaders() {
   return {
     Authorization: `Key ${process.env.PI_API_KEY}`,
@@ -14,6 +26,9 @@ function piHeaders() {
   };
 }
 
+/* =========================
+   Handler
+========================= */
 export default async function handler(req, res) {
   console.log("===== PI COMPLETE ENDPOINT HIT =====");
 
@@ -21,13 +36,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "METHOD_NOT_ALLOWED" });
   }
 
-  const { paymentId, txid, uid } = req.body;
+  const { paymentId, txid, uid } = req.body || {};
 
-  console.log("REQUEST BODY:", req.body);
+  console.log("REQUEST BODY:", {
+    paymentId,
+    txid,
+    uid,
+  });
 
   if (!paymentId || !txid || !uid) {
-    console.error("MISSING DATA:", { paymentId, txid, uid });
+    console.error("MISSING REQUIRED DATA");
     return res.status(400).json({
+      success: false,
       error: "PAYMENT_ID_TXID_UID_REQUIRED",
     });
   }
@@ -36,7 +56,7 @@ export default async function handler(req, res) {
     /* =========================
        STEP 1 — Confirm with Pi
     ========================= */
-    console.log("CONFIRMING WITH PI:", paymentId);
+    console.log("Confirming payment with Pi:", paymentId);
 
     const response = await fetch(
       `${PI_API_BASE}/v2/payments/${paymentId}/complete`,
@@ -48,53 +68,55 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
-    console.log("PI RESPONSE:", data);
+
+    console.log("Pi API response:", data);
 
     if (!response.ok) {
-      if (
+      const alreadyCompleted =
         data?.error?.code === "PAYMENT_ALREADY_COMPLETED" ||
-        data?.error?.message?.toLowerCase()?.includes("already")
-      ) {
-        console.log("Payment already completed. Continuing...");
-      } else {
-        console.error("PI API ERROR:", data);
-        return res.status(response.status).json(data);
+        data?.error?.message?.toLowerCase()?.includes("already");
+
+      if (!alreadyCompleted) {
+        console.error("Pi API error:", data);
+        return res.status(response.status).json({
+          success: false,
+          error: "PI_API_ERROR",
+          details: data,
+        });
       }
+
+      console.log("Payment already completed on Pi. Continuing...");
     }
 
     /* =========================
-       STEP 2 — Call RPC
+       STEP 2 — Process Payment via RPC
     ========================= */
-    console.log("CALLING RPC process_payment:", {
+    console.log("Calling RPC process_payment with:", {
       paymentId,
       uid,
     });
 
-    const { error: rpcError } = await supabase.rpc(
-      "process_payment",
-      {
-        p_payment_id: paymentId,
-        p_uid: uid,
-        p_months: 1,
-      }
-    );
+    const { error: rpcError } = await supabase.rpc("process_payment", {
+      p_payment_id: paymentId,
+      p_uid: uid,
+      p_months: 1,
+    });
 
     if (rpcError) {
-      console.error("RPC ERROR:", rpcError);
+      console.error("RPC process_payment failed:", rpcError);
       return res.status(500).json({
         success: false,
         error: "RPC_PROCESS_FAILED",
       });
     }
 
-    console.log("RPC SUCCESS");
+    console.log("RPC process_payment SUCCESS for UID:", uid);
 
     return res.status(200).json({
       success: true,
     });
-
   } catch (err) {
-    console.error("PI COMPLETE ERROR:", err);
+    console.error("Unhandled PI COMPLETE ERROR:", err);
     return res.status(500).json({
       success: false,
       error: "PI_COMPLETE_ERROR",
