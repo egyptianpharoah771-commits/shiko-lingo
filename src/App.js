@@ -13,7 +13,7 @@ import {
 } from "react-router-dom";
 
 import { useEffect, useState } from "react";
-import { initPiSDK } from "./lib/initPi";
+import { initPiSDK, isPiAvailable } from "./lib/initPi";
 
 /* ======================
    Utils
@@ -48,18 +48,11 @@ import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
 
 /* ======================
-   Helpers
-====================== */
-function isPiBrowser() {
-  return typeof window !== "undefined" && !!window.Pi;
-}
-
-/* ======================
    Entry Page
 ====================== */
 function Entry() {
   const navigate = useNavigate();
-  const insidePi = isPiBrowser();
+  const insidePi = isPiAvailable();
 
   return (
     <div style={entryStyle}>
@@ -91,12 +84,12 @@ function Entry() {
 }
 
 /* ======================
-   Auth Guard
+   Auth Gate
 ====================== */
 function AuthGate({ children }) {
   const { user, loading } = useAuth();
-  const insidePi = isPiBrowser();
   const location = useLocation();
+  const insidePi = isPiAvailable();
 
   if (loading) {
     return (
@@ -106,7 +99,6 @@ function AuthGate({ children }) {
     );
   }
 
-  // Chrome → لا يوجد user → اذهب إلى login
   if (!insidePi && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -209,61 +201,160 @@ function App() {
     initPiSDK();
   }, []);
 
-  const insidePi = isPiBrowser();
-
   return (
     <AuthProvider>
       <SubscriptionProvider>
         <Router>
           <Routes>
             <Route path="/" element={<Entry />} />
-
-            {!insidePi && <Route path="/login" element={<Login />} />}
-            {insidePi && (
-              <Route path="/login" element={<Navigate to="/" replace />} />
-            )}
-
+            <Route path="/login" element={<Login />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
 
             <Route
-              path="/*"
+              path="/dashboard"
               element={
                 <AuthGate>
                   <SubscriptionGuard>
                     <AppLayout>
-                      <Routes>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/grammar" element={<GrammarLevels />} />
-                        <Route path="/grammar/:level" element={<GrammarUnits />} />
-                        <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
-                        <Route path="/vocabulary" element={<VocabularyPage />} />
-                        <Route path="/listening" element={<ListeningHome />} />
-                        <Route path="/reading" element={<ReadingHome />} />
-                        <Route path="/speaking" element={<SpeakingHome />} />
-                        <Route path="/writing" element={<Writing />} />
-
-                        <Route
-                          path="/pi"
-                          element={
-                            <AdminGuard>
-                              <PI />
-                            </AdminGuard>
-                          }
-                        />
-
-                        <Route
-                          path="/admin/feedback"
-                          element={
-                            <AdminGuard>
-                              <AdminFeedback />
-                            </AdminGuard>
-                          }
-                        />
-                      </Routes>
+                      <Dashboard />
                     </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/grammar"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <GrammarLevels />
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/grammar/:level"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <GrammarUnits />
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/grammar/:level/:unit"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <GrammarUnitPage />
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/vocabulary"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <VocabularyPage />
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/listening"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <ListeningHome />
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/reading"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <ReadingHome />
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/speaking"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <SpeakingHome />
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/writing"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AppLayout>
+                      <Writing />
+                    </AppLayout>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/pi"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AdminGuard>
+                      <AppLayout>
+                        <PI />
+                      </AppLayout>
+                    </AdminGuard>
+                  </SubscriptionGuard>
+                </AuthGate>
+              }
+            />
+
+            <Route
+              path="/admin/feedback"
+              element={
+                <AuthGate>
+                  <SubscriptionGuard>
+                    <AdminGuard>
+                      <AppLayout>
+                        <AdminFeedback />
+                      </AppLayout>
+                    </AdminGuard>
                   </SubscriptionGuard>
                 </AuthGate>
               }

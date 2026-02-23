@@ -1,146 +1,113 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
-import { authenticateWithPi } from "../pi/piAuth";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
 
 const AuthContext = createContext();
 
-/* ======================
-   Simple & Correct Pi Detection
-====================== */
-function isPiEnvironment() {
-  if (typeof window === "undefined") return false;
-  return !!window.Pi;
-}
-
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function initAuth() {
-      try {
-        /* ======================
-           PI BROWSER AUTO AUTH
-        ======================= */
-        if (isPiEnvironment()) {
-          try {
-            console.log("🟣 Pi environment detected — starting auto-auth");
-
-            const { uid, accessToken } = await authenticateWithPi();
-
-            if (!uid || !accessToken) {
-              throw new Error("PI_AUTH_DATA_MISSING");
-            }
-
-            console.log("🟢 Pi authenticated:", uid);
-
-            const response = await fetch("/api/pi/auth", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                pi_uid: uid,
-                accessToken,
-              }),
-            });
-
-            if (!response.ok) {
-              const errText = await response.text();
-              console.error("🔴 /api/pi/auth failed:", errText);
-              throw new Error("PI_AUTH_SERVER_FAILED");
-            }
-
-            const result = await response.json();
-
-            const { access_token, refresh_token } = result;
-
-            if (!access_token || !refresh_token) {
-              throw new Error("INVALID_SESSION_TOKENS");
-            }
-
-            const { error } = await supabase.auth.setSession({
-              access_token,
-              refresh_token,
-            });
-
-            if (error) {
-              console.error("🔴 setSession error:", error);
-              throw error;
-            }
-
-            const { data } = await supabase.auth.getSession();
-
-            if (isMounted) {
-              setUser(data.session?.user || null);
-              setLoading(false);
-            }
-
-            console.log("🟢 Supabase session established");
-            return;
-          } catch (err) {
-            console.error("🔴 PI AUTO AUTH ERROR:", err);
-            if (isMounted) {
-              setUser(null);
-              setLoading(false);
-            }
-            return;
-          }
-        }
-
-        /* ======================
-           NORMAL BROWSER FLOW
-        ======================= */
-        const { data } = await supabase.auth.getSession();
-
-        if (isMounted) {
-          setUser(data.session?.user || null);
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error("🔴 AUTH INIT ERROR:", err);
-        if (isMounted) {
-          setUser(null);
-          setLoading(false);
-        }
-      }
-    }
-
-    initAuth();
-
-    const { data: listener } =
-      supabase.auth.onAuthStateChange((_event, session) => {
-        if (isMounted) {
-          setUser(session?.user || null);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  const login = async (email) => {
-    return await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-      },
-    });
+  /**
+   * Detect if running inside Pi Browser
+   */
+  const isPiBrowser = () => {
+    return typeof window !== "undefined" && typeof window.Pi !== "undefined";
   };
 
+  /**
+   * Initialize Supabase session (for Chrome / OTP users)
+   */
+  useEffect(() => {
+    const initializeSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          setUser(session.user);
+        }
+      } catch (error) {
+        console.error("Session initialization error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeSession();
+  }, []);
+
+  /**
+   * Manual Pi Login
+   * No auto-execution
+   */
+  const loginWithPi = async () => {
+    if (!isPiBrowser()) {
+      console.warn("Pi SDK not available.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const auth = await window.Pi.authenticate(["username", "payments"]);
+
+      if (!auth?.user?.uid) {
+        throw new Error("Invalid Pi authentication response");
+      }
+
+      console.log("Pi Auth Success:", auth);
+
+      /**
+       * IMPORTANT:
+       * In stabilization phase we DO NOT:
+       * - Call backend
+       * - Sync Supabase
+       * - Set session
+       *
+       * We only confirm Pi.authenticate stability.
+       */
+
+      setUser({
+        id: auth.user.uid,
+        username: auth.user.username,
+        provider: "pi",
+      });
+    } catch (error) {
+      console.error("Pi Login Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Logout
+   */
   const logout = async () => {
-    await supabase.auth.signOut();
+    try {
+      if (!isPiBrowser()) {
+        await supabase.auth.signOut();
+      }
+
+      setUser(null);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        loginWithPi,
+        logout,
+        isPiBrowser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);

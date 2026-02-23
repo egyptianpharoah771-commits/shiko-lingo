@@ -1,14 +1,18 @@
 /**
- * Auth Flow
- * ----------
- * Orchestrates Pi authentication
- * - Ensures Pi SDK initialization (only in Pi environment)
- * - Authenticates with Pi SDK
- * - Checks subscription from backend
- * - Stores unified Pi user contract
+ * Auth Flow (Stabilization Version)
+ * ----------------------------------
+ * Pi Identity Layer ONLY
+ *
+ * - No subscription checks
+ * - No backend calls
+ * - No Supabase sync
+ * - No auto initialization
+ *
+ * This file is responsible ONLY for:
+ * Authenticating with Pi SDK
+ * Storing minimal Pi identity contract
  */
 
-import { initPiSDK } from "../lib/initPi";
 import { authenticateWithPi } from "../pi/piAuth";
 import {
   setPiUser,
@@ -16,35 +20,34 @@ import {
 } from "../adapters/piUserAdapter";
 
 /**
- * Starts Pi authentication flow (Hybrid Safe)
+ * Starts Pi authentication flow (Manual Only)
+ * Must be triggered by explicit user action.
  */
 export async function startPiLogin() {
   try {
-    // 🚫 If not inside Pi Browser → skip Pi auth completely
+    /* ==============================
+       1️⃣ Ensure we are inside Pi Browser
+    ============================== */
     if (typeof window === "undefined" || !window.Pi) {
-      console.log("Not in Pi environment — skipping Pi authentication.");
+      console.log("Not inside Pi Browser — Pi login skipped.");
 
       return setPiUser({
         uid: null,
         username: null,
         isAuthenticated: false,
-        isSubscribed: false,
       });
     }
 
-    // Prevent double login
+    /* ==============================
+       2️⃣ Prevent double authentication
+    ============================== */
     const existingUser = getCurrentPiUser();
     if (existingUser?.isAuthenticated) {
       return existingUser;
     }
 
     /* ==============================
-       1️⃣ Ensure Pi SDK initialized
-    ============================== */
-    initPiSDK();
-
-    /* ==============================
-       2️⃣ Authenticate via Pi SDK
+       3️⃣ Authenticate via Pi SDK
     ============================== */
     const piUser = await authenticateWithPi();
 
@@ -52,34 +55,13 @@ export async function startPiLogin() {
       throw new Error("Pi authentication failed");
     }
 
-    const uid = piUser.uid;
-
     /* ==============================
-       3️⃣ Check subscription from backend
-    ============================== */
-    let isSubscribed = false;
-
-    try {
-      const res = await fetch(
-        `/api/check-subscription?uid=${uid}`
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        isSubscribed = data.active === true;
-      }
-    } catch (err) {
-      console.error("Subscription check failed:", err);
-    }
-
-    /* ==============================
-       4️⃣ Store unified user contract
+       4️⃣ Store minimal Pi identity contract
     ============================== */
     return setPiUser({
-      uid,
+      uid: piUser.uid,
       username: piUser.username,
       isAuthenticated: true,
-      isSubscribed,
     });
 
   } catch (err) {
@@ -89,7 +71,6 @@ export async function startPiLogin() {
       uid: null,
       username: null,
       isAuthenticated: false,
-      isSubscribed: false,
     });
   }
 }
