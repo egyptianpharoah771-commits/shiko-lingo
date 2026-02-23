@@ -128,12 +128,10 @@ function AuthGate({ children }) {
     );
   }
 
-  // Chrome → redirect to login
   if (!insidePi && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Pi → require manual login
   if (insidePi && !user) {
     return <PiLoginScreen />;
   }
@@ -244,7 +242,6 @@ function App() {
             <Route path="/" element={<Entry />} />
             <Route path="/login" element={<Login />} />
             <Route path="/assessment" element={<AssessmentPage />} />
-            <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
 
@@ -252,23 +249,31 @@ function App() {
               path="/*"
               element={
                 <AuthGate>
-                  <SubscriptionGuard>
-                    <AppLayout>
-                      <Routes>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/grammar" element={<GrammarLevels />} />
-                        <Route path="/grammar/:level" element={<GrammarUnits />} />
-                        <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
-                        <Route path="/vocabulary" element={<VocabularyPage />} />
-                        <Route path="/listening" element={<ListeningHome />} />
-                        <Route path="/reading" element={<ReadingHome />} />
-                        <Route path="/speaking" element={<SpeakingHome />} />
-                        <Route path="/writing" element={<Writing />} />
-                        <Route path="/pi" element={<AdminGuard><PI /></AdminGuard>} />
-                        <Route path="/admin/feedback" element={<AdminGuard><AdminFeedback /></AdminGuard>} />
-                      </Routes>
-                    </AppLayout>
-                  </SubscriptionGuard>
+                  <Routes>
+                    <Route path="/upgrade" element={<Upgrade />} />
+                    <Route
+                      path="/*"
+                      element={
+                        <SubscriptionGuard>
+                          <AppLayout>
+                            <Routes>
+                              <Route path="/dashboard" element={<Dashboard />} />
+                              <Route path="/grammar" element={<GrammarLevels />} />
+                              <Route path="/grammar/:level" element={<GrammarUnits />} />
+                              <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
+                              <Route path="/vocabulary" element={<VocabularyPage />} />
+                              <Route path="/listening" element={<ListeningHome />} />
+                              <Route path="/reading" element={<ReadingHome />} />
+                              <Route path="/speaking" element={<SpeakingHome />} />
+                              <Route path="/writing" element={<Writing />} />
+                              <Route path="/pi" element={<AdminGuard><PI /></AdminGuard>} />
+                              <Route path="/admin/feedback" element={<AdminGuard><AdminFeedback /></AdminGuard>} />
+                            </Routes>
+                          </AppLayout>
+                        </SubscriptionGuard>
+                      }
+                    />
+                  </Routes>
                 </AuthGate>
               }
             />
