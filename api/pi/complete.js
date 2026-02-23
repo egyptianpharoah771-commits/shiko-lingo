@@ -68,7 +68,6 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
-
     console.log("Pi API response:", data);
 
     if (!response.ok) {
