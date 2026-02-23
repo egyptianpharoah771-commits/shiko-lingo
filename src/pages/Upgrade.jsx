@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-/**
- * Strict Pi Environment Check
- */
 function isInsideRealPi() {
   if (typeof window === "undefined") return false;
   if (!window.Pi) return false;
@@ -37,8 +34,6 @@ function Upgrade() {
 
     try {
       const orderId = `order_${Date.now()}`;
-
-      console.log("💳 Creating Pi payment:", orderId);
 
       window.Pi.createPayment(
         {
@@ -84,7 +79,7 @@ function Upgrade() {
                 throw new Error("Completion request failed");
               }
 
-              // ننتظر شوية علشان السيرفر يحدّث الاشتراك
+              // انتظار بسيط لضمان تحديث الاشتراك في DB
               setTimeout(() => {
                 window.location.href = "/dashboard";
               }, 1000);
