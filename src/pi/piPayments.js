@@ -1,4 +1,4 @@
-export async function createPiPayment({ amount, memo }) {
+export async function createPiPayment({ amount, memo, uid }) {
   if (!window.Pi) {
     throw new Error("Pi SDK not available");
   }
@@ -7,19 +7,9 @@ export async function createPiPayment({ amount, memo }) {
     throw new Error("Invalid payment amount");
   }
 
-  // 1️⃣ Authenticate first
-  const auth = await window.Pi.authenticate(
-    ["username", "payments"],
-    () => {}
-  );
-
-  const uid = auth?.user?.uid;
-
   if (!uid) {
-    throw new Error("Authentication failed");
+    throw new Error("User not authenticated");
   }
-
-  localStorage.setItem("pi_uid", uid);
 
   return new Promise((resolve, reject) => {
     window.Pi.createPayment(
@@ -31,40 +21,48 @@ export async function createPiPayment({ amount, memo }) {
       {
         /* ===== Approval ===== */
         onReadyForServerApproval: async (paymentId) => {
-          const res = await fetch("/api/pi/approve", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paymentId }),
-          });
+          try {
+            const res = await fetch("/api/pi/approve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId }),
+            });
 
-          if (!res.ok) {
-            const err = await res.text();
-            reject(new Error("Approve failed: " + err));
+            if (!res.ok) {
+              const err = await res.text();
+              reject(new Error("Approve failed: " + err));
+            }
+          } catch (err) {
+            reject(err);
           }
         },
 
         /* ===== Completion ===== */
         onReadyForServerCompletion: async (paymentId, txid) => {
-          const res = await fetch("/api/pi/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paymentId, txid, uid }),
-          });
+          try {
+            const res = await fetch("/api/pi/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId, txid, uid }),
+            });
 
-          if (!res.ok) {
-            const err = await res.text();
-            reject(new Error("Complete failed: " + err));
-            return;
+            if (!res.ok) {
+              const err = await res.text();
+              reject(new Error("Complete failed: " + err));
+              return;
+            }
+
+            const data = await res.json();
+
+            if (!data.success) {
+              reject(new Error("Subscription activation failed"));
+              return;
+            }
+
+            resolve(data);
+          } catch (err) {
+            reject(err);
           }
-
-          const data = await res.json();
-
-          if (!data.success) {
-            reject(new Error("Subscription activation failed"));
-            return;
-          }
-
-          resolve(data);
         },
 
         onCancel: () => {
@@ -72,7 +70,7 @@ export async function createPiPayment({ amount, memo }) {
         },
 
         onError: (err) => {
-          reject(err);
+          reject(err || new Error("Payment failed"));
         },
       }
     );
