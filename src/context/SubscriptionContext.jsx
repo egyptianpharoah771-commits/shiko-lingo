@@ -15,12 +15,8 @@ export const SubscriptionProvider = ({ children }) => {
     let isMounted = true;
 
     const fetchSubscription = async () => {
-      // 🛑 لا تبدأ قبل انتهاء auth بالكامل
-      if (authLoading) {
-        return;
-      }
+      if (authLoading) return;
 
-      // لو بعد انتهاء auth مفيش user فعليًا
       if (!user) {
         if (isMounted) {
           setSubscription(null);
@@ -32,10 +28,11 @@ export const SubscriptionProvider = ({ children }) => {
 
       if (isMounted) setLoading(true);
 
+      // 🔥 IMPORTANT: Match by Pi UID, not Supabase UUID
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("uid", user.id)
         .order("expires_at", { ascending: false })
         .limit(1)
         .maybeSingle();
