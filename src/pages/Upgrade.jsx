@@ -9,7 +9,7 @@ function isInsideRealPi() {
 }
 
 function Upgrade() {
-  const { user } = useAuth();
+  const { user, loginWithPi } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -46,49 +46,31 @@ function Upgrade() {
         },
         {
           onReadyForServerApproval: async (paymentId) => {
-            try {
-              const res = await fetch("/api/pi/approve", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ paymentId }),
-              });
-
-              if (!res.ok) {
-                throw new Error("Approval request failed");
-              }
-            } catch (err) {
-              console.error("Approve error:", err);
-              setError("Payment approval failed.");
-              setLoading(false);
-            }
+            await fetch("/api/pi/approve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId }),
+            });
           },
 
           onReadyForServerCompletion: async (paymentId, txid) => {
-            try {
-              const res = await fetch("/api/pi/complete", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  paymentId,
-                  txid,
-                  uid: user.id,
-                }),
-              });
+            const res = await fetch("/api/pi/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                paymentId,
+                txid,
+                uid: user.id,
+              }),
+            });
 
-              if (!res.ok) {
-                throw new Error("Completion request failed");
-              }
-
-              // انتظار بسيط لضمان تحديث الاشتراك في DB
-              setTimeout(() => {
-                window.location.href = "/dashboard";
-              }, 1000);
-
-            } catch (err) {
-              console.error("Completion error:", err);
-              setError("Payment completion failed.");
-              setLoading(false);
+            if (!res.ok) {
+              throw new Error("Completion failed");
             }
+
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 1000);
           },
 
           onCancel: () => {
@@ -110,6 +92,10 @@ function Upgrade() {
     }
   };
 
+  const handlePiLogin = async () => {
+    await loginWithPi();
+  };
+
   return (
     <div
       style={{
@@ -121,22 +107,42 @@ function Upgrade() {
     >
       <h2>🔒 Subscription Required</h2>
 
-      <p style={{ marginTop: "12px", color: "#555" }}>
-        Access to Shiko Lingo requires an active PRO subscription.
-      </p>
+      {!user && (
+        <>
+          <p>Please authenticate with Pi first.</p>
+          <button
+            onClick={handlePiLogin}
+            style={{
+              marginTop: "20px",
+              padding: "12px 20px",
+              fontWeight: "bold",
+            }}
+          >
+            🔐 Login with Pi
+          </button>
+        </>
+      )}
 
-      <button
-        onClick={handleSubscribe}
-        disabled={loading}
-        style={{
-          marginTop: "25px",
-          padding: "12px 20px",
-          fontWeight: "bold",
-          cursor: loading ? "not-allowed" : "pointer",
-        }}
-      >
-        {loading ? "Processing…" : "Subscribe Now"}
-      </button>
+      {user && (
+        <>
+          <p style={{ marginTop: "12px", color: "#555" }}>
+            Access requires an active PRO subscription.
+          </p>
+
+          <button
+            onClick={handleSubscribe}
+            disabled={loading}
+            style={{
+              marginTop: "25px",
+              padding: "12px 20px",
+              fontWeight: "bold",
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Processing…" : "Subscribe Now"}
+          </button>
+        </>
+      )}
 
       {error && (
         <p style={{ marginTop: "15px", color: "red" }}>
