@@ -1,46 +1,49 @@
 import { useState } from "react";
 
+/**
+ * Strict Pi Environment Check
+ */
+function isInsideRealPi() {
+  if (typeof window === "undefined") return false;
+
+  // Pi SDK must exist
+  if (!window.Pi) return false;
+
+  // Must be inside iframe container (Pi Browser behavior)
+  if (window.self === window.top) return false;
+
+  return true;
+}
+
 function Upgrade() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubscribe = async () => {
-    if (!window.Pi) {
-      setError("Please open this app inside Pi Browser");
+    if (loading) return;
+
+    setError("");
+
+    /* ==============================
+       1️⃣ Hard Environment Guard
+    ============================== */
+    if (!isInsideRealPi()) {
+      setError(
+        "Subscriptions are only available inside the official Pi Browser."
+      );
       return;
     }
 
-    if (loading) return;
-
     setLoading(true);
-    setError("");
 
     try {
       /* ==============================
-         1️⃣ Authenticate
-      ============================== */
-      console.log("🔐 Starting Pi authentication...");
-
-      const auth = await window.Pi.authenticate(
-        ["username", "payments"],
-        () => {}
-      );
-
-      const uid = auth?.user?.uid;
-
-      if (!uid) {
-        throw new Error("Authentication failed");
-      }
-
-      console.log("✅ Authenticated UID:", uid);
-      localStorage.setItem("pi_uid", uid);
-
-      /* ==============================
-         2️⃣ Create Payment (Official Flow)
+         2️⃣ Create Payment ONLY
+         (No authenticate here)
       ============================== */
       const orderId = `order_${Date.now()}`;
 
-      console.log("💳 Creating payment with orderId:", orderId);
+      console.log("💳 Creating Pi payment:", orderId);
 
       window.Pi.createPayment(
         {
@@ -52,10 +55,7 @@ function Upgrade() {
           },
         },
         {
-          /* ===== Server Approval ===== */
           onReadyForServerApproval: async (paymentId) => {
-            console.log("🔥 APPROVAL CALLBACK FIRED:", paymentId);
-
             try {
               const res = await fetch("/api/pi/approve", {
                 method: "POST",
@@ -63,17 +63,17 @@ function Upgrade() {
                 body: JSON.stringify({ paymentId }),
               });
 
-              const data = await res.json();
-              console.log("✅ Approve response:", data);
+              if (!res.ok) {
+                throw new Error("Approval request failed");
+              }
             } catch (err) {
-              console.error("❌ Approve request failed:", err);
+              console.error("Approve error:", err);
+              setError("Payment approval failed.");
+              setLoading(false);
             }
           },
 
-          /* ===== Server Completion ===== */
           onReadyForServerCompletion: async (paymentId, txid) => {
-            console.log("🔥 COMPLETION CALLBACK FIRED:", paymentId, txid);
-
             try {
               await fetch("/api/pi/complete", {
                 method: "POST",
@@ -81,36 +81,32 @@ function Upgrade() {
                 body: JSON.stringify({
                   paymentId,
                   txid,
-                  uid,
                 }),
               });
 
-              console.log("✅ Complete request sent");
+              window.location.href = "/dashboard";
             } catch (err) {
-              console.error("❌ Complete request failed:", err);
+              console.error("Completion error:", err);
+              setError("Payment completion failed.");
+              setLoading(false);
             }
-
-            // Redirect after lifecycle reached completion stage
-            window.location.href = "/dashboard";
           },
 
-          onCancel: (paymentId) => {
-            console.warn("⚠️ Payment cancelled:", paymentId);
-            setError("Payment was cancelled");
+          onCancel: () => {
+            setError("Payment was cancelled.");
             setLoading(false);
           },
 
           onError: (err) => {
-            console.error("❌ Payment error:", err);
+            console.error("Payment error:", err);
             setError("Payment failed. Please try again.");
             setLoading(false);
           },
         }
       );
-
     } catch (err) {
-      console.error("❌ Subscription error:", err);
-      setError(err.message || "Payment failed");
+      console.error("Subscription error:", err);
+      setError(err.message || "Subscription failed.");
       setLoading(false);
     }
   };
