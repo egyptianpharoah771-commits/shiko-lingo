@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
 
+const PI_STORAGE_KEY = "shiko_pi_user";
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,6 +16,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initializeSession = async () => {
       try {
+        // 🟢 First: Check if we have stored Pi session
+        const storedPiUser = localStorage.getItem(PI_STORAGE_KEY);
+
+        if (storedPiUser) {
+          const parsed = JSON.parse(storedPiUser);
+          setUser(parsed);
+          setLoading(false);
+          return;
+        }
+
+        // 🟡 Otherwise check Supabase session (Chrome flow)
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -46,11 +59,16 @@ export function AuthProvider({ children }) {
         throw new Error("Invalid Pi authentication response");
       }
 
-      setUser({
+      const piUser = {
         id: auth.user.uid,
         username: auth.user.username,
         provider: "pi",
-      });
+      };
+
+      // 🟢 Persist Pi user locally
+      localStorage.setItem(PI_STORAGE_KEY, JSON.stringify(piUser));
+
+      setUser(piUser);
     } catch (error) {
       console.error("Pi Login Error:", error);
     } finally {
@@ -60,7 +78,9 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      if (!isPiBrowser()) {
+      if (isPiBrowser()) {
+        localStorage.removeItem(PI_STORAGE_KEY);
+      } else {
         await supabase.auth.signOut();
       }
 
