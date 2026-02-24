@@ -15,12 +15,12 @@ export const SubscriptionProvider = ({ children }) => {
     let isMounted = true;
 
     const fetchSubscription = async () => {
-      // لا تبدأ قبل انتهاء auth
+      // 🔒 لا تبدأ قبل انتهاء auth
       if (authLoading) {
         return;
       }
 
-      // لا يوجد مستخدم
+      // 🔒 لا يوجد مستخدم
       if (!user?.id) {
         if (isMounted) {
           console.log("🚫 No authenticated user for subscription check");
@@ -31,15 +31,26 @@ export const SubscriptionProvider = ({ children }) => {
         return;
       }
 
+      // 🔒 ليس مستخدم Pi → لا يوجد اشتراك Pi
+      if (!user?.pi_uid) {
+        if (isMounted) {
+          console.log("🚫 Non-Pi user. Skipping Pi subscription lookup.");
+          setSubscription(null);
+          setIsActive(false);
+          setLoading(false);
+        }
+        return;
+      }
+
       try {
         if (isMounted) setLoading(true);
 
-        console.log("🔎 Checking subscription for Pi UID:", user.id);
+        console.log("🔎 Checking subscription for Pi UID:", user.pi_uid);
 
         const { data, error } = await supabase
           .from("subscriptions")
           .select("*")
-          .eq("uid", user.id) // 🔥 Match strictly by Pi UID
+          .eq("uid", user.pi_uid) // ✅ Match strictly by Pi UID
           .order("expires_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -65,7 +76,7 @@ export const SubscriptionProvider = ({ children }) => {
           setSubscription(data);
           setIsActive(expires > now);
         } else {
-          console.log("⚠️ No subscription row found for UID:", user.id);
+          console.log("⚠️ No subscription row found for UID:", user.pi_uid);
           setSubscription(null);
           setIsActive(false);
         }
@@ -87,7 +98,7 @@ export const SubscriptionProvider = ({ children }) => {
     return () => {
       isMounted = false;
     };
-  }, [user?.id, authLoading]);
+  }, [user?.pi_uid, user?.id, authLoading]);
 
   return (
     <SubscriptionContext.Provider
@@ -102,4 +113,5 @@ export const SubscriptionProvider = ({ children }) => {
   );
 };
 
-export const useSubscriptionContext = () => useContext(SubscriptionContext);
+export const useSubscriptionContext = () =>
+  useContext(SubscriptionContext);
