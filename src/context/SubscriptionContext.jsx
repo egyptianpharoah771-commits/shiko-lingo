@@ -12,29 +12,13 @@ export const SubscriptionProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
     const fetchSubscription = async () => {
-      // 🔒 لا تبدأ قبل انتهاء auth
-      if (authLoading) {
-        return;
-      }
+      if (authLoading) return;
 
-      // 🔒 لا يوجد مستخدم
       if (!user?.id) {
-        if (isMounted) {
-          console.log("🚫 No authenticated user for subscription check");
-          setSubscription(null);
-          setIsActive(false);
-          setLoading(false);
-        }
-        return;
-      }
-
-      // 🔒 ليس مستخدم Pi → لا يوجد اشتراك Pi
-      if (!user?.pi_uid) {
-        if (isMounted) {
-          console.log("🚫 Non-Pi user. Skipping Pi subscription lookup.");
+        if (mounted) {
           setSubscription(null);
           setIsActive(false);
           setLoading(false);
@@ -43,49 +27,41 @@ export const SubscriptionProvider = ({ children }) => {
       }
 
       try {
-        if (isMounted) setLoading(true);
-
-        console.log("🔎 Checking subscription for Pi UID:", user.pi_uid);
+        if (mounted) setLoading(true);
 
         const { data, error } = await supabase
           .from("subscriptions")
           .select("*")
-          .eq("uid", user.pi_uid) // ✅ Match strictly by Pi UID
+          .eq("uid", user.id) // 🔥 Always Pi UID inside Pi
           .order("expires_at", { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        if (!isMounted) return;
+        if (!mounted) return;
 
         if (error) {
-          console.error("❌ Subscription fetch error:", error);
+          console.error("Subscription fetch error:", error);
           setSubscription(null);
           setIsActive(false);
           setLoading(false);
           return;
         }
 
-        console.log("📦 Subscription query result:", data);
-
         if (data) {
           const now = new Date();
           const expires = new Date(data.expires_at);
 
-          console.log("⏳ Subscription expires at:", expires);
-
           setSubscription(data);
           setIsActive(expires > now);
         } else {
-          console.log("⚠️ No subscription row found for UID:", user.pi_uid);
           setSubscription(null);
           setIsActive(false);
         }
 
         setLoading(false);
-
       } catch (err) {
-        console.error("🔥 Unexpected subscription error:", err);
-        if (isMounted) {
+        console.error("Unexpected subscription error:", err);
+        if (mounted) {
           setSubscription(null);
           setIsActive(false);
           setLoading(false);
@@ -96,9 +72,9 @@ export const SubscriptionProvider = ({ children }) => {
     fetchSubscription();
 
     return () => {
-      isMounted = false;
+      mounted = false;
     };
-  }, [user?.pi_uid, user?.id, authLoading]);
+  }, [user?.id, authLoading]);
 
   return (
     <SubscriptionContext.Provider

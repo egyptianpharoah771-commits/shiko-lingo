@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
 
+const PI_STORAGE_KEY = "shiko_pi_user";
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,56 +14,43 @@ export function AuthProvider({ children }) {
   };
 
   /* =========================
-     Stable Session Initialization
+     Initialize Session
   ========================= */
   useEffect(() => {
-    let mounted = true;
-
     const initialize = async () => {
       try {
+        // 🔵 Inside Pi → use local Pi identity only
+        if (isPiBrowser()) {
+          const stored = localStorage.getItem(PI_STORAGE_KEY);
+
+          if (stored) {
+            setUser(JSON.parse(stored));
+          }
+
+          setLoading(false);
+          return;
+        }
+
+        // 🟢 Outside Pi → use Supabase Auth
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
-        if (!mounted) return;
-
         if (session?.user) {
           setUser(session.user);
-        } else {
-          setUser(null);
         }
       } catch (err) {
         console.error("Session init error:", err);
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(false);
       }
     };
 
     initialize();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-      }
-
-      // 🔒 Loading ends ONLY when auth state settles
-      setLoading(false);
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
   }, []);
 
   /* =========================
-     Login with Pi (Deterministic)
+     Login with Pi
   ========================= */
   const loginWithPi = async () => {
     if (!isPiBrowser()) return;
@@ -71,41 +60,33 @@ export function AuthProvider({ children }) {
 
       const auth = await window.Pi.authenticate(["username", "payments"]);
 
-      if (!auth?.user?.uid || !auth?.accessToken) {
+      if (!auth?.user?.uid) {
         throw new Error("Invalid Pi authentication response");
       }
 
-      const response = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pi_uid: auth.user.uid,
-          accessToken: auth.accessToken,
-        }),
-      });
+      const piUser = {
+        id: auth.user.uid, // 🔥 Pi UID becomes primary ID
+        username: auth.user.username,
+        provider: "pi",
+      };
 
-      if (!response.ok) {
-        throw new Error("Backend Pi authentication failed");
-      }
+      localStorage.setItem(PI_STORAGE_KEY, JSON.stringify(piUser));
+      setUser(piUser);
 
-      const { access_token, refresh_token } = await response.json();
-
-      const { error } = await supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      });
-
-      if (error) throw error;
-
-      // ❗ Do NOT setLoading(false) here.
-      // We wait for onAuthStateChange to settle state.
     } catch (err) {
       console.error("Pi Login Error:", err);
+    } finally {
       setLoading(false);
     }
   };
 
   const logout = async () => {
+    if (isPiBrowser()) {
+      localStorage.removeItem(PI_STORAGE_KEY);
+      setUser(null);
+      return;
+    }
+
     await supabase.auth.signOut();
     setUser(null);
   };
