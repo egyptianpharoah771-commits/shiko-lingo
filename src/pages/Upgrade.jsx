@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { createPiPayment } from "../pi/piPayments";
 
 function isInsideRealPi() {
   if (typeof window === "undefined") return false;
@@ -10,6 +12,8 @@ function isInsideRealPi() {
 
 function Upgrade() {
   const { user, loginWithPi } = useAuth();
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,7 +29,7 @@ function Upgrade() {
       return;
     }
 
-    if (!user?.id) {
+    if (!user?.pi_uid) {
       setError("Authentication required before subscription.");
       return;
     }
@@ -33,61 +37,18 @@ function Upgrade() {
     setLoading(true);
 
     try {
-      const orderId = `order_${Date.now()}`;
+      await createPiPayment({
+        amount: 3,
+        memo: "Shiko Lingo Monthly Subscription",
+        uid: user.pi_uid, // 🔒 Use Pi UID only
+      });
 
-      window.Pi.createPayment(
-        {
-          amount: 3,
-          memo: "Shiko Lingo Monthly Subscription",
-          metadata: {
-            orderId,
-            plan: "MONTHLY",
-          },
-        },
-        {
-          onReadyForServerApproval: async (paymentId) => {
-            await fetch("/api/pi/approve", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ paymentId }),
-            });
-          },
-
-          onReadyForServerCompletion: async (paymentId, txid) => {
-            const res = await fetch("/api/pi/complete", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                paymentId,
-                txid,
-                uid: user.id,
-              }),
-            });
-
-            if (!res.ok) {
-              throw new Error("Completion failed");
-            }
-
-            setTimeout(() => {
-              window.location.href = "/dashboard";
-            }, 1000);
-          },
-
-          onCancel: () => {
-            setError("Payment was cancelled.");
-            setLoading(false);
-          },
-
-          onError: (err) => {
-            console.error("Payment error:", err);
-            setError("Payment failed. Please try again.");
-            setLoading(false);
-          },
-        }
-      );
+      // ✅ Let SubscriptionContext re-check naturally
+      navigate("/dashboard");
     } catch (err) {
       console.error("Subscription error:", err);
       setError(err.message || "Subscription failed.");
+    } finally {
       setLoading(false);
     }
   };
