@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
-
 const PI_STORAGE_KEY = "shiko_pi_user";
 
 export function AuthProvider({ children }) {
@@ -10,7 +9,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const isPiBrowser = () => {
-    return typeof window !== "undefined" && typeof window.Pi !== "undefined";
+    return typeof window !== "undefined" && !!window.Pi;
   };
 
   /* =========================
@@ -19,28 +18,33 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initialize = async () => {
       try {
-        // 🔵 Inside Pi → use local Pi identity only
         if (isPiBrowser()) {
+          // 🔵 Pi Environment
           const stored = localStorage.getItem(PI_STORAGE_KEY);
 
           if (stored) {
             setUser(JSON.parse(stored));
+          } else {
+            setUser(null);
           }
 
           setLoading(false);
           return;
         }
 
-        // 🟢 Outside Pi → use Supabase Auth
+        // 🟢 Non-Pi Environment (Chrome)
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
         if (session?.user) {
           setUser(session.user);
+        } else {
+          setUser(null);
         }
       } catch (err) {
         console.error("Session init error:", err);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -65,7 +69,7 @@ export function AuthProvider({ children }) {
       }
 
       const piUser = {
-        id: auth.user.uid, // 🔥 Pi UID becomes primary ID
+        id: auth.user.uid,
         username: auth.user.username,
         provider: "pi",
       };
@@ -75,6 +79,7 @@ export function AuthProvider({ children }) {
 
     } catch (err) {
       console.error("Pi Login Error:", err);
+      setUser(null);
     } finally {
       setLoading(false);
     }
