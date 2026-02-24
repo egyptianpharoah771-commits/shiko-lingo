@@ -25,6 +25,15 @@ function generateInternalEmail(piUid) {
   return `${piUid}@pi.shikolingo.internal`;
 }
 
+function extractTokensFromLink(link) {
+  const url = new URL(link);
+  const hash = new URLSearchParams(url.hash.substring(1));
+  return {
+    access_token: hash.get("access_token"),
+    refresh_token: hash.get("refresh_token"),
+  };
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "METHOD_NOT_ALLOWED" });
@@ -37,7 +46,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "MISSING_REQUIRED_FIELDS" });
     }
 
-    // 1️⃣ Verify Pi token with Pi servers
+    // 1️⃣ Verify Pi token
     const piUser = await verifyPiAccessToken(accessToken);
 
     if (piUser.uid !== pi_uid) {
@@ -46,14 +55,13 @@ export default async function handler(req, res) {
 
     const email = generateInternalEmail(pi_uid);
 
-    // 2️⃣ Check if user exists
+    // 2️⃣ Ensure user exists
     const { data: existingUsers } =
       await supabaseAdmin.auth.admin.listUsers();
 
     let user =
       existingUsers.users.find((u) => u.email === email);
 
-    // 3️⃣ Create user if not exists
     if (!user) {
       const { data: createdUser, error: createError } =
         await supabaseAdmin.auth.admin.createUser({
@@ -71,7 +79,7 @@ export default async function handler(req, res) {
       user = createdUser.user;
     }
 
-    // 4️⃣ Generate session (NO PASSWORD)
+    // 3️⃣ Generate magic link
     const { data: linkData, error: linkError } =
       await supabaseAdmin.auth.admin.generateLink({
         type: "magiclink",
@@ -85,8 +93,16 @@ export default async function handler(req, res) {
       });
     }
 
+    const actionLink = linkData.properties?.action_link;
+
+    if (!actionLink) {
+      return res.status(500).json({
+        error: "INVALID_ACTION_LINK",
+      });
+    }
+
     const { access_token, refresh_token } =
-      linkData.properties;
+      extractTokensFromLink(actionLink);
 
     if (!access_token || !refresh_token) {
       return res.status(500).json({
