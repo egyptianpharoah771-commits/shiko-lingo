@@ -15,21 +15,12 @@ import {
 import { useEffect, useState } from "react";
 import { initPiSDK, isPiAvailable } from "./lib/initPi";
 
-/* ======================
-   Utils
-====================== */
 import STORAGE_KEYS from "./utils/storageKeys";
 import { migrateLegacyStorage } from "./utils/migrateStorage";
 
-/* ======================
-   Global Components
-====================== */
 import FeedbackButton from "./components/FeedbackButton";
 import AdminGuard from "./components/AdminGuard";
 
-/* ======================
-   Pages
-====================== */
 import Dashboard from "./pages/Dashboard";
 import PI from "./pages/PI";
 import Writing from "./pages/Writing";
@@ -271,5 +262,68 @@ function App() {
     </AuthProvider>
   );
 }
+
+/* ======================
+   Styles
+====================== */
+
+const headerStyle = {
+  backgroundColor: "#ffffff",
+  padding: 15,
+  borderBottom: "1px solid #e2d7ee",
+  display: "flex",
+  justifyContent: "space-between",
+};
+
+const navStyle = {
+  display: "flex",
+  gap: 10,
+  flexWrap: "wrap",
+  marginBottom: 20,
+};
+
+const navBtnStyle = {
+  padding: "8px 14px",
+  borderRadius: 8,
+  border: "1px solid #e2d7ee",
+  cursor: "pointer",
+  backgroundColor: "#faf7fc",
+  fontWeight: "bold",
+};
+
+const feedbackBadgeStyle = {
+  background: "rgba(74,47,110,0.08)",
+  padding: "6px 12px",
+  borderRadius: 20,
+  fontWeight: "bold",
+};
+
+const badgeCountStyle = {
+  background: "#ff3b3b",
+  borderRadius: 12,
+  padding: "2px 8px",
+  fontSize: 12,
+};
+
+const entryStyle = {
+  minHeight: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  textAlign: "center",
+};
+
+const primaryBtn = {
+  padding: "12px 24px",
+  marginTop: 20,
+  fontSize: 16,
+  fontWeight: "bold",
+};
+
+const secondaryBtn = {
+  padding: "10px 20px",
+  marginTop: 10,
+};
 
 export default App;
