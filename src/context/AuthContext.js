@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
@@ -12,50 +12,54 @@ export function AuthProvider({ children }) {
   };
 
   /* =========================
-     Initialize Supabase Session
+     Initialize Session ONCE
   ========================= */
   useEffect(() => {
-    const initializeSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+    let mounted = true;
 
-        if (session?.user) {
-          setUser(session.user);
-        }
+    const init = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-        // Listen for auth changes (important)
-        supabase.auth.onAuthStateChange((_event, session) => {
-          if (session?.user) {
-            setUser(session.user);
-          } else {
-            setUser(null);
-          }
-        });
-      } catch (error) {
-        console.error("Session initialization error:", error);
-      } finally {
-        setLoading(false);
+      if (!mounted) return;
+
+      if (session?.user) {
+        setUser(session.user);
       }
+
+      setLoading(false);
     };
 
-    initializeSession();
+    init();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   /* =========================
-     Login with Pi (Bridge to Supabase)
+     Login with Pi
   ========================= */
   const loginWithPi = async () => {
-    if (!isPiBrowser()) {
-      console.warn("Pi SDK not available.");
-      return;
-    }
+    if (!isPiBrowser()) return;
 
     try {
       setLoading(true);
 
-      // 1️⃣ Authenticate with Pi
       const auth = await window.Pi.authenticate(["username", "payments"]);
 
       if (!auth?.user?.uid || !auth?.accessToken) {
@@ -63,75 +67,40 @@ export function AuthProvider({ children }) {
       }
 
       const pi_uid = auth.user.uid;
-      const accessToken = auth.accessToken;
 
-      // 2️⃣ Call backend bridge
       const response = await fetch("/api/auth", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pi_uid,
-          accessToken,
+          accessToken: auth.accessToken,
         }),
       });
 
       if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "Pi backend authentication failed");
+        throw new Error("Backend Pi authentication failed");
       }
 
       const { access_token, refresh_token } = await response.json();
 
-      if (!access_token || !refresh_token) {
-        throw new Error("Invalid Supabase session tokens");
-      }
-
-      // 3️⃣ Set Supabase session
-      const { error: sessionError } = await supabase.auth.setSession({
+      const { error } = await supabase.auth.setSession({
         access_token,
         refresh_token,
       });
 
-      if (sessionError) {
-        throw sessionError;
-      }
+      if (error) throw error;
 
-      // 4️⃣ Fetch fresh session user
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.user) {
-        throw new Error("Failed to establish Supabase session");
-      }
-
-      // Attach pi_uid in memory only (not persistent storage)
-      const enrichedUser = {
-        ...session.user,
-        pi_uid,
-        provider: "pi",
-      };
-
-      setUser(enrichedUser);
-    } catch (error) {
-      console.error("Pi Login Error:", error);
+      // Wait for onAuthStateChange to set user
+    } catch (err) {
+      console.error("Pi Login Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  /* =========================
-     Logout
-  ========================= */
   const logout = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+    await supabase.auth.signOut();
+    setUser(null);
   };
 
   return (
