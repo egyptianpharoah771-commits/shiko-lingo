@@ -1,15 +1,13 @@
 import STORAGE_KEYS from "../utils/storageKeys";
 import { getArray } from "../utils/progressStorage";
-import { getCurrentPiUser } from "./piUserAdapter";
 
 /**
  * Returns progress in Contract shape
+ * Identity must be injected from outside (Single Source of Truth)
  */
-export function getUserProgress() {
-  const piUser = getCurrentPiUser();
-
+export function getUserProgress(uid = null) {
   return {
-    pi_uid: piUser?.uid || "guest",
+    pi_uid: uid || "guest",
 
     skills: {
       listening: getArray(STORAGE_KEYS.LISTENING_COMPLETED),
