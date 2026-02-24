@@ -12,26 +12,32 @@ export function AuthProvider({ children }) {
   };
 
   /* =========================
-     Initialize Session ONCE
+     Stable Session Initialization
   ========================= */
   useEffect(() => {
     let mounted = true;
 
-    const init = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const initialize = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      if (session?.user) {
-        setUser(session.user);
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.error("Session init error:", err);
+      } finally {
+        if (mounted) setLoading(false);
       }
-
-      setLoading(false);
     };
 
-    init();
+    initialize();
 
     const {
       data: { subscription },
@@ -43,6 +49,9 @@ export function AuthProvider({ children }) {
       } else {
         setUser(null);
       }
+
+      // 🔒 Loading ends ONLY when auth state settles
+      setLoading(false);
     });
 
     return () => {
@@ -52,7 +61,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   /* =========================
-     Login with Pi
+     Login with Pi (Deterministic)
   ========================= */
   const loginWithPi = async () => {
     if (!isPiBrowser()) return;
@@ -66,13 +75,11 @@ export function AuthProvider({ children }) {
         throw new Error("Invalid Pi authentication response");
       }
 
-      const pi_uid = auth.user.uid;
-
       const response = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pi_uid,
+          pi_uid: auth.user.uid,
           accessToken: auth.accessToken,
         }),
       });
@@ -90,10 +97,10 @@ export function AuthProvider({ children }) {
 
       if (error) throw error;
 
-      // Wait for onAuthStateChange to set user
+      // ❗ Do NOT setLoading(false) here.
+      // We wait for onAuthStateChange to settle state.
     } catch (err) {
       console.error("Pi Login Error:", err);
-    } finally {
       setLoading(false);
     }
   };
