@@ -92,9 +92,7 @@ function PiLoginScreen() {
   return (
     <div style={{ padding: 40, textAlign: "center" }}>
       <h2>🔐 Login Required</h2>
-      <p style={{ marginTop: 10 }}>
-        Please authenticate with Pi to continue.
-      </p>
+      <p>Please authenticate with Pi to continue.</p>
 
       <button
         onClick={loginWithPi}
@@ -103,7 +101,6 @@ function PiLoginScreen() {
           marginTop: 20,
           padding: "12px 20px",
           fontWeight: "bold",
-          cursor: loading ? "not-allowed" : "pointer",
         }}
       >
         {loading ? "Authenticating…" : "Login with Pi"}
@@ -121,11 +118,7 @@ function AuthGate({ children }) {
   const insidePi = isPiAvailable();
 
   if (loading) {
-    return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        Initializing session...
-      </div>
-    );
+    return <div style={{ padding: 40 }}>Initializing session...</div>;
   }
 
   if (!insidePi && !user) {
@@ -142,23 +135,34 @@ function AuthGate({ children }) {
 /* ======================
    Subscription Guard
 ====================== */
-function SubscriptionGuard({ children }) {
-  const location = useLocation();
+function SubscriptionGuard() {
   const { isActive, loading } = useSubscription();
 
   if (loading) {
-    return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        Checking subscription...
-      </div>
-    );
+    return <div style={{ padding: 40 }}>Checking subscription...</div>;
   }
 
   if (!isActive) {
-    return <Navigate to="/upgrade" state={{ from: location }} replace />;
+    return <Upgrade />;
   }
 
-  return children;
+  return (
+    <AppLayout>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/grammar" element={<GrammarLevels />} />
+        <Route path="/grammar/:level" element={<GrammarUnits />} />
+        <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
+        <Route path="/vocabulary" element={<VocabularyPage />} />
+        <Route path="/listening" element={<ListeningHome />} />
+        <Route path="/reading" element={<ReadingHome />} />
+        <Route path="/speaking" element={<SpeakingHome />} />
+        <Route path="/writing" element={<Writing />} />
+        <Route path="/pi" element={<AdminGuard><PI /></AdminGuard>} />
+        <Route path="/admin/feedback" element={<AdminGuard><AdminFeedback /></AdminGuard>} />
+      </Routes>
+    </AppLayout>
+  );
 }
 
 /* ======================
@@ -226,8 +230,16 @@ function AppLayout({ children }) {
   );
 }
 
+function NavButton({ to, label }) {
+  return (
+    <Link to={to}>
+      <button style={navBtnStyle}>{label}</button>
+    </Link>
+  );
+}
+
 /* ======================
-   App Root
+   Root
 ====================== */
 function App() {
   useEffect(() => {
@@ -249,31 +261,7 @@ function App() {
               path="/*"
               element={
                 <AuthGate>
-                  <Routes>
-                    <Route path="/upgrade" element={<Upgrade />} />
-                    <Route
-                      path="/*"
-                      element={
-                        <SubscriptionGuard>
-                          <AppLayout>
-                            <Routes>
-                              <Route path="/dashboard" element={<Dashboard />} />
-                              <Route path="/grammar" element={<GrammarLevels />} />
-                              <Route path="/grammar/:level" element={<GrammarUnits />} />
-                              <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
-                              <Route path="/vocabulary" element={<VocabularyPage />} />
-                              <Route path="/listening" element={<ListeningHome />} />
-                              <Route path="/reading" element={<ReadingHome />} />
-                              <Route path="/speaking" element={<SpeakingHome />} />
-                              <Route path="/writing" element={<Writing />} />
-                              <Route path="/pi" element={<AdminGuard><PI /></AdminGuard>} />
-                              <Route path="/admin/feedback" element={<AdminGuard><AdminFeedback /></AdminGuard>} />
-                            </Routes>
-                          </AppLayout>
-                        </SubscriptionGuard>
-                      }
-                    />
-                  </Routes>
+                  <SubscriptionGuard />
                 </AuthGate>
               }
             />
@@ -283,76 +271,5 @@ function App() {
     </AuthProvider>
   );
 }
-
-function NavButton({ to, label }) {
-  return (
-    <Link to={to}>
-      <button style={navBtnStyle}>{label}</button>
-    </Link>
-  );
-}
-
-/* ======================
-   Styles
-====================== */
-
-const headerStyle = {
-  backgroundColor: "#ffffff",
-  padding: 15,
-  borderBottom: "1px solid #e2d7ee",
-  display: "flex",
-  justifyContent: "space-between",
-};
-
-const navStyle = {
-  display: "flex",
-  gap: 10,
-  flexWrap: "wrap",
-  marginBottom: 20,
-};
-
-const navBtnStyle = {
-  padding: "8px 14px",
-  borderRadius: 8,
-  border: "1px solid #e2d7ee",
-  cursor: "pointer",
-  backgroundColor: "#faf7fc",
-  fontWeight: "bold",
-};
-
-const feedbackBadgeStyle = {
-  background: "rgba(74,47,110,0.08)",
-  padding: "6px 12px",
-  borderRadius: 20,
-  fontWeight: "bold",
-};
-
-const badgeCountStyle = {
-  background: "#ff3b3b",
-  borderRadius: 12,
-  padding: "2px 8px",
-  fontSize: 12,
-};
-
-const entryStyle = {
-  minHeight: "100vh",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "center",
-  textAlign: "center",
-};
-
-const primaryBtn = {
-  padding: "12px 24px",
-  marginTop: 20,
-  fontSize: 16,
-  fontWeight: "bold",
-};
-
-const secondaryBtn = {
-  padding: "10px 20px",
-  marginTop: 10,
-};
 
 export default App;
