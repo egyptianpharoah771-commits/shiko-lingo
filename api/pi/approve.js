@@ -13,13 +13,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "METHOD_NOT_ALLOWED" });
   }
 
-  const { paymentId } = req.body;
+  const { paymentId } = req.body || {};
 
   if (!paymentId) {
     return res.status(400).json({ error: "PAYMENT_ID_REQUIRED" });
   }
 
   try {
+    console.log("Approving Pi payment:", paymentId);
+
     const response = await fetch(
       `${PI_API_BASE}/v2/payments/${paymentId}/approve`,
       {
@@ -28,22 +30,34 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
 
     if (!response.ok) {
       console.error("PI APPROVE API ERROR:", data);
-      return res.status(response.status).json(data);
+      return res.status(response.status).json({
+        success: false,
+        error: "PI_APPROVE_FAILED",
+        details: data,
+      });
     }
 
+    console.log("Pi payment approved:", paymentId);
+
     return res.status(200).json({
-      success: true
+      success: true,
     });
 
   } catch (err) {
     console.error("PI APPROVE ERROR:", err);
     return res.status(500).json({
       success: false,
-      error: "PI_APPROVE_ERROR"
+      error: "PI_APPROVE_ERROR",
     });
   }
 }
