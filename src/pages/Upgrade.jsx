@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useSubscription } from "../context/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { createPiPayment } from "../pi/piPayments";
 
-/**
- * Strict Pi Environment Check
- */
 function isInsideRealPi() {
   if (typeof window === "undefined") return false;
   if (!window.Pi) return false;
@@ -15,45 +13,42 @@ function isInsideRealPi() {
 
 function Upgrade() {
   const { user, loginWithPi } = useAuth();
+  const { isActive } = useSubscription();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const uid = user?.id || null;
+
   const handleSubscribe = async () => {
     if (loading) return;
-
     setError("");
 
-    /* =========================
-       Must be inside Pi Browser
-    ========================= */
     if (!isInsideRealPi()) {
-      setError(
-        "Subscriptions are only available inside the official Pi Browser."
-      );
+      setError("Subscriptions are only available inside the official Pi Browser.");
       return;
     }
 
-    /* =========================
-       Must be authenticated
-       Pi UID = user.id
-    ========================= */
-    if (!user?.id) {
-      setError("Authentication required before subscription.");
-      return;
-    }
-
-    setLoading(true);
+    let currentUser = user;
 
     try {
+      setLoading(true);
+
+      if (!currentUser?.id) {
+        currentUser = await loginWithPi();
+      }
+
+      if (!currentUser?.id) {
+        throw new Error("Authentication failed.");
+      }
+
       await createPiPayment({
         amount: 3,
         memo: "Shiko Lingo Monthly Subscription",
-        uid: user.id, // ✅ Pi UID unified
+        uid: currentUser.id,
       });
 
-      // Let SubscriptionContext re-check naturally
       navigate("/dashboard");
 
     } catch (err) {
@@ -62,10 +57,6 @@ function Upgrade() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePiLogin = async () => {
-    await loginWithPi();
   };
 
   return (
@@ -77,13 +68,13 @@ function Upgrade() {
         textAlign: "center",
       }}
     >
-      <h2>🔒 Subscription Required</h2>
+      <h2>🔒 Subscription</h2>
 
-      {!user && (
+      {!uid && (
         <>
           <p>Please authenticate with Pi first.</p>
           <button
-            onClick={handlePiLogin}
+            onClick={() => loginWithPi()}
             style={{
               marginTop: "20px",
               padding: "12px 20px",
@@ -95,7 +86,25 @@ function Upgrade() {
         </>
       )}
 
-      {user && (
+      {uid && isActive && (
+        <>
+          <h3 style={{ color: "green", marginTop: "20px" }}>
+            ✅ Welcome back — Your PRO subscription is active
+          </h3>
+          <button
+            style={{
+              marginTop: "20px",
+              padding: "12px 20px",
+              fontWeight: "bold",
+            }}
+            onClick={() => navigate("/dashboard")}
+          >
+            Go to Dashboard
+          </button>
+        </>
+      )}
+
+      {uid && !isActive && (
         <>
           <p style={{ marginTop: "12px", color: "#555" }}>
             Access requires an active PRO subscription.
