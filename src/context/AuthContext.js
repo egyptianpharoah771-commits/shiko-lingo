@@ -19,7 +19,6 @@ export function AuthProvider({ children }) {
     const initialize = async () => {
       try {
         if (isPiBrowser()) {
-          // 🔵 Pi Environment
           const stored = localStorage.getItem(PI_STORAGE_KEY);
 
           if (stored) {
@@ -32,7 +31,7 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // 🟢 Non-Pi Environment (Chrome)
+        // Chrome / Non-Pi
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -69,7 +68,7 @@ export function AuthProvider({ children }) {
       }
 
       const piUser = {
-        id: auth.user.uid,
+        pi_uid: auth.user.uid,   // ✅ PRIMARY ID
         username: auth.user.username,
         provider: "pi",
       };
