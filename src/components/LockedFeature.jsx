@@ -1,13 +1,12 @@
 /**
  * Locked Feature Component
  * ------------------------
- * Premium access gate (Unified Identity System)
+ * Premium access gate (Deterministic Identity)
  */
 
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { createPiPayment } from "../pi/piPayments";
-import { SUBSCRIPTION_PLANS } from "../adapters/subscriptionAdapter";
 
 function LockedFeature({ title }) {
   const { user, loginWithPi, isPiBrowser } = useAuth();
@@ -24,27 +23,26 @@ function LockedFeature({ title }) {
       return;
     }
 
+    let currentUser = user;
+
     try {
       setLoading(true);
 
-      // 1️⃣ Ensure authenticated via AuthContext only
-      if (!user?.id) {
-        await loginWithPi();
+      // 🔐 Ensure authenticated
+      if (!currentUser?.id) {
+        currentUser = await loginWithPi(); // ✅ deterministic
       }
 
-      if (!user?.id) {
+      if (!currentUser?.id) {
         throw new Error("Authentication failed.");
       }
 
-      // 2️⃣ Start deterministic payment flow
       await createPiPayment({
         amount: 3,
         memo: "Shiko Lingo - Monthly Subscription",
-        uid: user.id,
-        plan: SUBSCRIPTION_PLANS.MONTHLY,
+        uid: currentUser.id, // ✅ unified identity
       });
 
-      // 3️⃣ Reload after successful activation
       window.location.reload();
 
     } catch (err) {

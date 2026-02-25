@@ -17,14 +17,12 @@ export default function PI() {
     setError("");
     setMessage("");
 
-    // 🔒 Must be inside Pi
     if (typeof window === "undefined" || !window.Pi) {
       setError("❌ Please open this app in Pi Browser");
       return;
     }
 
-    // 🔒 Must have Pi UID from AuthContext
-    if (!user?.pi_uid) {
+    if (!user?.id) {
       setError("❌ Pi authentication required");
       return;
     }
@@ -35,7 +33,7 @@ export default function PI() {
       await createPiPayment({
         amount: 3,
         memo: "Shiko Lingo - Monthly Subscription",
-        uid: user.pi_uid, // 🔒 Always Pi UID
+        uid: user.id, // ✅ unified identity
       });
 
       setMessage("✅ Subscription activated successfully!");
