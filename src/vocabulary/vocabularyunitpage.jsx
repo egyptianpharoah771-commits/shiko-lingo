@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import useQuizEngine from "../core/engine/useQuizEngine";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
@@ -10,7 +10,7 @@ import { VOCABULARY_DATA } from "./vocabularyIndex.js";
    Utils
 ====================== */
 function shuffle(array) {
-  if (!array) return [];
+  if (!Array.isArray(array)) return [];
   const copy = [...array];
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -23,7 +23,9 @@ function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
 
-  const normalizedLevel = level?.trim().toUpperCase();
+  const normalizedLevel =
+    typeof level === "string" ? level.trim().toUpperCase() : null;
+
   const unitKey = `unit${unitId}`;
   const STORAGE_KEY = `vocabularyProgress_${normalizedLevel}`;
 
@@ -35,23 +37,68 @@ function VocabularyUnitPage() {
   const [loading, setLoading] = useState(true);
 
   /* ======================
-     Quiz Engine (SAFE)
+     Load Unit (SAFE)
   ====================== */
-  const { selectAnswer, submitAnswers, resetQuiz } =
-    useQuizEngine({
-      questions: questions.map((q) => ({
-        id: q.id,
-        answer: q.correctAnswer,
-      })),
-    });
+  useEffect(() => {
+    setLoading(true);
+
+    const unitData =
+      VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
+
+    if (
+      unitData &&
+      unitData.content &&
+      Array.isArray(unitData.questions)
+    ) {
+      setContent(unitData.content);
+
+      setQuestions(
+        unitData.questions.map((q) => ({
+          ...q,
+          shuffledOptions: shuffle(q.options),
+        }))
+      );
+
+      setCurrentQuestion(0);
+      setSelected(null);
+      setShowResult(false);
+    } else {
+      setContent(null);
+      setQuestions([]);
+    }
+
+    setLoading(false);
+  }, [normalizedLevel, unitKey]);
 
   /* ======================
-     Word Audio (STABLE)
+     Safe Quiz Engine
+  ====================== */
+  const safeQuestions = useMemo(() => {
+    if (!Array.isArray(questions) || questions.length === 0)
+      return [];
+    return questions.map((q) => ({
+      id: q.id,
+      answer: q.correctAnswer,
+    }));
+  }, [questions]);
+
+  const {
+    selectAnswer,
+    submitAnswers,
+    resetQuiz,
+  } = useQuizEngine({
+    questions: safeQuestions,
+  });
+
+  /* ======================
+     Word Audio
   ====================== */
   const wordAudioRef = useRef(null);
   const [playingWord, setPlayingWord] = useState(null);
 
   const playWordAudio = (word) => {
+    if (!normalizedLevel) return;
+
     const cleanWord = word.toLowerCase();
 
     if (wordAudioRef.current) {
@@ -73,74 +120,25 @@ function VocabularyUnitPage() {
   };
 
   /* ======================
-     Feedback Sounds (SAFE)
-  ====================== */
-  const correctSoundRef = useRef(null);
-  const wrongSoundRef = useRef(null);
-
-  if (!correctSoundRef.current) {
-    correctSoundRef.current = new Audio("/sounds/correct.mp3");
-  }
-
-  if (!wrongSoundRef.current) {
-    wrongSoundRef.current = new Audio("/sounds/wrong.mp3");
-  }
-
-  /* ======================
-     Load Unit (NO LOOP)
-  ====================== */
-  useEffect(() => {
-    setLoading(true);
-
-    const unitData =
-      VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
-
-    if (unitData?.content && unitData?.questions) {
-      setContent(unitData.content);
-
-      setQuestions(
-        unitData.questions.map((q) => ({
-          ...q,
-          shuffledOptions: shuffle(q.options),
-        }))
-      );
-
-      setCurrentQuestion(0);
-      setSelected(null);
-      setShowResult(false);
-      resetQuiz();
-    } else {
-      setContent(null);
-      setQuestions([]);
-    }
-
-    setLoading(false);
-
-    return () => {
-      if (wordAudioRef.current) {
-        wordAudioRef.current.pause();
-        wordAudioRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [normalizedLevel, unitKey]);
-
-  /* ======================
      Progress
   ====================== */
   const saveProgress = () => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const data = raw ? JSON.parse(raw) : { completedUnits: [] };
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const data = raw
+        ? JSON.parse(raw)
+        : { completedUnits: [] };
 
-    const unitNumber = Number(unitId);
+      const unitNumber = Number(unitId);
 
-    if (!data.completedUnits.includes(unitNumber)) {
-      data.completedUnits.push(unitNumber);
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(data)
-      );
-    }
+      if (!data.completedUnits.includes(unitNumber)) {
+        data.completedUnits.push(unitNumber);
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(data)
+        );
+      }
+    } catch {}
   };
 
   /* ======================
@@ -150,8 +148,16 @@ function VocabularyUnitPage() {
     return <div className="vocab-loading">Loading...</div>;
   }
 
-  if (!content || questions.length === 0) {
-    return <div className="vocab-loading">Unit not found.</div>;
+  if (
+    !content ||
+    !Array.isArray(content.items) ||
+    questions.length === 0
+  ) {
+    return (
+      <div className="vocab-loading">
+        Unit not found.
+      </div>
+    );
   }
 
   const question = questions[currentQuestion];
@@ -162,23 +168,10 @@ function VocabularyUnitPage() {
      Handlers
   ====================== */
   const handleCheck = () => {
+    if (!question) return;
+
     selectAnswer(question.id, selected);
     submitAnswers();
-
-    const isCorrect =
-      selected === question.correctAnswer;
-
-    if (isCorrect) {
-      try {
-        correctSoundRef.current.currentTime = 0;
-        correctSoundRef.current.play();
-      } catch {}
-    } else {
-      try {
-        wrongSoundRef.current.currentTime = 0;
-        wrongSoundRef.current.play();
-      } catch {}
-    }
 
     setShowResult(true);
   };
