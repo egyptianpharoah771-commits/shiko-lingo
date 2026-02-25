@@ -32,7 +32,7 @@ export const SubscriptionProvider = ({ children }) => {
         const { data, error } = await supabase
           .from("subscriptions")
           .select("*")
-          .eq("uid", user.id) // 🔥 unified identity
+          .eq("uid", user.id) // 🔐 Unified identity key
           .order("expires_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -89,7 +89,9 @@ export const SubscriptionProvider = ({ children }) => {
   );
 };
 
-// 🔥 Official hook
+/* =========================
+   Official Hook
+========================= */
 export const useSubscription = () => {
   const context = useContext(SubscriptionContext);
   if (!context) {
@@ -97,3 +99,9 @@ export const useSubscription = () => {
   }
   return context;
 };
+
+/* =========================
+   Backward Compatibility
+   (Prevents build breaks)
+========================= */
+export const useSubscriptionContext = useSubscription;
