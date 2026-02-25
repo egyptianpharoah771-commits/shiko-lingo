@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
-const PI_STORAGE_KEY = "shiko_pi_user";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -18,26 +17,23 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initialize = async () => {
       try {
+        // ✅ Inside Pi → No auto login, explicit only
         if (isPiBrowser()) {
-          const stored = localStorage.getItem(PI_STORAGE_KEY);
-
-          if (stored) {
-            setUser(JSON.parse(stored));
-          } else {
-            setUser(null);
-          }
-
-          setLoading(false);
+          setUser(null);
           return;
         }
 
-        // Chrome / Non-Pi
+        // ✅ Outside Pi → Supabase session
         const {
           data: { session },
         } = await supabase.auth.getSession();
 
         if (session?.user) {
-          setUser(session.user);
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            provider: "supabase",
+          });
         } else {
           setUser(null);
         }
@@ -56,7 +52,9 @@ export function AuthProvider({ children }) {
      Login with Pi
   ========================= */
   const loginWithPi = async () => {
-    if (!isPiBrowser()) return;
+    if (!isPiBrowser()) {
+      throw new Error("Not inside Pi Browser");
+    }
 
     try {
       setLoading(true);
@@ -68,17 +66,18 @@ export function AuthProvider({ children }) {
       }
 
       const piUser = {
-        pi_uid: auth.user.uid,   // ✅ PRIMARY ID
+        id: auth.user.uid, // 🔥 Unified identity key
         username: auth.user.username,
         provider: "pi",
       };
 
-      localStorage.setItem(PI_STORAGE_KEY, JSON.stringify(piUser));
       setUser(piUser);
+      return piUser; // 🔥 Return user directly (no race condition)
 
     } catch (err) {
       console.error("Pi Login Error:", err);
       setUser(null);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -86,7 +85,6 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     if (isPiBrowser()) {
-      localStorage.removeItem(PI_STORAGE_KEY);
       setUser(null);
       return;
     }
