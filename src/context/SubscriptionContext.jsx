@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./AuthContext";
 
-const SubscriptionContext = createContext();
+const SubscriptionContext = createContext(null);
 
 export const SubscriptionProvider = ({ children }) => {
   const { user, loading: authLoading } = useAuth();
@@ -32,7 +32,7 @@ export const SubscriptionProvider = ({ children }) => {
         const { data, error } = await supabase
           .from("subscriptions")
           .select("*")
-          .eq("uid", user.id) // 🔥 Always Pi UID inside Pi
+          .eq("uid", user.id) // 🔥 unified identity
           .order("expires_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -89,5 +89,11 @@ export const SubscriptionProvider = ({ children }) => {
   );
 };
 
-export const useSubscriptionContext = () =>
-  useContext(SubscriptionContext);
+// 🔥 Official hook
+export const useSubscription = () => {
+  const context = useContext(SubscriptionContext);
+  if (!context) {
+    throw new Error("useSubscription must be used within SubscriptionProvider");
+  }
+  return context;
+};
