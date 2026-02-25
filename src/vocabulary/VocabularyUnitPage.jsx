@@ -37,7 +37,7 @@ function VocabularyUnitPage() {
   const [loading, setLoading] = useState(true);
 
   /* ======================
-     Load Unit (Stable)
+     Load Unit
   ====================== */
   useEffect(() => {
     setLoading(true);
@@ -77,7 +77,7 @@ function VocabularyUnitPage() {
   }, [normalizedLevel, unitKey, unitId]);
 
   /* ======================
-     Quiz Engine (Guarded)
+     Quiz Engine
   ====================== */
   const quizData = useMemo(() => {
     if (!Array.isArray(questions) || questions.length === 0)
@@ -97,26 +97,37 @@ function VocabularyUnitPage() {
   });
 
   /* ======================
-     Word Audio
+     Word Audio (FIXED)
   ====================== */
   const wordAudioRef = useRef(null);
+  const correctSoundRef = useRef(null);
+  const wrongSoundRef = useRef(null);
+
   const [playingWord, setPlayingWord] = useState(null);
+
+  useEffect(() => {
+    correctSoundRef.current = new Audio("/sounds/correct.mp3");
+    wrongSoundRef.current = new Audio("/sounds/wrong.mp3");
+  }, []);
 
   const playWordAudio = (word) => {
     if (!normalizedLevel || !unitId) return;
 
-    const cleanWord = word.toLowerCase();
+    const encodedWord = encodeURIComponent(
+      word.toLowerCase()
+    );
 
     if (wordAudioRef.current) {
       wordAudioRef.current.pause();
       wordAudioRef.current = null;
     }
 
-    const audioPath = `/sounds/vocabulary/${normalizedLevel.toLowerCase()}/unit${unitId}/${cleanWord}.mp3`;
+    const audioPath = `/sounds/vocabulary/${normalizedLevel.toLowerCase()}/unit${unitId}/${encodedWord}.mp3`;
+
     const audio = new Audio(audioPath);
 
     wordAudioRef.current = audio;
-    setPlayingWord(cleanWord);
+    setPlayingWord(word.toLowerCase());
 
     audio.play().catch(() => {});
     audio.onended = () => {
@@ -178,6 +189,20 @@ function VocabularyUnitPage() {
 
     selectAnswer(question.id, selected);
     submitAnswers();
+
+    const isCorrect =
+      selected === question.correctAnswer;
+
+    try {
+      if (isCorrect && correctSoundRef.current) {
+        correctSoundRef.current.currentTime = 0;
+        correctSoundRef.current.play();
+      } else if (!isCorrect && wrongSoundRef.current) {
+        wrongSoundRef.current.currentTime = 0;
+        wrongSoundRef.current.play();
+      }
+    } catch {}
+
     setShowResult(true);
   };
 
