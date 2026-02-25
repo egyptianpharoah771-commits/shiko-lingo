@@ -3,6 +3,9 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { createPiPayment } from "../pi/piPayments";
 
+/**
+ * Strict Pi Environment Check
+ */
 function isInsideRealPi() {
   if (typeof window === "undefined") return false;
   if (!window.Pi) return false;
@@ -22,6 +25,9 @@ function Upgrade() {
 
     setError("");
 
+    /* =========================
+       Must be inside Pi Browser
+    ========================= */
     if (!isInsideRealPi()) {
       setError(
         "Subscriptions are only available inside the official Pi Browser."
@@ -29,7 +35,11 @@ function Upgrade() {
       return;
     }
 
-    if (!user?.pi_uid) {
+    /* =========================
+       Must be authenticated
+       Pi UID = user.id
+    ========================= */
+    if (!user?.id) {
       setError("Authentication required before subscription.");
       return;
     }
@@ -40,11 +50,12 @@ function Upgrade() {
       await createPiPayment({
         amount: 3,
         memo: "Shiko Lingo Monthly Subscription",
-        uid: user.pi_uid, // 🔒 Use Pi UID only
+        uid: user.id, // ✅ Pi UID unified
       });
 
-      // ✅ Let SubscriptionContext re-check naturally
+      // Let SubscriptionContext re-check naturally
       navigate("/dashboard");
+
     } catch (err) {
       console.error("Subscription error:", err);
       setError(err.message || "Subscription failed.");
