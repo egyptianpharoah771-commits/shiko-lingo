@@ -1,3 +1,5 @@
+// src/vocabulary/VocabularyUnitPage.jsx
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, useMemo } from "react";
 import useQuizEngine from "../core/engine/useQuizEngine";
@@ -88,46 +90,34 @@ function VocabularyUnitPage() {
     }));
   }, [questions]);
 
-  const {
-    selectAnswer,
-    submitAnswers,
-    resetQuiz,
-  } = useQuizEngine({
-    questions: quizData,
-  });
+  const { selectAnswer, submitAnswers, resetQuiz } =
+    useQuizEngine({
+      questions: quizData,
+    });
 
   /* ======================
-     Word Audio (FIXED)
+     Word Audio (FIXED PATH)
   ====================== */
   const wordAudioRef = useRef(null);
-  const correctSoundRef = useRef(null);
-  const wrongSoundRef = useRef(null);
-
   const [playingWord, setPlayingWord] = useState(null);
-
-  useEffect(() => {
-    correctSoundRef.current = new Audio("/sounds/correct.mp3");
-    wrongSoundRef.current = new Audio("/sounds/wrong.mp3");
-  }, []);
 
   const playWordAudio = (word) => {
     if (!normalizedLevel || !unitId) return;
 
-    const encodedWord = encodeURIComponent(
-      word.toLowerCase()
-    );
+    const cleanWord = word.toLowerCase();
 
     if (wordAudioRef.current) {
       wordAudioRef.current.pause();
       wordAudioRef.current = null;
     }
 
-    const audioPath = `/sounds/vocabulary/${normalizedLevel.toLowerCase()}/unit${unitId}/${encodedWord}.mp3`;
+    // ⚠ FIX: removed toLowerCase() from level (case sensitive on Vercel)
+    const audioPath = `/sounds/vocabulary/${normalizedLevel}/unit${unitId}/${cleanWord}.mp3`;
 
     const audio = new Audio(audioPath);
 
     wordAudioRef.current = audio;
-    setPlayingWord(word.toLowerCase());
+    setPlayingWord(cleanWord);
 
     audio.play().catch(() => {});
     audio.onended = () => {
@@ -189,20 +179,6 @@ function VocabularyUnitPage() {
 
     selectAnswer(question.id, selected);
     submitAnswers();
-
-    const isCorrect =
-      selected === question.correctAnswer;
-
-    try {
-      if (isCorrect && correctSoundRef.current) {
-        correctSoundRef.current.currentTime = 0;
-        correctSoundRef.current.play();
-      } else if (!isCorrect && wrongSoundRef.current) {
-        wrongSoundRef.current.currentTime = 0;
-        wrongSoundRef.current.play();
-      }
-    } catch {}
-
     setShowResult(true);
   };
 
