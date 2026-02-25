@@ -1,5 +1,3 @@
-// src/vocabulary/VocabularyUnitPage.jsx
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, useMemo } from "react";
 import useQuizEngine from "../core/engine/useQuizEngine";
@@ -39,7 +37,7 @@ function VocabularyUnitPage() {
   const [loading, setLoading] = useState(true);
 
   /* ======================
-     Load Unit
+     Load Unit (Stable)
   ====================== */
   useEffect(() => {
     setLoading(true);
@@ -79,7 +77,7 @@ function VocabularyUnitPage() {
   }, [normalizedLevel, unitKey, unitId]);
 
   /* ======================
-     Quiz Engine
+     Quiz Engine (Guarded)
   ====================== */
   const quizData = useMemo(() => {
     if (!Array.isArray(questions) || questions.length === 0)
@@ -90,10 +88,13 @@ function VocabularyUnitPage() {
     }));
   }, [questions]);
 
-  const { selectAnswer, submitAnswers, resetQuiz } =
-    useQuizEngine({
-      questions: quizData,
-    });
+  const {
+    selectAnswer,
+    submitAnswers,
+    resetQuiz,
+  } = useQuizEngine({
+    questions: quizData,
+  });
 
   /* ======================
      Word Audio (FIXED PATH)
@@ -111,7 +112,7 @@ function VocabularyUnitPage() {
       wordAudioRef.current = null;
     }
 
-    // ⚠ FIX: removed toLowerCase() from level (case sensitive on Vercel)
+    // ✅ IMPORTANT: keep level case EXACT (A1 not a1)
     const audioPath = `/sounds/vocabulary/${normalizedLevel}/unit${unitId}/${cleanWord}.mp3`;
 
     const audio = new Audio(audioPath);
@@ -119,7 +120,10 @@ function VocabularyUnitPage() {
     wordAudioRef.current = audio;
     setPlayingWord(cleanWord);
 
-    audio.play().catch(() => {});
+    audio.play().catch((err) => {
+      console.error("Audio play error:", err);
+    });
+
     audio.onended = () => {
       setPlayingWord(null);
       wordAudioRef.current = null;
