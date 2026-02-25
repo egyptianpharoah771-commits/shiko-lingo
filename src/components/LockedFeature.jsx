@@ -1,49 +1,56 @@
 /**
  * Locked Feature Component
  * ------------------------
- * Displayed when user tries to access premium content
+ * Premium access gate (Unified Identity System)
  */
 
 import { useState } from "react";
-import { startPiLogin } from "../flows/authFlow";
-import { startSubscriptionPayment } from "../flows/paymentFlow";
+import { useAuth } from "../context/AuthContext";
+import { createPiPayment } from "../pi/piPayments";
 import { SUBSCRIPTION_PLANS } from "../adapters/subscriptionAdapter";
 
 function LockedFeature({ title }) {
+  const { user, loginWithPi, isPiBrowser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubscribe = async () => {
     if (loading) return;
 
-    if (!window.Pi) {
+    setError("");
+
+    if (!isPiBrowser()) {
       setError("Please open the app inside Pi Browser.");
       return;
     }
 
-    setLoading(true);
-    setError("");
-
     try {
-      // 1️⃣ Ensure user authenticated
-      const user = await startPiLogin();
+      setLoading(true);
 
-      if (!user || !user.uid) {
+      // 1️⃣ Ensure authenticated via AuthContext only
+      if (!user?.id) {
+        await loginWithPi();
+      }
+
+      if (!user?.id) {
         throw new Error("Authentication failed.");
       }
 
-      // 2️⃣ Start payment flow
-      await startSubscriptionPayment({
-        uid: user.uid,
+      // 2️⃣ Start deterministic payment flow
+      await createPiPayment({
+        amount: 3,
+        memo: "Shiko Lingo - Monthly Subscription",
+        uid: user.id,
         plan: SUBSCRIPTION_PLANS.MONTHLY,
       });
 
-      // 3️⃣ Reload after activation
+      // 3️⃣ Reload after successful activation
       window.location.reload();
 
     } catch (err) {
       console.error("Subscription error:", err);
       setError("Subscription failed. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
