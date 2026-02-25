@@ -4,7 +4,7 @@ import useQuizEngine from "../core/engine/useQuizEngine";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import "./vocabulary.css";
-import { VOCABULARY_DATA } from "./vocabularyIndex.js";
+import { VOCABULARY_DATA } from "./vocabularyIndex";
 
 /* ======================
    Utils
@@ -37,10 +37,17 @@ function VocabularyUnitPage() {
   const [loading, setLoading] = useState(true);
 
   /* ======================
-     Load Unit (SAFE)
+     Load Unit (Stable)
   ====================== */
   useEffect(() => {
     setLoading(true);
+
+    if (!normalizedLevel || !unitId) {
+      setContent(null);
+      setQuestions([]);
+      setLoading(false);
+      return;
+    }
 
     const unitData =
       VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
@@ -52,13 +59,12 @@ function VocabularyUnitPage() {
     ) {
       setContent(unitData.content);
 
-      setQuestions(
-        unitData.questions.map((q) => ({
-          ...q,
-          shuffledOptions: shuffle(q.options),
-        }))
-      );
+      const safeQuestions = unitData.questions.map((q) => ({
+        ...q,
+        shuffledOptions: shuffle(q.options),
+      }));
 
+      setQuestions(safeQuestions);
       setCurrentQuestion(0);
       setSelected(null);
       setShowResult(false);
@@ -68,12 +74,12 @@ function VocabularyUnitPage() {
     }
 
     setLoading(false);
-  }, [normalizedLevel, unitKey]);
+  }, [normalizedLevel, unitKey, unitId]);
 
   /* ======================
-     Safe Quiz Engine
+     Quiz Engine (Guarded)
   ====================== */
-  const safeQuestions = useMemo(() => {
+  const quizData = useMemo(() => {
     if (!Array.isArray(questions) || questions.length === 0)
       return [];
     return questions.map((q) => ({
@@ -87,7 +93,7 @@ function VocabularyUnitPage() {
     submitAnswers,
     resetQuiz,
   } = useQuizEngine({
-    questions: safeQuestions,
+    questions: quizData,
   });
 
   /* ======================
@@ -97,7 +103,7 @@ function VocabularyUnitPage() {
   const [playingWord, setPlayingWord] = useState(null);
 
   const playWordAudio = (word) => {
-    if (!normalizedLevel) return;
+    if (!normalizedLevel || !unitId) return;
 
     const cleanWord = word.toLowerCase();
 
@@ -120,7 +126,7 @@ function VocabularyUnitPage() {
   };
 
   /* ======================
-     Progress
+     Save Progress
   ====================== */
   const saveProgress = () => {
     try {
@@ -172,7 +178,6 @@ function VocabularyUnitPage() {
 
     selectAnswer(question.id, selected);
     submitAnswers();
-
     setShowResult(true);
   };
 
@@ -183,7 +188,7 @@ function VocabularyUnitPage() {
     } else {
       setSelected(null);
       setShowResult(false);
-      setCurrentQuestion((q) => q + 1);
+      setCurrentQuestion((prev) => prev + 1);
       resetQuiz();
     }
   };
@@ -257,25 +262,26 @@ function VocabularyUnitPage() {
         </p>
 
         <div className="vocab-options">
-          {question.shuffledOptions.map((opt) => (
-            <AnswerOption
-              key={opt}
-              label={opt}
-              disabled={showResult}
-              state={
-                showResult
-                  ? opt === question.correctAnswer
-                    ? "correct"
-                    : opt === selected
-                    ? "wrong"
+          {Array.isArray(question.shuffledOptions) &&
+            question.shuffledOptions.map((opt) => (
+              <AnswerOption
+                key={opt}
+                label={opt}
+                disabled={showResult}
+                state={
+                  showResult
+                    ? opt === question.correctAnswer
+                      ? "correct"
+                      : opt === selected
+                      ? "wrong"
+                      : "default"
+                    : selected === opt
+                    ? "selected"
                     : "default"
-                  : selected === opt
-                  ? "selected"
-                  : "default"
-              }
-              onClick={() => setSelected(opt)}
-            />
-          ))}
+                }
+                onClick={() => setSelected(opt)}
+              />
+            ))}
         </div>
 
         <div className="vocab-actions">

@@ -1,6 +1,6 @@
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
-import { useSubscription } from "./hooks/useSubscription";
+import { useSubscriptionContext } from "./context/SubscriptionContext";
 
 import {
   BrowserRouter as Router,
@@ -30,7 +30,11 @@ import AssessmentPage from "./assessment/AssessmentPage";
 import ListeningHome from "./pages/ListeningHome";
 import ReadingHome from "./reading/ReadingHome";
 import SpeakingHome from "./speaking/SpeakingHome";
+
 import VocabularyPage from "./vocabulary/vocabularypage";
+import VocabularyLevelPage from "./vocabulary/vocabularylevelpage";
+import VocabularyUnitPage from "./vocabulary/vocabularyunitpage";
+
 import GrammarLevels from "./grammar/GrammarLevels";
 import GrammarUnits from "./grammar/GrammarUnits";
 import GrammarUnitPage from "./grammar/GrammarUnitPage";
@@ -127,7 +131,7 @@ function AuthGate({ children }) {
    Subscription Guard
 ====================== */
 function SubscriptionGuard() {
-  const { isActive, loading } = useSubscription();
+  const { isActive, loading } = useSubscriptionContext();
 
   if (loading) {
     return <div style={{ padding: 40 }}>Checking subscription...</div>;
@@ -141,16 +145,46 @@ function SubscriptionGuard() {
     <AppLayout>
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Grammar */}
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
         <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
+
+        {/* Vocabulary */}
         <Route path="/vocabulary" element={<VocabularyPage />} />
+        <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
+        <Route path="/vocabulary/:level/:unitId" element={<VocabularyUnitPage />} />
+
+        {/* Listening */}
         <Route path="/listening" element={<ListeningHome />} />
+
+        {/* Reading */}
         <Route path="/reading" element={<ReadingHome />} />
+
+        {/* Speaking */}
         <Route path="/speaking" element={<SpeakingHome />} />
+
+        {/* Writing */}
         <Route path="/writing" element={<Writing />} />
-        <Route path="/pi" element={<AdminGuard><PI /></AdminGuard>} />
-        <Route path="/admin/feedback" element={<AdminGuard><AdminFeedback /></AdminGuard>} />
+
+        {/* Admin */}
+        <Route
+          path="/pi"
+          element={
+            <AdminGuard>
+              <PI />
+            </AdminGuard>
+          }
+        />
+        <Route
+          path="/admin/feedback"
+          element={
+            <AdminGuard>
+              <AdminFeedback />
+            </AdminGuard>
+          }
+        />
       </Routes>
     </AppLayout>
   );
