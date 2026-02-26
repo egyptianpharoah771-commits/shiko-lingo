@@ -27,11 +27,15 @@ import Writing from "./pages/Writing";
 import AdminFeedback from "./pages/AdminFeedback";
 import Upgrade from "./pages/Upgrade";
 import AssessmentPage from "./assessment/AssessmentPage";
+
+/* ✅ LISTENING IMPORTS */
 import ListeningHome from "./pages/ListeningHome";
+import ListeningLevel from "./pages/ListeningLevel";
+import Listening from "./pages/Listening";
+
 import ReadingHome from "./reading/ReadingHome";
 import SpeakingHome from "./speaking/SpeakingHome";
 
-/* ✅ FIXED — EXACT casing to match Git files */
 import VocabularyPage from "./vocabulary/VocabularyPage";
 import VocabularyLevelPage from "./vocabulary/VocabularyLevelPage";
 import VocabularyUnitPage from "./vocabulary/VocabularyUnitPage";
@@ -39,6 +43,7 @@ import VocabularyUnitPage from "./vocabulary/VocabularyUnitPage";
 import GrammarLevels from "./grammar/GrammarLevels";
 import GrammarUnits from "./grammar/GrammarUnits";
 import GrammarUnitPage from "./grammar/GrammarUnitPage";
+
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
@@ -80,32 +85,6 @@ function Entry() {
 }
 
 /* ======================
-   Pi Login Screen
-====================== */
-function PiLoginScreen() {
-  const { loginWithPi, loading } = useAuth();
-
-  return (
-    <div style={{ padding: 40, textAlign: "center" }}>
-      <h2>🔐 Login Required</h2>
-      <p>Please authenticate with Pi to continue.</p>
-
-      <button
-        onClick={loginWithPi}
-        disabled={loading}
-        style={{
-          marginTop: 20,
-          padding: "12px 20px",
-          fontWeight: "bold",
-        }}
-      >
-        {loading ? "Authenticating…" : "Login with Pi"}
-      </button>
-    </div>
-  );
-}
-
-/* ======================
    Auth Gate
 ====================== */
 function AuthGate({ children }) {
@@ -119,10 +98,6 @@ function AuthGate({ children }) {
 
   if (!insidePi && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  if (insidePi && !user) {
-    return <PiLoginScreen />;
   }
 
   return children;
@@ -147,19 +122,27 @@ function SubscriptionGuard() {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
 
+        {/* Grammar */}
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
         <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
 
+        {/* Vocabulary */}
         <Route path="/vocabulary" element={<VocabularyPage />} />
         <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
         <Route path="/vocabulary/:level/:unitId" element={<VocabularyUnitPage />} />
 
+        {/* Listening */}
         <Route path="/listening" element={<ListeningHome />} />
+        <Route path="/listening/:level" element={<ListeningLevel />} />
+        <Route path="/listening/:level/:lessonId" element={<Listening />} />
+
+        {/* Other Skills */}
         <Route path="/reading" element={<ReadingHome />} />
         <Route path="/speaking" element={<SpeakingHome />} />
         <Route path="/writing" element={<Writing />} />
 
+        {/* Admin */}
         <Route
           path="/pi"
           element={
@@ -182,12 +165,11 @@ function SubscriptionGuard() {
 }
 
 /* ======================
-   App Layout
+   Layout
 ====================== */
 function AppLayout({ children }) {
   const location = useLocation();
   const hideLayout = location.pathname === "/";
-  const isAdmin = sessionStorage.getItem("admin_authed") === "true";
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -195,15 +177,9 @@ function AppLayout({ children }) {
   }, []);
 
   useEffect(() => {
-    const loadUnread = () => {
-      const stored =
-        JSON.parse(localStorage.getItem(STORAGE_KEYS.FEEDBACKS)) || [];
-      setUnreadCount(stored.filter((f) => !f.isRead).length);
-    };
-
-    loadUnread();
-    window.addEventListener("storage", loadUnread);
-    return () => window.removeEventListener("storage", loadUnread);
+    const stored =
+      JSON.parse(localStorage.getItem(STORAGE_KEYS.FEEDBACKS)) || [];
+    setUnreadCount(stored.filter((f) => !f.isRead).length);
   }, []);
 
   return (
@@ -213,19 +189,7 @@ function AppLayout({ children }) {
       {!hideLayout && (
         <>
           <header style={headerStyle}>
-            <div style={{ display: "flex", gap: 12 }}>
-              <img src="/shiko-logo.png" alt="Shiko Lingo" style={{ width: 42 }} />
-              <strong style={{ fontSize: 20 }}>Shiko Lingo</strong>
-            </div>
-
-            <Link to="/admin/feedback">
-              <div style={feedbackBadgeStyle}>
-                🔔 Feedback
-                {unreadCount > 0 && (
-                  <span style={badgeCountStyle}>{unreadCount}</span>
-                )}
-              </div>
-            </Link>
+            <strong style={{ fontSize: 20 }}>Shiko Lingo</strong>
           </header>
 
           <nav style={navStyle}>
@@ -236,7 +200,6 @@ function AppLayout({ children }) {
             <NavButton to="/reading" label="Reading" />
             <NavButton to="/speaking" label="Speaking" />
             <NavButton to="/writing" label="Writing" />
-            {isAdmin && <NavButton to="/pi" label="Pi" />}
           </nav>
         </>
       )}
@@ -288,16 +251,10 @@ function App() {
   );
 }
 
-/* ======================
-   Styles
-====================== */
-
 const headerStyle = {
   backgroundColor: "#ffffff",
   padding: 15,
   borderBottom: "1px solid #e2d7ee",
-  display: "flex",
-  justifyContent: "space-between",
 };
 
 const navStyle = {
@@ -314,20 +271,6 @@ const navBtnStyle = {
   cursor: "pointer",
   backgroundColor: "#faf7fc",
   fontWeight: "bold",
-};
-
-const feedbackBadgeStyle = {
-  background: "rgba(74,47,110,0.08)",
-  padding: "6px 12px",
-  borderRadius: 20,
-  fontWeight: "bold",
-};
-
-const badgeCountStyle = {
-  background: "#ff3b3b",
-  borderRadius: 12,
-  padding: "2px 8px",
-  fontSize: 12,
 };
 
 const entryStyle = {
