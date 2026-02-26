@@ -3,40 +3,74 @@ import { getUserId } from "../utils/userIdentity";
 
 export function useFeatureAccess() {
   const userId = getUserId();
+
   const [loading, setLoading] = useState(true);
-  const [isPro, setIsPro] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [packageName, setPackageName] = useState("FREE");
 
   useEffect(() => {
-    const check = async () => {
+    const checkSubscription = async () => {
+      if (!userId) {
+        setIsActive(false);
+        setPackageName("FREE");
+        setLoading(false);
+        return;
+      }
+
       try {
-        if (!userId) {
-          setIsPro(false);
+        const res = await fetch(
+          `/api/check-subscription?uid=${encodeURIComponent(userId)}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        if (!res.ok) {
+          setIsActive(false);
+          setPackageName("FREE");
           return;
         }
 
-        const res = await fetch(
-          `/api/check-subscription?uid=${encodeURIComponent(userId)}`
-        );
-
         const data = await res.json();
-        setIsPro(res.ok && data.active);
+
+        /*
+          Expected response shape (robust handling):
+          {
+            active: boolean,
+            package?: string,
+            expires_at?: string
+          }
+        */
+
+        const active = !!data?.active;
+        const pkg =
+          typeof data?.package === "string" && data.package.trim()
+            ? data.package.trim().toUpperCase()
+            : active
+            ? "PRO"
+            : "FREE";
+
+        setIsActive(active);
+        setPackageName(pkg);
       } catch {
-        setIsPro(false);
+        setIsActive(false);
+        setPackageName("FREE");
       } finally {
         setLoading(false);
       }
     };
 
-    check();
+    checkSubscription();
   }, [userId]);
 
   return {
-    canAccess: isPro,
-    canGetAIFeedback: isPro,
-    requiresUpgrade: !isPro,
+    canAccess: isActive,
+    canGetAIFeedback: isActive,
+    requiresUpgrade: !isActive,
     isAuthenticated: !!userId,
     userId,
     loading,
-    packageName: isPro ? "PRO" : "FREE",
+    packageName,
   };
 }
