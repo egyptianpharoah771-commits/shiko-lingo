@@ -12,10 +12,9 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { initPiSDK, isPiAvailable } from "./lib/initPi";
 
-import STORAGE_KEYS from "./utils/storageKeys";
 import { migrateLegacyStorage } from "./utils/migrateStorage";
 
 import FeedbackButton from "./components/FeedbackButton";
@@ -28,18 +27,21 @@ import AdminFeedback from "./pages/AdminFeedback";
 import Upgrade from "./pages/Upgrade";
 import AssessmentPage from "./assessment/AssessmentPage";
 
-/* ✅ LISTENING IMPORTS */
+/* Listening */
 import ListeningHome from "./pages/ListeningHome";
 import ListeningLevel from "./pages/ListeningLevel";
 import Listening from "./pages/Listening";
 
+/* Other Skills */
 import ReadingHome from "./reading/ReadingHome";
 import SpeakingHome from "./speaking/SpeakingHome";
 
+/* Vocabulary */
 import VocabularyPage from "./vocabulary/VocabularyPage";
 import VocabularyLevelPage from "./vocabulary/VocabularyLevelPage";
 import VocabularyUnitPage from "./vocabulary/VocabularyUnitPage";
 
+/* Grammar */
 import GrammarLevels from "./grammar/GrammarLevels";
 import GrammarUnits from "./grammar/GrammarUnits";
 import GrammarUnitPage from "./grammar/GrammarUnitPage";
@@ -170,16 +172,9 @@ function SubscriptionGuard() {
 function AppLayout({ children }) {
   const location = useLocation();
   const hideLayout = location.pathname === "/";
-  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     migrateLegacyStorage();
-  }, []);
-
-  useEffect(() => {
-    const stored =
-      JSON.parse(localStorage.getItem(STORAGE_KEYS.FEEDBACKS)) || [];
-    setUnreadCount(stored.filter((f) => !f.isRead).length);
   }, []);
 
   return (
@@ -250,6 +245,10 @@ function App() {
     </AuthProvider>
   );
 }
+
+/* ======================
+   Styles
+====================== */
 
 const headerStyle = {
   backgroundColor: "#ffffff",
