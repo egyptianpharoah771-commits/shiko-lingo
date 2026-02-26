@@ -17,10 +17,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { data: subscription, error } = await supabase
+    const { data, error } = await supabase
       .from("subscriptions")
       .select("plan, expires_at")
       .eq("uid", uid)
+      .order("expires_at", { ascending: false }) // 🔥 مهم جدًا
+      .limit(1)
       .maybeSingle();
 
     if (error) {
@@ -31,7 +33,7 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!subscription) {
+    if (!data) {
       return res.status(200).json({
         active: false,
         plan: null,
@@ -40,13 +42,13 @@ export default async function handler(req, res) {
     }
 
     const now = new Date();
-    const expiryDate = new Date(subscription.expires_at);
+    const expiryDate = new Date(data.expires_at);
     const active = expiryDate > now;
 
     return res.status(200).json({
       active,
-      plan: active ? subscription.plan : null,
-      expiresAt: active ? subscription.expires_at : null,
+      plan: active ? data.plan : null,
+      expiresAt: active ? data.expires_at : null,
     });
 
   } catch (err) {
