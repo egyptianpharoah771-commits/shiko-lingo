@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { getUserId } from "../utils/userIdentity";
+import { useAuth } from "../context/AuthContext";
 
 export function useFeatureAccess() {
-  const userId = getUserId();
+  const { user, loading: authLoading } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [isActive, setIsActive] = useState(false);
@@ -10,7 +10,9 @@ export function useFeatureAccess() {
 
   useEffect(() => {
     const checkSubscription = async () => {
-      if (!userId) {
+      if (authLoading) return;
+
+      if (!user?.id) {
         setIsActive(false);
         setPackageName("FREE");
         setLoading(false);
@@ -19,40 +21,24 @@ export function useFeatureAccess() {
 
       try {
         const res = await fetch(
-          `/api/check-subscription?uid=${encodeURIComponent(userId)}`,
-          {
-            method: "GET",
-            credentials: "include",
-          }
+          `/api/check-subscription?uid=${encodeURIComponent(user.id)}`
         );
 
         if (!res.ok) {
           setIsActive(false);
           setPackageName("FREE");
+          setLoading(false);
           return;
         }
 
         const data = await res.json();
 
-        /*
-          Expected response shape (robust handling):
-          {
-            active: boolean,
-            package?: string,
-            expires_at?: string
-          }
-        */
-
-        const active = !!data?.active;
-        const pkg =
-          typeof data?.package === "string" && data.package.trim()
-            ? data.package.trim().toUpperCase()
-            : active
-            ? "PRO"
-            : "FREE";
-
-        setIsActive(active);
-        setPackageName(pkg);
+        setIsActive(!!data?.active);
+        setPackageName(
+          data?.active && data?.plan
+            ? data.plan.toUpperCase()
+            : "FREE"
+        );
       } catch {
         setIsActive(false);
         setPackageName("FREE");
@@ -62,14 +48,14 @@ export function useFeatureAccess() {
     };
 
     checkSubscription();
-  }, [userId]);
+  }, [user?.id, authLoading]);
 
   return {
     canAccess: isActive,
     canGetAIFeedback: isActive,
     requiresUpgrade: !isActive,
-    isAuthenticated: !!userId,
-    userId,
+    isAuthenticated: !!user?.id,
+    userId: user?.id || null,
     loading,
     packageName,
   };
