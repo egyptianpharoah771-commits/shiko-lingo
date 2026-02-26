@@ -37,7 +37,44 @@ function VocabularyUnitPage() {
   const [loading, setLoading] = useState(true);
 
   /* ======================
-     Load Unit (Stable)
+     Audio Refs (ISOLATED)
+  ====================== */
+  const wordAudioRef = useRef(null);
+  const selectAudioRef = useRef(null);
+  const correctAudioRef = useRef(null);
+  const wrongAudioRef = useRef(null);
+
+  const [playingWord, setPlayingWord] = useState(null);
+
+  /* ======================
+     Init Feedback Sounds (ONCE)
+  ====================== */
+  useEffect(() => {
+    selectAudioRef.current = new Audio("/sounds/select.mp3");
+    correctAudioRef.current = new Audio("/sounds/correct.mp3");
+    wrongAudioRef.current = new Audio("/sounds/wrong.mp3");
+  }, []);
+
+  const playSelectSound = () => {
+    if (!selectAudioRef.current) return;
+    selectAudioRef.current.currentTime = 0;
+    selectAudioRef.current.play().catch(() => {});
+  };
+
+  const playCorrectSound = () => {
+    if (!correctAudioRef.current) return;
+    correctAudioRef.current.currentTime = 0;
+    correctAudioRef.current.play().catch(() => {});
+  };
+
+  const playWrongSound = () => {
+    if (!wrongAudioRef.current) return;
+    wrongAudioRef.current.currentTime = 0;
+    wrongAudioRef.current.play().catch(() => {});
+  };
+
+  /* ======================
+     Load Unit
   ====================== */
   useEffect(() => {
     setLoading(true);
@@ -77,7 +114,7 @@ function VocabularyUnitPage() {
   }, [normalizedLevel, unitKey, unitId]);
 
   /* ======================
-     Quiz Engine (Guarded)
+     Quiz Engine
   ====================== */
   const quizData = useMemo(() => {
     if (!Array.isArray(questions) || questions.length === 0)
@@ -97,11 +134,8 @@ function VocabularyUnitPage() {
   });
 
   /* ======================
-     Word Audio (FIXED PATH)
+     Word Audio
   ====================== */
-  const wordAudioRef = useRef(null);
-  const [playingWord, setPlayingWord] = useState(null);
-
   const playWordAudio = (word) => {
     if (!normalizedLevel || !unitId) return;
 
@@ -112,17 +146,13 @@ function VocabularyUnitPage() {
       wordAudioRef.current = null;
     }
 
-    // ✅ IMPORTANT: keep level case EXACT (A1 not a1)
     const audioPath = `/sounds/vocabulary/${normalizedLevel}/unit${unitId}/${cleanWord}.mp3`;
 
     const audio = new Audio(audioPath);
-
     wordAudioRef.current = audio;
     setPlayingWord(cleanWord);
 
-    audio.play().catch((err) => {
-      console.error("Audio play error:", err);
-    });
+    audio.play().catch(() => {});
 
     audio.onended = () => {
       setPlayingWord(null);
@@ -179,11 +209,20 @@ function VocabularyUnitPage() {
      Handlers
   ====================== */
   const handleCheck = () => {
-    if (!question) return;
+    if (!question || !selected) return;
+
+    const isCorrect =
+      selected === question.correctAnswer;
 
     selectAnswer(question.id, selected);
     submitAnswers();
     setShowResult(true);
+
+    if (isCorrect) {
+      playCorrectSound();
+    } else {
+      playWrongSound();
+    }
   };
 
   const handleNext = () => {
@@ -284,7 +323,10 @@ function VocabularyUnitPage() {
                     ? "selected"
                     : "default"
                 }
-                onClick={() => setSelected(opt)}
+                onClick={() => {
+                  setSelected(opt);
+                  playSelectSound();
+                }}
               />
             ))}
         </div>
