@@ -13,6 +13,7 @@ import AIResponseModal from "../components/AIResponseModal";
 /* =========================
    Listening Lesson Page
    ✅ Full File – Copy/Paste Ready
+   ✅ Normalized Answer Comparison (FIXED RED BUG)
    ✅ Flexible Question Keys (q | question)
    ✅ Safe Guards
 ========================= */
@@ -45,6 +46,15 @@ function Listening() {
   const selectSound = useRef(new Audio("/sounds/select.mp3"));
   const correctSound = useRef(new Audio("/sounds/correct.mp3"));
   const wrongSound = useRef(new Audio("/sounds/wrong.mp3"));
+
+  /* =========================
+     Normalizer (CRITICAL FIX)
+  ========================= */
+  const normalize = (value) =>
+    (value || "")
+      .toString()
+      .trim()
+      .toLowerCase();
 
   /* =========================
      Load Lesson
@@ -99,13 +109,20 @@ function Listening() {
     return q.q || q.question || "";
   };
 
+  /* =========================
+     Submit Answers (FIXED)
+  ========================= */
+
   const handleSubmit = () => {
     if (submitted || Object.keys(answers).length === 0) return;
 
     let correct = 0;
 
     lesson.questions.forEach((q, i) => {
-      if (answers[i] === q.answer) {
+      if (
+        normalize(answers[i]) ===
+        normalize(q.answer)
+      ) {
         correct++;
       }
     });
@@ -126,6 +143,10 @@ function Listening() {
       `${level}-${lessonId}`
     );
   };
+
+  /* =========================
+     AI Feedback
+  ========================= */
 
   const handleAIFeedback = async () => {
     setAiOpen(true);
@@ -211,8 +232,11 @@ function Listening() {
           <strong>{getQuestionText(q)}</strong>
 
           {q.options?.map((opt, j) => {
-            const isSelected = answers[i] === opt;
-            const isCorrect = opt === q.answer;
+            const isSelected =
+              normalize(answers[i]) === normalize(opt);
+
+            const isCorrect =
+              normalize(opt) === normalize(q.answer);
 
             let bg = "#fff";
             let border = "1px solid #ddd";
@@ -222,7 +246,11 @@ function Listening() {
               bg = "#28a745";
               border = "1px solid #1e7e34";
               color = "#fff";
-            } else if (submitted && isSelected && !isCorrect) {
+            } else if (
+              submitted &&
+              isSelected &&
+              !isCorrect
+            ) {
               bg = "#dc3545";
               border = "1px solid #b21f2d";
               color = "#fff";
@@ -273,7 +301,8 @@ function Listening() {
       {submitted && (
         <>
           <p style={{ marginTop: 15 }}>
-            🎉 Score: {score} / {lesson.questions?.length}
+            🎉 Score: {score} /{" "}
+            {lesson.questions?.length}
           </p>
 
           <Link to={`/listening/${level}`}>
