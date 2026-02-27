@@ -10,6 +10,13 @@ import LockedFeature from "../components/LockedFeature";
 import { askAITutor } from "../utils/aiClient";
 import AIResponseModal from "../components/AIResponseModal";
 
+/* =========================
+   Listening Lesson Page
+   ✅ Full File – Copy/Paste Ready
+   ✅ Flexible Question Keys (q | question)
+   ✅ Safe Guards
+========================= */
+
 function Listening() {
   const { level, lessonId } = useParams();
 
@@ -39,6 +46,9 @@ function Listening() {
   const correctSound = useRef(new Audio("/sounds/correct.mp3"));
   const wrongSound = useRef(new Audio("/sounds/wrong.mp3"));
 
+  /* =========================
+     Load Lesson
+  ========================= */
   useEffect(() => {
     if (!canAccess || !lessonId) {
       setLoading(false);
@@ -60,10 +70,15 @@ function Listening() {
         setLesson(data);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Lesson load error:", err);
         setLoading(false);
       });
   }, [level, lessonId, canAccess]);
+
+  /* =========================
+     Guards
+  ========================= */
 
   if (!canAccess) {
     return <LockedFeature title="Listening Lesson" />;
@@ -75,6 +90,14 @@ function Listening() {
 
   if (loading) return <p>Loading lesson…</p>;
   if (!lesson) return <p>Lesson not found</p>;
+
+  /* =========================
+     Helpers
+  ========================= */
+
+  const getQuestionText = (q) => {
+    return q.q || q.question || "";
+  };
 
   const handleSubmit = () => {
     if (submitted || Object.keys(answers).length === 0) return;
@@ -122,9 +145,9 @@ function Listening() {
       skill: "Listening",
       level,
       lessonTitle: lesson.title,
-      text: lesson.text.join(" "),
+      text: lesson.text?.join(" ") || "",
       score,
-      total: lesson.questions.length,
+      total: lesson.questions?.length || 0,
       userId,
       packageName,
     });
@@ -132,6 +155,10 @@ function Listening() {
     setAiStatus(result.status);
     setAiMessage(result.message || "");
   };
+
+  /* =========================
+     Render
+  ========================= */
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
@@ -164,14 +191,14 @@ function Listening() {
       />
 
       <ul>
-        {lesson.text.map((line, i) => (
+        {lesson.text?.map((line, i) => (
           <li key={i}>{line}</li>
         ))}
       </ul>
 
       <h3>Comprehension Questions</h3>
 
-      {lesson.questions.map((q, i) => (
+      {lesson.questions?.map((q, i) => (
         <div
           key={i}
           style={{
@@ -181,9 +208,9 @@ function Listening() {
             borderRadius: 10,
           }}
         >
-          <strong>{q.q}</strong>
+          <strong>{getQuestionText(q)}</strong>
 
-          {q.options.map((opt, j) => {
+          {q.options?.map((opt, j) => {
             const isSelected = answers[i] === opt;
             const isCorrect = opt === q.answer;
 
@@ -246,7 +273,7 @@ function Listening() {
       {submitted && (
         <>
           <p style={{ marginTop: 15 }}>
-            🎉 Score: {score} / {lesson.questions.length}
+            🎉 Score: {score} / {lesson.questions?.length}
           </p>
 
           <Link to={`/listening/${level}`}>
