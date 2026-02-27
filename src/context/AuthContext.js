@@ -17,13 +17,22 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initialize = async () => {
       try {
-        // ✅ Inside Pi → No auto login, explicit only
+        // 🔥 1️⃣ Restore Pi user from localStorage
         if (isPiBrowser()) {
+          const stored = localStorage.getItem("shiko_pi_user");
+
+          if (stored) {
+            setUser(JSON.parse(stored));
+            setLoading(false);
+            return;
+          }
+
           setUser(null);
+          setLoading(false);
           return;
         }
 
-        // ✅ Outside Pi → Supabase session
+        // 2️⃣ Outside Pi → Supabase session
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -66,13 +75,16 @@ export function AuthProvider({ children }) {
       }
 
       const piUser = {
-        id: auth.user.uid, // 🔥 Unified identity key
+        id: auth.user.uid,
         username: auth.user.username,
         provider: "pi",
       };
 
+      // 🔥 Save to localStorage
+      localStorage.setItem("shiko_pi_user", JSON.stringify(piUser));
+
       setUser(piUser);
-      return piUser; // 🔥 Return user directly (no race condition)
+      return piUser;
 
     } catch (err) {
       console.error("Pi Login Error:", err);
@@ -85,6 +97,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     if (isPiBrowser()) {
+      localStorage.removeItem("shiko_pi_user");
       setUser(null);
       return;
     }
