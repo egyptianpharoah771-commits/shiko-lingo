@@ -1,0 +1,17 @@
+{
+  "level": "A2",
+  "lessons": [
+    {
+      "id": "lesson1",
+      "lesson": 1,
+      "title": "Lesson 1 Title",
+      "description": "Description of lesson 1"
+    },
+    {
+      "id": "lesson2",
+      "lesson": 2,
+      "title": "Lesson 2 Title",
+      "description": "Description of lesson 2"
+    }
+  ]
+}
