@@ -11,69 +11,98 @@ export default function Terms() {
       <h1>Terms & Conditions</h1>
 
       <p>
-        These terms and conditions apply to the Shiko Lingo application ("Application")
-        for mobile devices that was created by Shiko Lingo ("Service Provider") as a free service.
+        These Terms & Conditions govern your use of the Shiko Lingo web
+        application ("Application"), operated by Shiko Lingo
+        ("Service Provider").
       </p>
 
       <p>
-        By downloading or using the Application, you agree to be bound by these
-        Terms and Conditions. If you do not agree, please do not use the Application.
+        By accessing or using the Application, including through the
+        official Pi Browser, you agree to be bound by these Terms.
+        If you do not agree, please discontinue use of the Application.
       </p>
 
+      <h2>1. Use of the Application</h2>
       <p>
-        Unauthorized copying, modification, reverse engineering, or redistribution
-        of the Application or any part of it is strictly prohibited.
+        You agree to use the Application only for lawful educational
+        purposes. Unauthorized copying, modification, reverse engineering,
+        scraping, redistribution, or exploitation of the Application
+        or its content is strictly prohibited.
       </p>
 
+      <h2>2. Accounts & Authentication</h2>
       <p>
-        The Service Provider reserves the right to modify, suspend, or discontinue
-        the Application at any time without notice.
+        When using the Application inside the official Pi Browser,
+        authentication and payments are processed via the Pi Network SDK.
+        The Service Provider does not store passwords or private wallet data.
       </p>
 
+      <h2>3. Subscriptions & Payments</h2>
       <p>
-        The Application may store and process personal data as described in the
-        Privacy Policy. It is your responsibility to keep your device secure.
+        Certain features require an active subscription. Payments made
+        via Pi Network are subject to Pi Network’s own policies.
+        Subscription access may be limited, suspended, or revoked
+        in cases of abuse or violation of these Terms.
       </p>
 
-      <h3>Third-Party Services</h3>
+      <h2>4. Artificial Intelligence Features</h2>
       <p>
-        The Application uses third-party services that have their own Terms and Conditions,
-        including:
+        The Application may provide AI-generated feedback and learning
+        assistance. AI responses are automatically generated and may
+        not always be accurate or complete.
+      </p>
+      <p>
+        AI features are provided “as is” without warranties of any kind.
+        Users remain responsible for how they interpret and apply AI feedback.
+      </p>
+
+      <h2>5. Third-Party Services</h2>
+      <p>
+        The Application may rely on third-party services including:
       </p>
       <ul>
-        <li>Google Play Services</li>
-        <li>Facebook</li>
-        <li>Pi Network</li>
+        <li>Pi Network SDK (authentication and payments)</li>
+        <li>Hosting providers for application deployment</li>
       </ul>
 
       <p>
-        Some features require an active internet connection. The Service Provider
-        is not responsible for lack of functionality due to network issues or data charges.
+        The Application does not use Facebook login or Google Play Services.
+      </p>
+
+      <h2>6. Availability</h2>
+      <p>
+        The Service Provider may modify, suspend, or discontinue
+        the Application (or any part of it) at any time without notice.
+        Continuous availability is not guaranteed.
+      </p>
+
+      <h2>7. Limitation of Liability</h2>
+      <p>
+        The Service Provider shall not be liable for any indirect,
+        incidental, consequential, or special damages arising from
+        the use or inability to use the Application.
+      </p>
+
+      <h2>8. Data & Privacy</h2>
+      <p>
+        Use of the Application is also governed by the Privacy Policy.
+        By using the Application, you agree to the collection and use
+        of information as described therein.
+      </p>
+
+      <h2>9. Changes to These Terms</h2>
+      <p>
+        These Terms may be updated periodically. Continued use of the
+        Application after updates constitutes acceptance of the revised Terms.
       </p>
 
       <p>
-        The Application uses Artificial Intelligence (AI) technologies to enhance
-        learning features. AI usage is provided "as is".
+        <strong>Effective date:</strong> February 27, 2026
       </p>
 
+      <h2>Contact</h2>
       <p>
-        The Service Provider shall not be liable for any indirect or consequential
-        damages arising from the use of the Application.
-      </p>
-
-      <h3>Changes to These Terms</h3>
-      <p>
-        These Terms and Conditions may be updated at any time. Continued use of the
-        Application indicates acceptance of the updated terms.
-      </p>
-
-      <p>
-        <strong>Effective date:</strong> January 7, 2026
-      </p>
-
-      <h3>Contact Us</h3>
-      <p>
-        If you have any questions about these Terms and Conditions, please contact:
+        If you have questions regarding these Terms, please contact:
       </p>
 
       <p>
