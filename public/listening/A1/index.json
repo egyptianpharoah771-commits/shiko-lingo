@@ -1,21 +1,146 @@
-{
-  "level": "A1",
-  "lessons": [
-    { "id": "lesson1", "lesson": 1, "title": "Lesson 1" },
-    { "id": "lesson2", "lesson": 2, "title": "Lesson 2" },
-    { "id": "lesson3", "lesson": 3, "title": "Lesson 3" },
-    { "id": "lesson4", "lesson": 4, "title": "Lesson 4" },
-    { "id": "lesson5", "lesson": 5, "title": "Lesson 5" },
-    { "id": "lesson6", "lesson": 6, "title": "Lesson 6" },
-    { "id": "lesson7", "lesson": 7, "title": "Lesson 7" },
-    { "id": "lesson8", "lesson": 8, "title": "Lesson 8" },
-    { "id": "lesson9", "lesson": 9, "title": "Lesson 9" },
-    { "id": "lesson10", "lesson": 10, "title": "Lesson 10" },
-    { "id": "lesson11", "lesson": 11, "title": "Lesson 11" },
-    { "id": "lesson12", "lesson": 12, "title": "Lesson 12" },
-    { "id": "lesson13", "lesson": 13, "title": "Lesson 13" },
-    { "id": "lesson14", "lesson": 14, "title": "Lesson 14" },
-    { "id": "lesson15", "lesson": 15, "title": "Lesson 15" },
-    { "id": "lesson16", "lesson": 16, "title": "Lesson 16" }
-  ]
-}
+[
+  {
+    "id": "A1-L1",
+    "level": "A1",
+    "lessonNumber": 1,
+    "title": "Greetings – Meeting for the First Time",
+    "description": "A simple conversation between Sarah and Julian meeting for the first time.",
+    "isLocked": false,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L2",
+    "level": "A1",
+    "lessonNumber": 2,
+    "title": "My Daily Routine",
+    "description": "Sarah talks about her daily routine.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L3",
+    "level": "A1",
+    "lessonNumber": 3,
+    "title": "Free Time Activities",
+    "description": "Talking about hobbies and free time.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L4",
+    "level": "A1",
+    "lessonNumber": 4,
+    "title": "Food and Drinks",
+    "description": "A conversation about meals and drinks.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L5",
+    "level": "A1",
+    "lessonNumber": 5,
+    "title": "My Job",
+    "description": "Talking about work and daily tasks.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L6",
+    "level": "A1",
+    "lessonNumber": 6,
+    "title": "At the Supermarket",
+    "description": "Shopping for groceries.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L7",
+    "level": "A1",
+    "lessonNumber": 7,
+    "title": "Weekend Plans",
+    "description": "Making plans for the weekend.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L8",
+    "level": "A1",
+    "lessonNumber": 8,
+    "title": "At the Doctor",
+    "description": "A visit to the doctor.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L9",
+    "level": "A1",
+    "lessonNumber": 9,
+    "title": "In the Classroom",
+    "description": "A conversation at school.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L10",
+    "level": "A1",
+    "lessonNumber": 10,
+    "title": "A Day at the Park",
+    "description": "Spending time outdoors.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L11",
+    "level": "A1",
+    "lessonNumber": 11,
+    "title": "Travel Plans",
+    "description": "Talking about travel arrangements.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L12",
+    "level": "A1",
+    "lessonNumber": 12,
+    "title": "At the Restaurant",
+    "description": "Ordering food at a restaurant.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L13",
+    "level": "A1",
+    "lessonNumber": 13,
+    "title": "Family Gathering",
+    "description": "A conversation during a family event.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L14",
+    "level": "A1",
+    "lessonNumber": 14,
+    "title": "Daily Responsibilities",
+    "description": "Talking about responsibilities at home.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L15",
+    "level": "A1",
+    "lessonNumber": 15,
+    "title": "At the Airport",
+    "description": "Checking in and boarding.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L16",
+    "level": "A1",
+    "lessonNumber": 16,
+    "title": "A Busy Day",
+    "description": "Describing a busy schedule.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  }
+]
