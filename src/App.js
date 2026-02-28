@@ -14,7 +14,6 @@ import {
 
 import { useEffect } from "react";
 import { initPiSDK, isPiAvailable } from "./lib/initPi";
-
 import { migrateLegacyStorage } from "./utils/migrateStorage";
 
 import FeedbackButton from "./components/FeedbackButton";
@@ -46,6 +45,7 @@ import GrammarLevels from "./grammar/GrammarLevels";
 import GrammarUnits from "./grammar/GrammarUnits";
 import GrammarUnitPage from "./grammar/GrammarUnitPage";
 
+/* Legal */
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
@@ -167,7 +167,7 @@ function SubscriptionGuard() {
 }
 
 /* ======================
-   Layout
+   Layout (UPDATED WITH FOOTER)
 ====================== */
 function AppLayout({ children }) {
   const location = useLocation();
@@ -178,7 +178,7 @@ function AppLayout({ children }) {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {!hideLayout && <FeedbackButton />}
 
       {!hideLayout && (
@@ -199,7 +199,15 @@ function AppLayout({ children }) {
         </>
       )}
 
-      <div style={{ padding: 20 }}>{children}</div>
+      <div style={{ padding: 20, flex: 1 }}>{children}</div>
+
+      {!hideLayout && (
+        <footer style={footerStyle}>
+          <Link to="/privacy" style={footerLink}>Privacy Policy</Link>
+          <span style={{ margin: "0 10px" }}>•</span>
+          <Link to="/terms" style={footerLink}>Terms & Conditions</Link>
+        </footer>
+      )}
     </div>
   );
 }
@@ -269,6 +277,20 @@ const navBtnStyle = {
   border: "1px solid #e2d7ee",
   cursor: "pointer",
   backgroundColor: "#faf7fc",
+  fontWeight: "bold",
+};
+
+const footerStyle = {
+  padding: 15,
+  textAlign: "center",
+  borderTop: "1px solid #eee",
+  fontSize: 14,
+  backgroundColor: "#fafafa",
+};
+
+const footerLink = {
+  textDecoration: "none",
+  color: "#4A2F6E",
   fontWeight: "bold",
 };
 
