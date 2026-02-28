@@ -13,10 +13,9 @@ import AIResponseModal from "../components/AIResponseModal";
 /* =========================
    Listening Lesson Page
    ✅ Full File – Copy/Paste Ready
+   ✅ Audio Re-initialized on lesson change (Pi Browser safe)
    ✅ Supports new index schema (LEVEL-L#)
    ✅ Backward compatible with old lessonId format
-   ✅ Normalized Comparison
-   ✅ Safe Guards
 ========================= */
 
 function Listening() {
@@ -44,9 +43,9 @@ function Listening() {
   const [aiMessage, setAiMessage] = useState("");
 
   /* 🔊 Sounds */
-  const selectSound = useRef(new Audio("/sounds/select.mp3"));
-  const correctSound = useRef(new Audio("/sounds/correct.mp3"));
-  const wrongSound = useRef(new Audio("/sounds/wrong.mp3"));
+  const selectSound = useRef(null);
+  const correctSound = useRef(null);
+  const wrongSound = useRef(null);
 
   /* =========================
      Helpers
@@ -65,37 +64,21 @@ function Listening() {
   const getQuestionText = (q) =>
     q.q || q.question || "";
 
-  /* =========================
-     Resolve Folder Lesson ID
-     Supports:
-     - A1-L1
-     - lesson1
-     - 1
-  ========================= */
   const resolveLessonFolder = (id) => {
     if (!id) return null;
 
-    // If format LEVEL-L#
     const match = id.match(/L(\d+)$/i);
-    if (match) {
-      return `lesson${match[1]}`;
-    }
+    if (match) return `lesson${match[1]}`;
 
-    // If already lesson#
-    if (id.toLowerCase().startsWith("lesson")) {
-      return id;
-    }
+    if (id.toLowerCase().startsWith("lesson")) return id;
 
-    // If just number
-    if (!isNaN(id)) {
-      return `lesson${id}`;
-    }
+    if (!isNaN(id)) return `lesson${id}`;
 
     return id;
   };
 
   /* =========================
-     Load Lesson
+     Load Lesson + Re-init Audio
   ========================= */
   useEffect(() => {
     if (!canAccess || !lessonId) {
@@ -104,7 +87,6 @@ function Listening() {
     }
 
     const folderName = resolveLessonFolder(lessonId);
-
     if (!folderName) {
       setLoading(false);
       return;
@@ -115,6 +97,11 @@ function Listening() {
     setAnswers({});
     setSubmitted(false);
     setScore(0);
+
+    // 🔥 Re-initialize audio instances safely
+    selectSound.current = new Audio("/sounds/select.mp3");
+    correctSound.current = new Audio("/sounds/correct.mp3");
+    wrongSound.current = new Audio("/sounds/wrong.mp3");
 
     fetch(`/listening/${level}/${folderName}/data.json`)
       .then((res) => {
@@ -170,11 +157,15 @@ function Listening() {
     setSubmitted(true);
 
     if (correctCount === lesson.questions.length) {
-      correctSound.current.currentTime = 0;
-      correctSound.current.play().catch(() => {});
+      if (correctSound.current) {
+        correctSound.current.currentTime = 0;
+        correctSound.current.play().catch(() => {});
+      }
     } else {
-      wrongSound.current.currentTime = 0;
-      wrongSound.current.play().catch(() => {});
+      if (wrongSound.current) {
+        wrongSound.current.currentTime = 0;
+        wrongSound.current.play().catch(() => {});
+      }
     }
 
     markLessonCompleted(
@@ -324,10 +315,10 @@ function Listening() {
                       disabled={submitted}
                       checked={isSelected}
                       onChange={() => {
-                        selectSound.current.currentTime = 0;
-                        selectSound.current
-                          .play()
-                          .catch(() => {});
+                        if (selectSound.current) {
+                          selectSound.current.currentTime = 0;
+                          selectSound.current.play().catch(() => {});
+                        }
                         setAnswers({
                           ...answers,
                           [i]: opt,
