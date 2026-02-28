@@ -7,10 +7,6 @@ import LockedFeature from "../components/LockedFeature";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 
-/* =========================
-   Progress Bar
-========================= */
-
 function ProgressBar({ completed, total }) {
   const percent =
     total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -41,13 +37,6 @@ function ProgressBar({ completed, total }) {
   );
 }
 
-/* =========================
-   Listening Level Page
-   ✅ Supports new array index schema
-   ✅ Backward compatible with old schema
-   ✅ No legacy breakage
-========================= */
-
 function ListeningLevel() {
   const { level } = useParams();
   const [lessons, setLessons] = useState([]);
@@ -63,32 +52,22 @@ function ListeningLevel() {
     setLoading(true);
 
     fetch(`/listening/${level}/index.json`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Index not found");
-        }
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
         if (!mounted) return;
 
-        let parsedLessons = [];
+        let parsed = [];
 
-        // ✅ New scalable schema (array)
         if (Array.isArray(data)) {
-          parsedLessons = data;
+          parsed = data;
+        } else if (Array.isArray(data?.lessons)) {
+          parsed = data.lessons;
         }
 
-        // ✅ Old schema ({ level, lessons: [] })
-        else if (Array.isArray(data?.lessons)) {
-          parsedLessons = data.lessons;
-        }
-
-        setLessons(parsedLessons);
+        setLessons(parsed);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error("Listening index fetch error:", err);
+      .catch(() => {
         if (mounted) {
           setLessons([]);
           setLoading(false);
@@ -132,7 +111,6 @@ function ListeningLevel() {
 
       {lessons.map((lesson, index) => {
         const lessonKey = `${level}-${lesson.id}`;
-
         const isCompleted =
           completedLessons.includes(lessonKey);
 
@@ -158,11 +136,8 @@ function ListeningLevel() {
             }}
           >
             <h4>
-              Lesson{" "}
-              {lesson.lessonNumber ??
-                lesson.lesson ??
-                index + 1}
-              : {lesson.title}
+              Lesson {lesson.lessonNumber ?? index + 1} –{" "}
+              {lesson.title}
             </h4>
 
             {isUnlocked ? (
