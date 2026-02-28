@@ -1,17 +1,110 @@
-{
-  "level": "A2",
-  "lessons": [
-    { "id": "lesson1", "lesson": 1, "title": "Lesson 1 Title", "description": "Description of lesson 1" },
-    { "id": "lesson2", "lesson": 2, "title": "Lesson 2 Title", "description": "Description of lesson 2" },
-    { "id": "lesson3", "lesson": 3, "title": "Lesson 3 Title", "description": "Description of lesson 3" },
-    { "id": "lesson4", "lesson": 4, "title": "Lesson 4 Title", "description": "Description of lesson 4" },
-    { "id": "lesson5", "lesson": 5, "title": "Lesson 5 Title", "description": "Description of lesson 5" },
-    { "id": "lesson6", "lesson": 6, "title": "Lesson 6 Title", "description": "Description of lesson 6" },
-    { "id": "lesson7", "lesson": 7, "title": "Lesson 7 Title", "description": "Description of lesson 7" },
-    { "id": "lesson8", "lesson": 8, "title": "Lesson 8 Title", "description": "Description of lesson 8" },
-    { "id": "lesson9", "lesson": 9, "title": "Lesson 9 Title", "description": "Description of lesson 9" },
-    { "id": "lesson10", "lesson": 10, "title": "Lesson 10 Title", "description": "Description of lesson 10" },
-    { "id": "lesson11", "lesson": 11, "title": "Lesson 11 Title", "description": "Description of lesson 11" },
-    { "id": "lesson12", "lesson": 12, "title": "Lesson 12 Title", "description": "Description of lesson 12" }
-  ]
-}
+[
+  {
+    "id": "A2-L1",
+    "level": "A2",
+    "lessonNumber": 1,
+    "title": "Lesson 1 Title",
+    "description": "Description of lesson 1",
+    "isLocked": false,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L2",
+    "level": "A2",
+    "lessonNumber": 2,
+    "title": "Lesson 2 Title",
+    "description": "Description of lesson 2",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L3",
+    "level": "A2",
+    "lessonNumber": 3,
+    "title": "Lesson 3 Title",
+    "description": "Description of lesson 3",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L4",
+    "level": "A2",
+    "lessonNumber": 4,
+    "title": "Lesson 4 Title",
+    "description": "Description of lesson 4",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L5",
+    "level": "A2",
+    "lessonNumber": 5,
+    "title": "Lesson 5 Title",
+    "description": "Description of lesson 5",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L6",
+    "level": "A2",
+    "lessonNumber": 6,
+    "title": "Lesson 6 Title",
+    "description": "Description of lesson 6",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L7",
+    "level": "A2",
+    "lessonNumber": 7,
+    "title": "Lesson 7 Title",
+    "description": "Description of lesson 7",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L8",
+    "level": "A2",
+    "lessonNumber": 8,
+    "title": "Lesson 8 Title",
+    "description": "Description of lesson 8",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L9",
+    "level": "A2",
+    "lessonNumber": 9,
+    "title": "Lesson 9 Title",
+    "description": "Description of lesson 9",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L10",
+    "level": "A2",
+    "lessonNumber": 10,
+    "title": "Lesson 10 Title",
+    "description": "Description of lesson 10",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L11",
+    "level": "A2",
+    "lessonNumber": 11,
+    "title": "Lesson 11 Title",
+    "description": "Description of lesson 11",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  },
+  {
+    "id": "A2-L12",
+    "level": "A2",
+    "lessonNumber": 12,
+    "title": "Lesson 12 Title",
+    "description": "Description of lesson 12",
+    "isLocked": true,
+    "estimatedMinutes": 12
+  }
+]
