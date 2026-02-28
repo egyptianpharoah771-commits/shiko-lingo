@@ -13,7 +13,8 @@ import AIResponseModal from "../components/AIResponseModal";
 /* =========================
    Listening Lesson Page
    ✅ Full File – Copy/Paste Ready
-   ✅ Supports answer | correct | correctAnswer
+   ✅ Supports new index schema (LEVEL-L#)
+   ✅ Backward compatible with old lessonId format
    ✅ Normalized Comparison
    ✅ Safe Guards
 ========================= */
@@ -48,8 +49,9 @@ function Listening() {
   const wrongSound = useRef(new Audio("/sounds/wrong.mp3"));
 
   /* =========================
-     Normalizer
+     Helpers
   ========================= */
+
   const normalize = (value) =>
     (value || "")
       .toString()
@@ -57,12 +59,40 @@ function Listening() {
       .replace(/\s+/g, " ")
       .toLowerCase();
 
-  /* =========================
-     Resolve Correct Answer
-     (handles answer | correct | correctAnswer)
-  ========================= */
   const resolveAnswer = (q) =>
     q.answer ?? q.correct ?? q.correctAnswer ?? "";
+
+  const getQuestionText = (q) =>
+    q.q || q.question || "";
+
+  /* =========================
+     Resolve Folder Lesson ID
+     Supports:
+     - A1-L1
+     - lesson1
+     - 1
+  ========================= */
+  const resolveLessonFolder = (id) => {
+    if (!id) return null;
+
+    // If format LEVEL-L#
+    const match = id.match(/L(\d+)$/i);
+    if (match) {
+      return `lesson${match[1]}`;
+    }
+
+    // If already lesson#
+    if (id.toLowerCase().startsWith("lesson")) {
+      return id;
+    }
+
+    // If just number
+    if (!isNaN(id)) {
+      return `lesson${id}`;
+    }
+
+    return id;
+  };
 
   /* =========================
      Load Lesson
@@ -73,13 +103,20 @@ function Listening() {
       return;
     }
 
+    const folderName = resolveLessonFolder(lessonId);
+
+    if (!folderName) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setLesson(null);
     setAnswers({});
     setSubmitted(false);
     setScore(0);
 
-    fetch(`/listening/${level}/${lessonId}/data.json`)
+    fetch(`/listening/${level}/${folderName}/data.json`)
       .then((res) => {
         if (!res.ok) throw new Error("Lesson not found");
         return res.json();
@@ -108,13 +145,6 @@ function Listening() {
 
   if (loading) return <p>Loading lesson…</p>;
   if (!lesson) return <p>Lesson not found</p>;
-
-  /* =========================
-     Helpers
-  ========================= */
-
-  const getQuestionText = (q) =>
-    q.q || q.question || "";
 
   /* =========================
      Submit Answers
@@ -217,7 +247,9 @@ function Listening() {
       <audio
         controls
         style={{ width: "100%", marginBottom: 20 }}
-        src={`/listening/${level}/${lessonId}/${lesson.audio}`}
+        src={`/listening/${level}/${resolveLessonFolder(
+          lessonId
+        )}/${lesson.audio}`}
       />
 
       <ul>

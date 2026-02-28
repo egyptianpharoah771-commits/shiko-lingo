@@ -44,17 +44,14 @@ function ProgressBar({ completed, total }) {
 
 /* =========================
    Listening Home
-   🔥 Clean Architecture Version
-   - index.json = Single Source of Truth
-   - No hardcoded totals
-   - No legacy pollution
+   ✅ Supports new scalable index schema
+   ✅ Backward compatible
 ========================= */
 
 function ListeningHome() {
   const [levelsData, setLevelsData] = useState({});
   const [loading, setLoading] = useState(true);
 
-  /* ===== Load All Levels Dynamically ===== */
   useEffect(() => {
     let mounted = true;
 
@@ -73,12 +70,19 @@ function ListeningHome() {
 
               const data = await res.json();
 
-              return {
-                level,
-                lessons: Array.isArray(data?.lessons)
-                  ? data.lessons
-                  : [],
-              };
+              let lessons = [];
+
+              // ✅ New schema (array)
+              if (Array.isArray(data)) {
+                lessons = data;
+              }
+
+              // ✅ Old schema (object with lessons)
+              else if (Array.isArray(data?.lessons)) {
+                lessons = data.lessons;
+              }
+
+              return { level, lessons };
             } catch {
               return { level, lessons: [] };
             }
@@ -105,13 +109,11 @@ function ListeningHome() {
     };
   }, []);
 
-  /* ===== Load Progress ===== */
   const completedLessons =
     JSON.parse(
       localStorage.getItem(STORAGE_KEYS.LISTENING_COMPLETED)
     ) || [];
 
-  /* ===== Helpers ===== */
   const getCompletedCount = (level, lessons) => {
     const validLessonIds = lessons.map(
       (l) => `${level}-${l.id}`
@@ -122,7 +124,6 @@ function ListeningHome() {
     ).length;
   };
 
-  /* ===== Lock Logic ===== */
   const isLevelUnlocked = (index) => {
     if (index === 0) return true;
 
@@ -178,8 +179,7 @@ function ListeningHome() {
             />
 
             <p style={progressText}>
-              {completed} / {total} lessons
-              completed
+              {completed} / {total} lessons completed
             </p>
 
             {unlocked ? (
@@ -190,8 +190,7 @@ function ListeningHome() {
               </Link>
             ) : (
               <p style={lockedText}>
-                🔒 Complete previous level to
-                unlock
+                🔒 Complete previous level to unlock
               </p>
             )}
           </div>

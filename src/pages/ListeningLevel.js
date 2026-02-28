@@ -7,6 +7,10 @@ import LockedFeature from "../components/LockedFeature";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 
+/* =========================
+   Progress Bar
+========================= */
+
 function ProgressBar({ completed, total }) {
   const percent =
     total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -37,6 +41,13 @@ function ProgressBar({ completed, total }) {
   );
 }
 
+/* =========================
+   Listening Level Page
+   ✅ Supports new array index schema
+   ✅ Backward compatible with old schema
+   ✅ No legacy breakage
+========================= */
+
 function ListeningLevel() {
   const { level } = useParams();
   const [lessons, setLessons] = useState([]);
@@ -48,33 +59,45 @@ function ListeningLevel() {
   });
 
   useEffect(() => {
+    let mounted = true;
     setLoading(true);
 
     fetch(`/listening/${level}/index.json`)
       .then((res) => {
-        console.log("STATUS:", res.status);
-        return res.text();
+        if (!res.ok) {
+          throw new Error("Index not found");
+        }
+        return res.json();
       })
-      .then((text) => {
-        console.log("RAW RESPONSE:", text);
+      .then((data) => {
+        if (!mounted) return;
 
-        try {
-          const data = JSON.parse(text);
-          setLessons(
-            Array.isArray(data?.lessons) ? data.lessons : []
-          );
-        } catch (e) {
-          console.error("NOT JSON:", e);
-          setLessons([]);
+        let parsedLessons = [];
+
+        // ✅ New scalable schema (array)
+        if (Array.isArray(data)) {
+          parsedLessons = data;
         }
 
+        // ✅ Old schema ({ level, lessons: [] })
+        else if (Array.isArray(data?.lessons)) {
+          parsedLessons = data.lessons;
+        }
+
+        setLessons(parsedLessons);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Listening fetch error:", err);
-        setLessons([]);
-        setLoading(false);
+        console.error("Listening index fetch error:", err);
+        if (mounted) {
+          setLessons([]);
+          setLoading(false);
+        }
       });
+
+    return () => {
+      mounted = false;
+    };
   }, [level]);
 
   if (!canAccess) {
@@ -113,10 +136,13 @@ function ListeningLevel() {
         const isCompleted =
           completedLessons.includes(lessonKey);
 
+        const previousLesson =
+          index > 0 ? lessons[index - 1] : null;
+
         const isUnlocked =
           index === 0 ||
           completedLessons.includes(
-            `${level}-${lessons[index - 1].id}`
+            `${level}-${previousLesson?.id}`
           );
 
         return (
@@ -132,12 +158,17 @@ function ListeningLevel() {
             }}
           >
             <h4>
-              Lesson {lesson.lesson ?? index + 1}:{" "}
-              {lesson.title}
+              Lesson{" "}
+              {lesson.lessonNumber ??
+                lesson.lesson ??
+                index + 1}
+              : {lesson.title}
             </h4>
 
             {isUnlocked ? (
-              <Link to={`/listening/${level}/${lesson.id}`}>
+              <Link
+                to={`/listening/${level}/${lesson.id}`}
+              >
                 <button
                   style={{
                     padding: "8px 14px",
