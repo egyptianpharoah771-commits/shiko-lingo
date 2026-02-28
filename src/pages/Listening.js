@@ -13,8 +13,8 @@ import AIResponseModal from "../components/AIResponseModal";
 /* =========================
    Listening Lesson Page
    ✅ Full File – Copy/Paste Ready
-   ✅ Normalized Answer Comparison (FIXED RED BUG)
-   ✅ Flexible Question Keys (q | question)
+   ✅ Supports answer | correct | correctAnswer
+   ✅ Normalized Comparison
    ✅ Safe Guards
 ========================= */
 
@@ -48,13 +48,21 @@ function Listening() {
   const wrongSound = useRef(new Audio("/sounds/wrong.mp3"));
 
   /* =========================
-     Normalizer (CRITICAL FIX)
+     Normalizer
   ========================= */
   const normalize = (value) =>
     (value || "")
       .toString()
       .trim()
+      .replace(/\s+/g, " ")
       .toLowerCase();
+
+  /* =========================
+     Resolve Correct Answer
+     (handles answer | correct | correctAnswer)
+  ========================= */
+  const resolveAnswer = (q) =>
+    q.answer ?? q.correct ?? q.correctAnswer ?? "";
 
   /* =========================
      Load Lesson
@@ -105,32 +113,33 @@ function Listening() {
      Helpers
   ========================= */
 
-  const getQuestionText = (q) => {
-    return q.q || q.question || "";
-  };
+  const getQuestionText = (q) =>
+    q.q || q.question || "";
 
   /* =========================
-     Submit Answers (FIXED)
+     Submit Answers
   ========================= */
 
   const handleSubmit = () => {
     if (submitted || Object.keys(answers).length === 0) return;
 
-    let correct = 0;
+    let correctCount = 0;
 
-    lesson.questions.forEach((q, i) => {
+    lesson.questions?.forEach((q, i) => {
+      const correctAnswer = resolveAnswer(q);
+
       if (
         normalize(answers[i]) ===
-        normalize(q.answer)
+        normalize(correctAnswer)
       ) {
-        correct++;
+        correctCount++;
       }
     });
 
-    setScore(correct);
+    setScore(correctCount);
     setSubmitted(true);
 
-    if (correct === lesson.questions.length) {
+    if (correctCount === lesson.questions.length) {
       correctSound.current.currentTime = 0;
       correctSound.current.play().catch(() => {});
     } else {
@@ -219,80 +228,88 @@ function Listening() {
 
       <h3>Comprehension Questions</h3>
 
-      {lesson.questions?.map((q, i) => (
-        <div
-          key={i}
-          style={{
-            marginBottom: 20,
-            padding: 15,
-            border: "1px solid #eee",
-            borderRadius: 10,
-          }}
-        >
-          <strong>{getQuestionText(q)}</strong>
+      {lesson.questions?.map((q, i) => {
+        const correctAnswer = resolveAnswer(q);
 
-          {q.options?.map((opt, j) => {
-            const isSelected =
-              normalize(answers[i]) === normalize(opt);
+        return (
+          <div
+            key={i}
+            style={{
+              marginBottom: 20,
+              padding: 15,
+              border: "1px solid #eee",
+              borderRadius: 10,
+            }}
+          >
+            <strong>{getQuestionText(q)}</strong>
 
-            const isCorrect =
-              normalize(opt) === normalize(q.answer);
+            {q.options?.map((opt, j) => {
+              const isSelected =
+                normalize(answers[i]) ===
+                normalize(opt);
 
-            let bg = "#fff";
-            let border = "1px solid #ddd";
-            let color = "#000";
+              const isCorrect =
+                normalize(opt) ===
+                normalize(correctAnswer);
 
-            if (submitted && isCorrect) {
-              bg = "#28a745";
-              border = "1px solid #1e7e34";
-              color = "#fff";
-            } else if (
-              submitted &&
-              isSelected &&
-              !isCorrect
-            ) {
-              bg = "#dc3545";
-              border = "1px solid #b21f2d";
-              color = "#fff";
-            } else if (isSelected) {
-              bg = "#4A90E2";
-              border = "1px solid #2f6fc2";
-              color = "#fff";
-            }
+              let bg = "#fff";
+              let border = "1px solid #ddd";
+              let color = "#000";
 
-            return (
-              <div
-                key={j}
-                style={{
-                  marginTop: 8,
-                  padding: 8,
-                  borderRadius: 6,
-                  border,
-                  background: bg,
-                  color,
-                }}
-              >
-                <label style={{ cursor: "pointer" }}>
-                  <input
-                    type="radio"
-                    disabled={submitted}
-                    checked={isSelected}
-                    onChange={() => {
-                      selectSound.current.currentTime = 0;
-                      selectSound.current.play().catch(() => {});
-                      setAnswers({
-                        ...answers,
-                        [i]: opt,
-                      });
-                    }}
-                  />{" "}
-                  {opt}
-                </label>
-              </div>
-            );
-          })}
-        </div>
-      ))}
+              if (submitted && isCorrect) {
+                bg = "#28a745";
+                border = "1px solid #1e7e34";
+                color = "#fff";
+              } else if (
+                submitted &&
+                isSelected &&
+                !isCorrect
+              ) {
+                bg = "#dc3545";
+                border = "1px solid #b21f2d";
+                color = "#fff";
+              } else if (isSelected) {
+                bg = "#4A90E2";
+                border = "1px solid #2f6fc2";
+                color = "#fff";
+              }
+
+              return (
+                <div
+                  key={j}
+                  style={{
+                    marginTop: 8,
+                    padding: 8,
+                    borderRadius: 6,
+                    border,
+                    background: bg,
+                    color,
+                  }}
+                >
+                  <label style={{ cursor: "pointer" }}>
+                    <input
+                      type="radio"
+                      disabled={submitted}
+                      checked={isSelected}
+                      onChange={() => {
+                        selectSound.current.currentTime = 0;
+                        selectSound.current
+                          .play()
+                          .catch(() => {});
+                        setAnswers({
+                          ...answers,
+                          [i]: opt,
+                        });
+                      }}
+                    />{" "}
+                    {opt}
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
 
       <button onClick={handleSubmit} disabled={submitted}>
         Submit Answers
