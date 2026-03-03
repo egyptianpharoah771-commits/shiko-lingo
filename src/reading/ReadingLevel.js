@@ -1,13 +1,21 @@
 import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import FeedbackBox from "../components/FeedbackBox";
 
-// 🔐 Feature Gating
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
 import LockedFeature from "../components/LockedFeature";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 
-/* ===== Progress Bar (shared UX) ===== */
+/* =========================
+   Reading Level Page
+   ✅ Full File – Copy/Paste Ready
+   ✅ Dynamic index.json (no hardcoded lessons)
+   ✅ Supports array schema OR { lessons: [] }
+   ✅ Same architecture as ListeningLevel
+========================= */
+
+/* ===== Progress Bar ===== */
 function ProgressBar({ completed, total }) {
   const percent =
     total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -38,49 +46,72 @@ function ProgressBar({ completed, total }) {
   );
 }
 
-/* ===== Lessons Config ===== */
-const READING_LESSONS_BY_LEVEL = {
-  A1: [
-    { id: "lesson1", title: "My Daily Routine" },
-    { id: "lesson2", title: "My Family" },
-    { id: "lesson3", title: "My Hobbies" },
-    { id: "lesson4", title: "My Favorite Food" },
-    { id: "lesson5", title: "My Job" },
-  ],
-  A2: [
-    { id: "lesson1", title: "A Busy Day" },
-    { id: "lesson2", title: "A Memorable Trip" },
-    { id: "lesson3", title: "Healthy Habits" },
-    { id: "lesson4", title: "Life in the City" },
-    { id: "lesson5", title: "Technology Today" },
-    { id: "lesson6", title: "Learning English" },
-  ],
-  B1: [
-    { id: "lesson1", title: "Work and Life Balance" },
-    { id: "lesson2", title: "Social Media Effects" },
-    { id: "lesson3", title: "Education Today" },
-    { id: "lesson4", title: "Living Abroad" },
-    { id: "lesson5", title: "Future Plans" },
-    { id: "lesson6", title: "Personal Opinions" },
-  ],
-};
-
 function ReadingLevel() {
   const { level } = useParams();
 
-  /* ===== Feature Gating ===== */
+  const [lessons, setLessons] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const { canAccess } = useFeatureAccess({
     skill: "Reading",
     level,
   });
 
+  /* ===== Load Lessons Dynamically ===== */
+  useEffect(() => {
+    let mounted = true;
+
+    const loadLessons = async () => {
+      try {
+        const res = await fetch(
+          `/reading/${level}/index.json`
+        );
+
+        if (!res.ok) {
+          if (mounted) setLessons([]);
+          return;
+        }
+
+        const data = await res.json();
+
+        let structured = [];
+
+        if (Array.isArray(data)) {
+          structured = data;
+        } else if (Array.isArray(data?.lessons)) {
+          structured = data.lessons;
+        }
+
+        if (mounted) {
+          setLessons(structured);
+        }
+      } catch (err) {
+        console.error("Reading fetch error:", err);
+        if (mounted) setLessons([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadLessons();
+
+    return () => {
+      mounted = false;
+    };
+  }, [level]);
+
+  /* ===== Guards ===== */
   if (!canAccess) {
     return (
-      <LockedFeature title={`Reading Level ${level}`} />
+      <LockedFeature
+        title={`Reading Level ${level}`}
+      />
     );
   }
 
-  const lessons = READING_LESSONS_BY_LEVEL[level] || [];
+  if (loading) {
+    return <p>Loading lessons…</p>;
+  }
 
   const completedLessons =
     JSON.parse(
@@ -90,8 +121,11 @@ function ReadingLevel() {
     ) || [];
 
   /* ===== Progress ===== */
-  const completedCount = lessons.filter((lesson) =>
-    completedLessons.includes(`${level}-${lesson.id}`)
+  const completedCount = lessons.filter(
+    (lesson) =>
+      completedLessons.includes(
+        `${level}-${lesson.id}`
+      )
   ).length;
 
   const levelCompleted =
@@ -113,6 +147,12 @@ function ReadingLevel() {
         total={lessons.length}
       />
 
+      {lessons.length === 0 && (
+        <p style={{ color: "red" }}>
+          No lessons found for this level.
+        </p>
+      )}
+
       {levelCompleted && (
         <div
           style={{
@@ -126,7 +166,8 @@ function ReadingLevel() {
         >
           <h3>🎉 Level Completed!</h3>
           <p>
-            You’ve completed Reading – Level {level}.
+            You’ve completed Reading – Level{" "}
+            {level}.
           </p>
           <div
             style={{
@@ -166,10 +207,19 @@ function ReadingLevel() {
             `${level}-${lessons[index - 1].id}`
           );
 
+        const lessonNumber =
+          lesson.lesson ??
+          lesson.lessonNumber ??
+          index + 1;
+
+        const lessonTitle =
+          lesson.title || "Untitled Lesson";
+
         return (
           <div key={lesson.id} style={cardStyle}>
             <h4>
-              Lesson {index + 1}: {lesson.title}
+              Lesson {lessonNumber}:{" "}
+              {lessonTitle}
             </h4>
 
             {isUnlocked ? (
@@ -191,18 +241,23 @@ function ReadingLevel() {
         );
       })}
 
-      <FeedbackBox skill="Reading" level={level} />
+      <FeedbackBox
+        skill="Reading"
+        level={level}
+      />
     </div>
   );
 }
 
 /* ===== Styles ===== */
+
 const cardStyle = {
   backgroundColor: "#fff",
   padding: "16px",
   borderRadius: "12px",
   marginBottom: "14px",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.06)",
+  boxShadow:
+    "0 4px 10px rgba(0,0,0,0.06)",
 };
 
 const buttonStyle = {

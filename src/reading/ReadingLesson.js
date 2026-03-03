@@ -1,41 +1,40 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 import { markLessonCompleted } from "../utils/progressStorage";
-import {
-  getLessonFolder,
-  isLastLesson,
-} from "../utils/lessonUtils";
 
-// 🔐 Feature Gating + Identity
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
 import LockedFeature from "../components/LockedFeature";
 
-// 🤖 AI
 import { askAITutor } from "../utils/aiClient";
 import AIResponseModal from "../components/AIResponseModal";
+
+/* =========================
+   Reading Lesson Page
+   ✅ Full File – Copy/Paste Ready
+   ✅ Uses public/reading/{LEVEL}/lessonX/data.json
+   ✅ No require()
+   ✅ Same architecture as Listening
+   ✅ AI + Progress + Next Lesson
+========================= */
 
 function ReadingLesson() {
   const { level, lessonId } = useParams();
 
-  /* ===== Normalize lessonId ===== */
-  const normalizedLessonId = lessonId?.includes("lesson")
-    ? lessonId
-    : lessonId?.split("-").pop(); // A1-lesson1 → lesson1
+  const {
+    canAccess,
+    canGetAIFeedback,
+    userId,
+    packageName,
+  } = useFeatureAccess({
+    skill: "Reading",
+    level,
+  });
 
-  const lessonNumber = Number(
-    normalizedLessonId?.replace("lesson", "")
-  );
+  const [lesson, setLesson] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  /* ===== Feature access + identity ===== */
-  const { canAccess, userId, packageName } =
-    useFeatureAccess({
-      skill: "Reading",
-      level,
-    });
-
-  /* ===== State ===== */
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
@@ -44,160 +43,215 @@ function ReadingLesson() {
   const [aiStatus, setAiStatus] = useState("IDLE");
   const [aiMessage, setAiMessage] = useState("");
 
-  /* ===== Load lesson content ===== */
-  let content = null;
-  let questions = [];
+  /* =========================
+     Helpers
+  ========================= */
 
-  try {
-    content =
-      require(`./${level}/lesson${lessonNumber}/content`).default;
-  } catch {}
+  const normalize = (value) =>
+    (value || "")
+      .toString()
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase();
 
-  try {
-    const imported =
-      require(`./${level}/lesson${lessonNumber}/questions`).default;
-    questions = Array.isArray(imported) ? imported : [];
-  } catch {}
+  const resolveAnswer = (q) =>
+    q.answer ?? q.correct ?? q.correctAnswer ?? "";
 
-  /* ===== Reset on lesson change ===== */
+  const getQuestionText = (q) =>
+    q.q || q.question || "";
+
+  const resolveLessonFolder = (id) => {
+    if (!id) return null;
+
+    const match = id.match(/L(\d+)$/i);
+    if (match) {
+      return `lesson${match[1]}`;
+    }
+
+    if (id.toLowerCase().startsWith("lesson")) {
+      return id;
+    }
+
+    if (!isNaN(id)) {
+      return `lesson${id}`;
+    }
+
+    return id;
+  };
+
+  /* =========================
+     Load Lesson (from public)
+  ========================= */
+
   useEffect(() => {
-    if (!canAccess) return;
+    if (!canAccess || !lessonId) {
+      setLoading(false);
+      return;
+    }
 
+    const folderName = resolveLessonFolder(lessonId);
+
+    if (!folderName) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setLesson(null);
     setAnswers({});
     setSubmitted(false);
     setScore(0);
-    setAiStatus("IDLE");
-    setAiMessage("");
+
+    fetch(`/reading/${level}/${folderName}/data.json`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Lesson not found");
+        return res.json();
+      })
+      .then((data) => {
+        setLesson(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Reading load error:", err);
+        setLoading(false);
+      });
   }, [level, lessonId, canAccess]);
 
-  /* ===== Lock ===== */
+  /* =========================
+     Guards
+  ========================= */
+
   if (!canAccess) {
     return <LockedFeature title="Reading Lesson" />;
   }
 
-  if (!content) {
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-        <p style={{ color: "red", fontWeight: "bold" }}>
-          Lesson content not found.
-        </p>
-        <Link to={`/reading/${level}`}>
-          ← Back to {level} lessons
-        </Link>
-      </div>
-    );
+  if (!lessonId) {
+    return <p>Please select a lesson.</p>;
   }
 
-  /* ===== Normalize text ===== */
-  const textBlocks = Array.isArray(content.text)
-    ? content.text
-    : typeof content.text === "string"
-    ? [content.text]
-    : content.text && typeof content.text === "object"
-    ? Object.values(content.text)
-    : [];
+  if (loading) return <p>Loading lesson…</p>;
+  if (!lesson) return <p>Lesson not found</p>;
 
-  /* ===== Helpers ===== */
-  const hasAnyAnswer = Object.values(answers).some(
-    (v) => v && v.toString().trim() !== ""
-  );
+  /* =========================
+     Submit Answers
+  ========================= */
 
-  const autoGradedCount = questions.filter(
-    (q) => Array.isArray(q.options)
-  ).length;
-
-  const lastLesson = isLastLesson(
-    getLessonFolder(level, "reading"),
-    lessonNumber
-  );
-
-  /* ===== Submit ===== */
   const handleSubmit = () => {
-    if (submitted || !hasAnyAnswer) return;
+    if (submitted || Object.keys(answers).length === 0)
+      return;
 
-    let correct = 0;
+    let correctCount = 0;
 
-    questions.forEach((q, i) => {
+    lesson.questions?.forEach((q, i) => {
+      if (!Array.isArray(q.options)) return;
+
+      const correctAnswer = resolveAnswer(q);
+
       if (
-        Array.isArray(q.options) &&
-        answers[i] === q.answer
+        normalize(answers[i]) ===
+        normalize(correctAnswer)
       ) {
-        correct++;
+        correctCount++;
       }
     });
 
-    setScore(correct);
+    setScore(correctCount);
     setSubmitted(true);
 
     markLessonCompleted(
       STORAGE_KEYS.READING_COMPLETED,
-      `${level}-lesson${lessonNumber}`
+      `${level}-${lessonId}`
     );
   };
 
-  /* ===== Ask AI Tutor ===== */
-  const handleAskAI = async () => {
-    if (!hasAnyAnswer) return;
+  /* =========================
+     AI Tutor
+  ========================= */
 
+  const handleAIFeedback = async () => {
     setAiOpen(true);
+
+    if (!canGetAIFeedback) {
+      setAiStatus("LIMIT");
+      setAiMessage(
+        "AI feedback is available after completing lessons."
+      );
+      return;
+    }
+
     setAiStatus("LOADING");
     setAiMessage("");
 
     const result = await askAITutor({
       skill: "Reading",
       level,
-      lessonTitle: content.title,
-      text: textBlocks.join(" "),
+      lessonTitle: lesson.title,
+      text: lesson.text?.join(" ") || "",
       studentAnswers: answers,
       score,
-      total: autoGradedCount,
+      total:
+        lesson.questions?.filter((q) =>
+          Array.isArray(q.options)
+        ).length || 0,
       userId,
       packageName,
     });
 
-    if (result.status === "SUCCESS") {
-      setAiStatus("SUCCESS");
-      setAiMessage(result.message);
-    } else if (result.status === "LIMIT") {
-      setAiStatus("LIMIT");
-      setAiMessage(result.message);
-    } else {
-      setAiStatus("ERROR");
-      setAiMessage(
-        "AI Tutor error. Please try again."
-      );
-    }
+    setAiStatus(result.status);
+    setAiMessage(result.message || "");
   };
 
+  /* =========================
+     Next Lesson Logic
+  ========================= */
+
+  const lessonNumberMatch =
+    lessonId?.match(/(\d+)/);
+
+  const lessonNumber = lessonNumberMatch
+    ? Number(lessonNumberMatch[1])
+    : null;
+
+  const nextLessonLink =
+    lessonNumber != null
+      ? `/reading/${level}/lesson${
+          lessonNumber + 1
+        }`
+      : null;
+
+  /* =========================
+     Render
+  ========================= */
+
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-      <h2>{content.title}</h2>
-      {content.description && (
-        <p>{content.description}</p>
+    <div style={{ maxWidth: 720, margin: "0 auto" }}>
+      <h2>{lesson.title}</h2>
+      {lesson.description && (
+        <p>{lesson.description}</p>
       )}
 
-      {/* 🤖 AI Tutor */}
       <button
-        onClick={handleAskAI}
-        disabled={!hasAnyAnswer}
+        onClick={handleAIFeedback}
+        disabled={!submitted}
         style={{
-          marginBottom: "15px",
+          marginBottom: 15,
           padding: "8px 14px",
-          borderRadius: "8px",
+          borderRadius: 8,
+          background: submitted ? "#111" : "#aaa",
+          color: "#fff",
           border: "none",
-          backgroundColor: "#111",
-          color: "white",
+          cursor: submitted
+            ? "pointer"
+            : "not-allowed",
           fontWeight: "bold",
-          opacity: hasAnyAnswer ? 1 : 0.6,
-          cursor: "pointer",
         }}
       >
-        🤖 Ask AI Tutor
+        🤖 AI Lesson Feedback
       </button>
 
       <hr />
 
-      {/* 📖 Reading Text */}
+      {/* Reading Text */}
       <div
         style={{
           border: "1px solid #ddd",
@@ -207,54 +261,77 @@ function ReadingLesson() {
           marginBottom: "30px",
         }}
       >
-        {textBlocks.map((block, i) => (
-          <p key={i}>{block}</p>
+        {lesson.text?.map((line, i) => (
+          <p key={i}>{line}</p>
         ))}
       </div>
 
       <h3>Comprehension Questions</h3>
 
-      {questions.map((q, i) => {
+      {lesson.questions?.map((q, i) => {
+        const correctAnswer = resolveAnswer(q);
         const isMCQ = Array.isArray(q.options);
 
         return (
           <div
             key={i}
             style={{
-              marginBottom: "15px",
-              padding: "12px",
+              marginBottom: 20,
+              padding: 15,
               border: "1px solid #eee",
-              borderRadius: "8px",
+              borderRadius: 10,
             }}
           >
-            <strong>{q.question}</strong>
+            <strong>{getQuestionText(q)}</strong>
 
             {isMCQ ? (
               q.options.map((opt, j) => {
-                const isSelected = answers[i] === opt;
-                const isCorrect = opt === q.answer;
+                const isSelected =
+                  normalize(answers[i]) ===
+                  normalize(opt);
+
+                const isCorrect =
+                  normalize(opt) ===
+                  normalize(correctAnswer);
 
                 let bg = "#fff";
-                if (submitted) {
-                  if (isCorrect) bg = "#d4edda";
-                  else if (isSelected)
-                    bg = "#f8d7da";
+                let border = "1px solid #ddd";
+
+                if (submitted && isCorrect) {
+                  bg = "#28a745";
+                  border = "1px solid #1e7e34";
+                } else if (
+                  submitted &&
+                  isSelected &&
+                  !isCorrect
+                ) {
+                  bg = "#dc3545";
+                  border = "1px solid #b21f2d";
                 } else if (isSelected) {
-                  bg = "#e5e9ff";
+                  bg = "#4A90E2";
+                  border = "1px solid #2f6fc2";
                 }
 
                 return (
                   <div
                     key={j}
                     style={{
-                      marginTop: "6px",
-                      padding: "8px",
-                      borderRadius: "6px",
-                      backgroundColor: bg,
-                      border: "1px solid #ddd",
+                      marginTop: 8,
+                      padding: 8,
+                      borderRadius: 6,
+                      border,
+                      background: bg,
+                      color:
+                        bg === "#fff"
+                          ? "#000"
+                          : "#fff",
                     }}
                   >
-                    <label>
+                    <label
+                      style={{
+                        cursor: "pointer",
+                      }}
+                    >
                       <input
                         type="radio"
                         disabled={submitted}
@@ -267,9 +344,6 @@ function ReadingLesson() {
                         }
                       />{" "}
                       {opt}
-                      {submitted &&
-                        isCorrect &&
-                        " ✔️"}
                     </label>
                   </div>
                 );
@@ -288,7 +362,7 @@ function ReadingLesson() {
                 }
                 style={{
                   width: "100%",
-                  marginTop: "8px",
+                  marginTop: 10,
                 }}
               />
             )}
@@ -298,50 +372,32 @@ function ReadingLesson() {
 
       <button
         onClick={handleSubmit}
-        disabled={submitted || !hasAnyAnswer}
-        style={{
-          marginTop: "10px",
-          opacity:
-            submitted || !hasAnyAnswer ? 0.6 : 1,
-        }}
+        disabled={submitted}
       >
         Submit Answers
       </button>
 
       {submitted && (
         <>
-          <div
-            style={{
-              marginTop: "20px",
-              padding: "15px",
-              background: "#eaffea",
-              borderRadius: "10px",
-              fontWeight: "bold",
-            }}
-          >
-            🎉 You scored {score} out of{" "}
-            {autoGradedCount}
-          </div>
+          <p style={{ marginTop: 15 }}>
+            🎉 Score: {score} /{" "}
+            {lesson.questions?.filter((q) =>
+              Array.isArray(q.options)
+            ).length}
+          </p>
 
-          <div style={{ marginTop: "20px" }}>
-            {lastLesson ? (
-              <Link to={`/reading/${level}`}>
-                Back to {level} lessons
-              </Link>
-            ) : (
-              <Link
-                to={`/reading/${level}/lesson${
-                  lessonNumber + 1
-                }`}
-              >
-                ▶️ Next Lesson
-              </Link>
-            )}
-          </div>
+          {nextLessonLink ? (
+            <Link to={nextLessonLink}>
+              ▶️ Next Lesson
+            </Link>
+          ) : (
+            <Link to={`/reading/${level}`}>
+              Back to {level} Lessons
+            </Link>
+          )}
         </>
       )}
 
-      {/* 🤖 AI Modal */}
       <AIResponseModal
         open={aiOpen}
         onClose={() => setAiOpen(false)}

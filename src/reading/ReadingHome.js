@@ -1,9 +1,17 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
-import {
-  countCompletedByLevel
-} from "../utils/progressStorage";
+
+/* =========================
+   Reading Home
+   ✅ Dynamic levels (A1–C1)
+   ✅ index.json = Single Source of Truth
+   ✅ No hardcoded totals
+   ✅ Clean Unlock Logic
+========================= */
+
+const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
 
 /* ===== Small Progress Bar ===== */
 function ProgressBar({ completed, total }) {
@@ -37,30 +45,104 @@ function ProgressBar({ completed, total }) {
 }
 
 function ReadingHome() {
-  /* ===== Totals ===== */
-  const A1_TOTAL = 5;
-  const A2_TOTAL = 6;
-  const B1_TOTAL = 6;
+  const [levelsData, setLevelsData] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  /* ===== Progress (via helpers) ===== */
-  const completedA1 = countCompletedByLevel(
-    STORAGE_KEYS.READING_COMPLETED,
-    "A1"
-  );
+  /* ===== Load All Levels Dynamically ===== */
+  useEffect(() => {
+    let mounted = true;
 
-  const completedA2 = countCompletedByLevel(
-    STORAGE_KEYS.READING_COMPLETED,
-    "A2"
-  );
+    const loadLevels = async () => {
+      try {
+        const results = await Promise.all(
+          LEVELS.map(async (level) => {
+            try {
+              const res = await fetch(
+                `/reading/${level}/index.json`
+              );
 
-  const completedB1 = countCompletedByLevel(
-    STORAGE_KEYS.READING_COMPLETED,
-    "B1"
-  );
+              if (!res.ok) {
+                return { level, lessons: [] };
+              }
 
-  /* ===== Locking Rules ===== */
-  const isA2Unlocked = completedA1 === A1_TOTAL;
-  const isB1Unlocked = completedA2 === A2_TOTAL;
+              const data = await res.json();
+
+              // Supports both array schema and object { lessons: [] }
+              if (Array.isArray(data)) {
+                return { level, lessons: data };
+              }
+
+              if (Array.isArray(data?.lessons)) {
+                return { level, lessons: data.lessons };
+              }
+
+              return { level, lessons: [] };
+            } catch {
+              return { level, lessons: [] };
+            }
+          })
+        );
+
+        if (!mounted) return;
+
+        const structured = {};
+        results.forEach((r) => {
+          structured[r.level] = r.lessons;
+        });
+
+        setLevelsData(structured);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadLevels();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  /* ===== Load Progress ===== */
+  const completedLessons =
+    JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.READING_COMPLETED)
+    ) || [];
+
+  /* ===== Helpers ===== */
+
+  const getCompletedCount = (level, lessons) => {
+    const validLessonIds = lessons.map(
+      (l) => `${level}-${l.id}`
+    );
+
+    return completedLessons.filter((id) =>
+      validLessonIds.includes(id)
+    ).length;
+  };
+
+  const isLevelUnlocked = (index) => {
+    if (index === 0) return true;
+
+    const previousLevel = LEVELS[index - 1];
+    const previousLessons =
+      levelsData[previousLevel] || [];
+
+    const completedPrevious =
+      getCompletedCount(
+        previousLevel,
+        previousLessons
+      );
+
+    return (
+      previousLessons.length > 0 &&
+      completedPrevious >= previousLessons.length
+    );
+  };
+
+  if (loading) {
+    return <p>Loading Reading levels…</p>;
+  }
 
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto" }}>
@@ -71,107 +153,65 @@ function ReadingHome() {
         Improve your reading skills step by step.
       </p>
 
-      {/* ===== A1 ===== */}
-      <div style={cardStyle}>
-        <h3>A1 – Beginner</h3>
-        <p>Short texts about daily life.</p>
+      {LEVELS.map((level, index) => {
+        const lessons = levelsData[level] || [];
+        const total = lessons.length;
+        const completed = getCompletedCount(
+          level,
+          lessons
+        );
+        const unlocked = isLevelUnlocked(index);
 
-        <ProgressBar
-          completed={completedA1}
-          total={A1_TOTAL}
-        />
+        return (
+          <div
+            key={level}
+            style={{
+              ...cardStyle,
+              opacity: unlocked ? 1 : 0.6,
+            }}
+          >
+            <h3>{level} – Reading</h3>
 
-        <p style={progressText}>
-          {completedA1} / {A1_TOTAL} lessons completed
-        </p>
+            <ProgressBar
+              completed={completed}
+              total={total}
+            />
 
-        <Link to="/reading/A1">
-          <button style={buttonStyle}>
-            {completedA1 === 0
-              ? "Start A1"
-              : "Continue A1"}
-          </button>
-        </Link>
-      </div>
+            <p style={progressText}>
+              {completed} / {total} lessons
+              completed
+            </p>
 
-      {/* ===== A2 ===== */}
-      <div
-        style={{
-          ...cardStyle,
-          opacity: isA2Unlocked ? 1 : 0.6,
-        }}
-      >
-        <h3>A2 – Elementary</h3>
-        <p>Longer texts and simple stories.</p>
-
-        <ProgressBar
-          completed={completedA2}
-          total={A2_TOTAL}
-        />
-
-        <p style={progressText}>
-          {completedA2} / {A2_TOTAL} lessons completed
-        </p>
-
-        {isA2Unlocked ? (
-          <Link to="/reading/A2">
-            <button style={buttonStyle}>
-              {completedA2 === 0
-                ? "Start A2"
-                : "Continue A2"}
-            </button>
-          </Link>
-        ) : (
-          <p style={lockedText}>
-            🔒 Complete all A1 lessons to unlock A2
-          </p>
-        )}
-      </div>
-
-      {/* ===== B1 ===== */}
-      <div
-        style={{
-          ...cardStyle,
-          opacity: isB1Unlocked ? 1 : 0.6,
-        }}
-      >
-        <h3>B1 – Intermediate</h3>
-        <p>Articles, opinions, and real topics.</p>
-
-        <ProgressBar
-          completed={completedB1}
-          total={B1_TOTAL}
-        />
-
-        <p style={progressText}>
-          {completedB1} / {B1_TOTAL} lessons completed
-        </p>
-
-        {isB1Unlocked ? (
-          <Link to="/reading/B1">
-            <button style={buttonStyle}>
-              {completedB1 === 0
-                ? "Start B1"
-                : "Continue B1"}
-            </button>
-          </Link>
-        ) : (
-          <p style={lockedText}>
-            🔒 Complete all A2 lessons to unlock B1
-          </p>
-        )}
-      </div>
+            {unlocked ? (
+              <Link to={`/reading/${level}`}>
+                <button style={buttonStyle}>
+                  {completed === 0
+                    ? `Start ${level}`
+                    : `Continue ${level}`}
+                </button>
+              </Link>
+            ) : (
+              <p style={lockedText}>
+                🔒 Complete previous level to
+                unlock
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 /* ===== Styles ===== */
+
 const cardStyle = {
   backgroundColor: "#fff",
   padding: "20px",
   borderRadius: "12px",
   marginBottom: "20px",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  boxShadow:
+    "0 4px 12px rgba(0,0,0,0.08)",
 };
 
 const progressText = {
