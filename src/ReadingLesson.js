@@ -16,9 +16,10 @@ import AIResponseModal from "./components/AIResponseModal";
    ✔ Sound Feedback
    ✔ Answer Explanation
    ✔ Interactive Dictionary
-   ✔ Arabic Translation (translated definition)
+   ✔ Arabic Translation
    ✔ Pronunciation
    ✔ Save Word System
+   ✔ Fixed Paragraph Overflow
 ========================= */
 
 function ReadingLesson() {
@@ -46,12 +47,7 @@ function ReadingLesson() {
   const [dictionaryData, setDictionaryData] = useState(null);
   const [dictionaryLoading, setDictionaryLoading] = useState(false);
 
-  // نحتفظ بالـ setter فقط لتجنب eslint warning
   const [, setSavedWords] = useState([]);
-
-  /* =========================
-     Sound System
-  ========================= */
 
   const selectSound = useRef(null);
   const correctSound = useRef(null);
@@ -77,10 +73,6 @@ function ReadingLesson() {
       wrongSound.current.play().catch(() => {});
     }
   };
-
-  /* =========================
-     Helpers
-  ========================= */
 
   const normalize = (value) =>
     (value || "")
@@ -114,19 +106,11 @@ function ReadingLesson() {
   const cleanWord = (word) =>
     word.replace(/[.,!?;:()"']/g, "").toLowerCase();
 
-  /* =========================
-     Pronounce Word
-  ========================= */
-
   const speakWord = (word) => {
     const utter = new SpeechSynthesisUtterance(word);
     utter.lang = "en-US";
     speechSynthesis.speak(utter);
   };
-
-  /* =========================
-     Save Word
-  ========================= */
 
   const saveWord = (word) => {
     const existing = JSON.parse(
@@ -139,10 +123,6 @@ function ReadingLesson() {
       setSavedWords(updated);
     }
   };
-
-  /* =========================
-     Dictionary Lookup
-  ========================= */
 
   const handleWordClick = async (word) => {
     const clean = cleanWord(word);
@@ -190,7 +170,7 @@ function ReadingLesson() {
         example,
         arabic,
       });
-    } catch (err) {
+    } catch {
       setDictionaryData({
         definition: "Definition not available",
         example: "",
@@ -200,10 +180,6 @@ function ReadingLesson() {
 
     setDictionaryLoading(false);
   };
-
-  /* =========================
-     Load Lesson
-  ========================= */
 
   useEffect(() => {
     const saved = JSON.parse(
@@ -254,10 +230,6 @@ function ReadingLesson() {
     ? lesson.text.split("\n\n")
     : [];
 
-  /* =========================
-     Submit Answers
-  ========================= */
-
   const handleSubmit = () => {
     if (submitted || Object.keys(answers).length === 0) return;
 
@@ -284,10 +256,6 @@ function ReadingLesson() {
       `${level}-${lessonId}`
     );
   };
-
-  /* =========================
-     AI Tutor
-  ========================= */
 
   const handleAIFeedback = async () => {
     setAiOpen(true);
@@ -332,7 +300,15 @@ function ReadingLesson() {
       : null;
 
   return (
-    <div style={{ maxWidth: 760, margin: "0 auto", padding: 20 }}>
+    <div
+      style={{
+        maxWidth: 760,
+        margin: "0 auto",
+        padding: 20,
+        width: "100%",
+        boxSizing: "border-box",
+      }}
+    >
       <audio ref={selectSound} src="/sounds/select.mp3" />
       <audio ref={correctSound} src="/sounds/correct.mp3" />
       <audio ref={wrongSound} src="/sounds/wrong.mp3" />
@@ -351,14 +327,26 @@ function ReadingLesson() {
           background: "#fafafa",
           marginBottom: 30,
           lineHeight: 1.9,
-          fontSize: 18,
+          fontSize: 19,
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+          overflowWrap: "break-word",
+          wordBreak: "break-word",
         }}
       >
         {textLines.map((line, i) => {
           const words = line.split(" ");
 
           return (
-            <p key={i}>
+            <p
+              key={i}
+              style={{
+                marginBottom: 18,
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
+            >
               {words.map((word, j) => (
                 <span
                   key={j}
@@ -366,6 +354,7 @@ function ReadingLesson() {
                   style={{
                     cursor: "pointer",
                     marginRight: 4,
+                    display: "inline",
                   }}
                 >
                   {word}
@@ -466,6 +455,8 @@ function ReadingLesson() {
               padding: 28,
               borderRadius: 16,
               width: 420,
+              maxWidth: "90%",
+              boxSizing: "border-box",
             }}
           >
             <h2>📘 {dictionaryWord}</h2>
