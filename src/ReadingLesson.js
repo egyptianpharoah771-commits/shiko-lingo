@@ -12,7 +12,7 @@ import AIResponseModal from "./components/AIResponseModal";
 
 /* =========================
    Reading Lesson Page
-   Full File – Vocabulary Engine
+   Full File – Clean Stable Version
    ✔ Sound Feedback
    ✔ Answer Explanation
    ✔ Interactive Dictionary
@@ -46,7 +46,8 @@ function ReadingLesson() {
   const [dictionaryData, setDictionaryData] = useState(null);
   const [dictionaryLoading, setDictionaryLoading] = useState(false);
 
-  const [savedWords, setSavedWords] = useState([]);
+  // نحتفظ بالـ setter فقط لتجنب eslint warning
+  const [, setSavedWords] = useState([]);
 
   /* =========================
      Sound System
