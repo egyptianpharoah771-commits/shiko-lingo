@@ -43,6 +43,7 @@ import SpeakingHome from "./speaking/SpeakingHome";
 import VocabularyPage from "./vocabulary/VocabularyPage";
 import VocabularyLevelPage from "./vocabulary/VocabularyLevelPage";
 import VocabularyUnitPage from "./vocabulary/VocabularyUnitPage";
+import VocabularyQuiz from "./vocabulary/VocabularyQuiz";
 
 /* Grammar */
 import GrammarLevels from "./grammar/GrammarLevels";
@@ -135,6 +136,7 @@ function SubscriptionGuard() {
 
         {/* Vocabulary */}
         <Route path="/vocabulary" element={<VocabularyPage />} />
+        <Route path="/vocabulary/quiz" element={<VocabularyQuiz />} />
         <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
         <Route
           path="/vocabulary/:level/:unitId"
@@ -207,6 +209,7 @@ function AppLayout({ children }) {
             <NavButton to="/dashboard" label="Dashboard" />
             <NavButton to="/grammar" label="Grammar" />
             <NavButton to="/vocabulary" label="Vocabulary" />
+            <NavButton to="/vocabulary/quiz" label="Review Words" />
             <NavButton to="/listening" label="Listening" />
             <NavButton to="/reading" label="Reading" />
             <NavButton to="/speaking" label="Speaking" />
