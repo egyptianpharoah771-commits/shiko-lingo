@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import {
+  getWordsForReview,
+  updateWordStage,
+} from "./spacedRepetition";
 
 function VocabularyQuiz() {
   const [quiz, setQuiz] = useState([]);
@@ -21,7 +25,9 @@ function VocabularyQuiz() {
       localStorage.getItem("VOCAB_SAVED") || "[]"
     );
 
-    if (!saved.length) {
+    const reviewWords = getWordsForReview(saved);
+
+    if (!reviewWords.length) {
       setLoading(false);
       return;
     }
@@ -29,15 +35,15 @@ function VocabularyQuiz() {
     const loadQuiz = async () => {
       const questions = [];
 
-      for (const word of saved) {
+      for (const word of reviewWords) {
         try {
-          const dictRes = await fetch(
+          const res = await fetch(
             `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
           );
 
-          if (!dictRes.ok) continue;
+          if (!res.ok) continue;
 
-          const data = await dictRes.json();
+          const data = await res.json();
 
           const definition =
             data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition;
@@ -58,7 +64,7 @@ function VocabularyQuiz() {
     loadQuiz();
   }, []);
 
-  const handleSelect = (index, value) => {
+  const handleAnswer = (index, value) => {
     if (submitted) return;
 
     setAnswers({
@@ -73,9 +79,12 @@ function VocabularyQuiz() {
     let correct = 0;
 
     quiz.forEach((q, i) => {
-      if (normalize(answers[i]) === normalize(q.word)) {
-        correct++;
-      }
+      const isCorrect =
+        normalize(answers[i]) === normalize(q.word);
+
+      if (isCorrect) correct++;
+
+      updateWordStage(q.word, isCorrect);
     });
 
     setScore(correct);
@@ -85,7 +94,7 @@ function VocabularyQuiz() {
   if (loading) {
     return (
       <div style={{ padding: 30 }}>
-        <h2>Loading vocabulary quiz...</h2>
+        <h2>Preparing your review...</h2>
       </div>
     );
   }
@@ -93,24 +102,17 @@ function VocabularyQuiz() {
   if (!quiz.length) {
     return (
       <div style={{ padding: 30 }}>
-        <h2>No saved words to review.</h2>
-        <p>Save words from Reading first.</p>
+        <h2>No words ready for review.</h2>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        maxWidth: 800,
-        margin: "0 auto",
-        padding: 24,
-      }}
-    >
-      <h1>🧠 Vocabulary Review Quiz</h1>
+    <div style={{ maxWidth: 800, margin: "0 auto", padding: 24 }}>
+      <h1>🧠 Smart Vocabulary Review</h1>
 
       {quiz.map((q, i) => {
-        const isCorrect =
+        const correct =
           normalize(answers[i]) === normalize(q.word);
 
         return (
@@ -136,33 +138,31 @@ function VocabularyQuiz() {
 
             <input
               type="text"
-              placeholder="Type the word..."
               disabled={submitted}
               value={answers[i] || ""}
               onChange={(e) =>
-                handleSelect(i, e.target.value)
+                handleAnswer(i, e.target.value)
               }
               style={{
-                padding: 10,
                 width: "100%",
+                padding: 10,
                 marginTop: 10,
-                fontSize: 16,
               }}
             />
 
             {submitted && (
               <div style={{ marginTop: 10 }}>
-                {isCorrect ? (
+                {correct ? (
                   <span style={{ color: "green" }}>
                     ✅ Correct
                   </span>
                 ) : (
                   <span style={{ color: "red" }}>
-                    ❌ Correct answer: {q.word}
+                    ❌ {q.word}
                   </span>
                 )}
 
-                <div style={{ marginTop: 6 }}>
+                <div>
                   <button
                     onClick={() => speakWord(q.word)}
                   >
@@ -178,20 +178,15 @@ function VocabularyQuiz() {
       <button
         onClick={handleSubmit}
         disabled={submitted}
-        style={{
-          padding: "12px 18px",
-          fontSize: 16,
-        }}
+        style={{ padding: 12 }}
       >
-        Submit Quiz
+        Submit Review
       </button>
 
       {submitted && (
-        <div style={{ marginTop: 20 }}>
-          <h2>
-            Score: {score} / {quiz.length}
-          </h2>
-        </div>
+        <h2 style={{ marginTop: 20 }}>
+          Score: {score} / {quiz.length}
+        </h2>
       )}
     </div>
   );
