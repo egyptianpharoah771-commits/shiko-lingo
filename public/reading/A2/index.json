@@ -1,0 +1,35 @@
+{
+  "level": "A2",
+  "lessons": [
+    {
+      "id": "lesson1",
+      "lesson": 1,
+      "title": "A Busy Workday"
+    },
+    {
+      "id": "lesson2",
+      "lesson": 2,
+      "title": "Life in the City"
+    },
+    {
+      "id": "lesson3",
+      "lesson": 3,
+      "title": "A Healthy Lifestyle"
+    },
+    {
+      "id": "lesson4",
+      "lesson": 4,
+      "title": "Free Time and Hobbies"
+    },
+    {
+      "id": "lesson5",
+      "lesson": 5,
+      "title": "Learning New Skills"
+    },
+    {
+      "id": "lesson6",
+      "lesson": 6,
+      "title": "Plans for the Future"
+    }
+  ]
+}

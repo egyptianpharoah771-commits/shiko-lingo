@@ -11,11 +11,31 @@ export const SubscriptionProvider = ({ children }) => {
   const [isActive, setIsActive] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  /* =========================
+     🔓 DEV BYPASS
+     Allows full access on localhost only
+  ========================= */
+  const isDev = process.env.NODE_ENV === "development";
+
   useEffect(() => {
     let mounted = true;
 
     const fetchSubscription = async () => {
       if (authLoading) return;
+
+      /* 🔥 If development mode → auto unlock */
+      if (isDev) {
+        if (mounted) {
+          setSubscription({
+            uid: "dev-user",
+            package_name: "DEV",
+            expires_at: "2099-01-01",
+          });
+          setIsActive(true);
+          setLoading(false);
+        }
+        return;
+      }
 
       if (!user?.id) {
         if (mounted) {
@@ -32,7 +52,7 @@ export const SubscriptionProvider = ({ children }) => {
         const { data, error } = await supabase
           .from("subscriptions")
           .select("*")
-          .eq("uid", user.id) // 🔐 Unified identity key
+          .eq("uid", user.id)
           .order("expires_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -74,7 +94,7 @@ export const SubscriptionProvider = ({ children }) => {
     return () => {
       mounted = false;
     };
-  }, [user?.id, authLoading]);
+  }, [user?.id, authLoading, isDev]);
 
   return (
     <SubscriptionContext.Provider
@@ -95,13 +115,14 @@ export const SubscriptionProvider = ({ children }) => {
 export const useSubscription = () => {
   const context = useContext(SubscriptionContext);
   if (!context) {
-    throw new Error("useSubscription must be used within SubscriptionProvider");
+    throw new Error(
+      "useSubscription must be used within SubscriptionProvider"
+    );
   }
   return context;
 };
 
 /* =========================
    Backward Compatibility
-   (Prevents build breaks)
 ========================= */
 export const useSubscriptionContext = useSubscription;

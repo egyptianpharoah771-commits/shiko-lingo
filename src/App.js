@@ -31,8 +31,12 @@ import ListeningHome from "./pages/ListeningHome";
 import ListeningLevel from "./pages/ListeningLevel";
 import Listening from "./pages/Listening";
 
+/* Reading */
+import ReadingHome from "./ReadingHome";
+import ReadingLevel from "./ReadingLevel";
+import ReadingLesson from "./ReadingLesson";
+
 /* Other Skills */
-import ReadingHome from "./reading/ReadingHome";
 import SpeakingHome from "./speaking/SpeakingHome";
 
 /* Vocabulary */
@@ -132,15 +136,25 @@ function SubscriptionGuard() {
         {/* Vocabulary */}
         <Route path="/vocabulary" element={<VocabularyPage />} />
         <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
-        <Route path="/vocabulary/:level/:unitId" element={<VocabularyUnitPage />} />
+        <Route
+          path="/vocabulary/:level/:unitId"
+          element={<VocabularyUnitPage />}
+        />
 
         {/* Listening */}
         <Route path="/listening" element={<ListeningHome />} />
         <Route path="/listening/:level" element={<ListeningLevel />} />
         <Route path="/listening/:level/:lessonId" element={<Listening />} />
 
-        {/* Other Skills */}
+        {/* Reading */}
         <Route path="/reading" element={<ReadingHome />} />
+        <Route path="/reading/:level" element={<ReadingLevel />} />
+        <Route
+          path="/reading/:level/:lessonId"
+          element={<ReadingLesson />}
+        />
+
+        {/* Other Skills */}
         <Route path="/speaking" element={<SpeakingHome />} />
         <Route path="/writing" element={<Writing />} />
 
@@ -167,7 +181,7 @@ function SubscriptionGuard() {
 }
 
 /* ======================
-   Layout (UPDATED WITH FOOTER)
+   Layout
 ====================== */
 function AppLayout({ children }) {
   const location = useLocation();
@@ -178,7 +192,9 @@ function AppLayout({ children }) {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+    >
       {!hideLayout && <FeedbackButton />}
 
       {!hideLayout && (
@@ -203,9 +219,13 @@ function AppLayout({ children }) {
 
       {!hideLayout && (
         <footer style={footerStyle}>
-          <Link to="/privacy" style={footerLink}>Privacy Policy</Link>
+          <Link to="/privacy" style={footerLink}>
+            Privacy Policy
+          </Link>
           <span style={{ margin: "0 10px" }}>•</span>
-          <Link to="/terms" style={footerLink}>Terms & Conditions</Link>
+          <Link to="/terms" style={footerLink}>
+            Terms & Conditions
+          </Link>
         </footer>
       )}
     </div>

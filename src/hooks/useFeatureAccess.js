@@ -1,54 +1,49 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useSubscriptionContext } from "../context/SubscriptionContext";
+
+const DEV_MODE = process.env.NODE_ENV === "development";
 
 export function useFeatureAccess() {
   const { user, loading: authLoading } = useAuth();
+  const { isActive: subscriptionActive, loading: subscriptionLoading } =
+    useSubscriptionContext();
 
   const [loading, setLoading] = useState(true);
   const [isActive, setIsActive] = useState(false);
   const [packageName, setPackageName] = useState("FREE");
 
   useEffect(() => {
-    const checkSubscription = async () => {
-      if (authLoading) return;
+    // 🔓 DEV MODE → Always unlock everything
+    if (DEV_MODE) {
+      setIsActive(true);
+      setPackageName("DEV");
+      setLoading(false);
+      return;
+    }
 
-      if (!user?.id) {
-        setIsActive(false);
-        setPackageName("FREE");
-        setLoading(false);
-        return;
-      }
+    if (authLoading || subscriptionLoading) {
+      setLoading(true);
+      return;
+    }
 
-      try {
-        const res = await fetch(
-          `/api/check-subscription?uid=${encodeURIComponent(user.id)}`
-        );
+    if (!user?.id) {
+      setIsActive(false);
+      setPackageName("FREE");
+      setLoading(false);
+      return;
+    }
 
-        if (!res.ok) {
-          setIsActive(false);
-          setPackageName("FREE");
-          setLoading(false);
-          return;
-        }
-
-        const data = await res.json();
-
-        setIsActive(!!data?.active);
-        setPackageName(
-          data?.active && data?.plan
-            ? data.plan.toUpperCase()
-            : "FREE"
-        );
-      } catch {
-        setIsActive(false);
-        setPackageName("FREE");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkSubscription();
-  }, [user?.id, authLoading]);
+    // ✅ Production → rely on SubscriptionContext (single source of truth)
+    setIsActive(!!subscriptionActive);
+    setPackageName(subscriptionActive ? "PREMIUM" : "FREE");
+    setLoading(false);
+  }, [
+    user?.id,
+    authLoading,
+    subscriptionLoading,
+    subscriptionActive,
+  ]);
 
   return {
     canAccess: isActive,

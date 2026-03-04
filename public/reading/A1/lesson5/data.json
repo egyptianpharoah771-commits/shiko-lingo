@@ -1,0 +1,50 @@
+{
+  "id": "A1-lesson5",
+  "level": "A1",
+  "title": "My Weekend",
+  "text": [
+    "My name is Lina. I like weekends because I can relax.",
+    "On Saturday, I wake up late and have breakfast with my family.",
+    "In the afternoon, I go out with my friends.",
+    "On Sunday, I stay at home and do my homework.",
+    "Weekends help me feel happy and ready for the new week."
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "question": "Why does Lina like weekends?",
+      "options": [
+        "Because she goes to school",
+        "Because she can relax",
+        "Because she works"
+      ],
+      "correctAnswer": "Because she can relax"
+    },
+    {
+      "id": 2,
+      "question": "What does Lina do on Saturday morning?",
+      "options": [
+        "She wakes up late and has breakfast",
+        "She goes to school",
+        "She does homework"
+      ],
+      "correctAnswer": "She wakes up late and has breakfast"
+    },
+    {
+      "id": 3,
+      "question": "Who does Lina go out with?",
+      "options": ["Her family", "Her friends", "Her teacher"],
+      "correctAnswer": "Her friends"
+    },
+    {
+      "id": 4,
+      "question": "What does Lina do on Sunday?",
+      "options": [
+        "She goes out",
+        "She stays at home and does homework",
+        "She travels"
+      ],
+      "correctAnswer": "She stays at home and does homework"
+    }
+  ]
+}

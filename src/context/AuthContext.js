@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
 
+const DEV_MODE = process.env.NODE_ENV === "development";
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,18 +19,27 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initialize = async () => {
       try {
+        // 🔥 0️⃣ Dev Mode Auto Login
+        if (DEV_MODE) {
+          const devUser = {
+            id: "dev-user-001",
+            email: "dev@shikolingo.local",
+            provider: "dev",
+          };
+          setUser(devUser);
+          return;
+        }
+
         // 🔥 1️⃣ Restore Pi user from localStorage
         if (isPiBrowser()) {
           const stored = localStorage.getItem("shiko_pi_user");
 
           if (stored) {
             setUser(JSON.parse(stored));
-            setLoading(false);
-            return;
+          } else {
+            setUser(null);
           }
 
-          setUser(null);
-          setLoading(false);
           return;
         }
 
@@ -61,6 +72,16 @@ export function AuthProvider({ children }) {
      Login with Pi
   ========================= */
   const loginWithPi = async () => {
+    if (DEV_MODE) {
+      const devUser = {
+        id: "dev-user-001",
+        email: "dev@shikolingo.local",
+        provider: "dev",
+      };
+      setUser(devUser);
+      return devUser;
+    }
+
     if (!isPiBrowser()) {
       throw new Error("Not inside Pi Browser");
     }
@@ -80,12 +101,10 @@ export function AuthProvider({ children }) {
         provider: "pi",
       };
 
-      // 🔥 Save to localStorage
       localStorage.setItem("shiko_pi_user", JSON.stringify(piUser));
 
       setUser(piUser);
       return piUser;
-
     } catch (err) {
       console.error("Pi Login Error:", err);
       setUser(null);
@@ -96,6 +115,11 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    if (DEV_MODE) {
+      setUser(null);
+      return;
+    }
+
     if (isPiBrowser()) {
       localStorage.removeItem("shiko_pi_user");
       setUser(null);
