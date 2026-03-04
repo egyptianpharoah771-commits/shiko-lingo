@@ -52,10 +52,18 @@ export function addXP(amount = 5) {
 
     state.todayXP = 0;
     state.lastDate = t;
+    state._goalCompletedToday = false;
   }
 
   state.xp += amount;
   state.todayXP += amount;
+
+  /* Trigger XP animation */
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("xp-earned", { detail: amount })
+    );
+  }
 
   /* Streak logic */
   if (state.todayXP >= state.goal) {
