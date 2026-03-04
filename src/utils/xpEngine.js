@@ -1,3 +1,5 @@
+import { evaluateAchievements } from "./achievementEngine";
+
 const STORAGE_KEY = "DAILY_LEARNING_STATE";
 
 function today() {
@@ -38,7 +40,16 @@ export function addXP(amount = 5) {
   const state = loadState();
   const t = today();
 
+  /* Reset daily XP if new day */
   if (state.lastDate !== t) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const y = yesterday.toISOString().slice(0, 10);
+
+    if (state.lastDate !== y) {
+      state.streak = 0;
+    }
+
     state.todayXP = 0;
     state.lastDate = t;
   }
@@ -46,9 +57,19 @@ export function addXP(amount = 5) {
   state.xp += amount;
   state.todayXP += amount;
 
-  if (state.todayXP >= state.goal && state.streak === 0) {
-    state.streak += 1;
+  /* Streak logic */
+  if (state.todayXP >= state.goal) {
+    if (!state._goalCompletedToday) {
+      state.streak += 1;
+      state._goalCompletedToday = true;
+    }
   }
+
+  /* Achievement evaluation */
+  evaluateAchievements({
+    xp: state.xp,
+    streak: state.streak,
+  });
 
   saveState(state);
 }

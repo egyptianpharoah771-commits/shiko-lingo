@@ -3,7 +3,10 @@ import { useMemo } from "react";
 
 import FeedbackBox from "../components/FeedbackBox";
 import DailyLearning from "../components/DailyLearning";
+import Achievements from "../components/Achievements";
+
 import { getUserProgress } from "../adapters/progressAdapter";
+import { getContinueLesson } from "../utils/learningEngine";
 
 /* ===== Mini Progress ===== */
 function MiniProgress({ value = 0, total }) {
@@ -35,6 +38,7 @@ function MiniProgress({ value = 0, total }) {
 
 function Dashboard() {
   const progress = useMemo(() => getUserProgress(), []);
+  const nextLesson = useMemo(() => getContinueLesson(), []);
 
   const assessment = useMemo(() => {
     try {
@@ -46,7 +50,7 @@ function Dashboard() {
     }
   }, []);
 
-  /* 🛡️ Defensive skills mapping */
+  /* Defensive skills mapping */
   const skills = {
     grammar: progress.skills?.grammar || [],
     vocabulary: progress.skills?.vocabulary || [],
@@ -63,8 +67,25 @@ function Dashboard() {
         Welcome back. Let’s continue your journey.
       </p>
 
-      {/* ===== Daily Learning System ===== */}
+      {/* ===== Daily Learning ===== */}
       <DailyLearning />
+
+      {/* ===== Achievements ===== */}
+      <Achievements />
+
+      {/* ===== Continue Learning ===== */}
+      <div style={card}>
+        <h3>▶ Continue Learning</h3>
+        <p>
+          Jump back to your last activity and keep progressing.
+        </p>
+
+        <Link to={nextLesson.link}>
+          <button style={primaryBtn}>
+            {nextLesson.label}
+          </button>
+        </Link>
+      </div>
 
       {/* ===== Assessment Hero ===== */}
       <div style={cardHero}>
@@ -77,8 +98,7 @@ function Dashboard() {
               <strong>{assessment.level}</strong>
             </p>
             <p style={{ color: "#555" }}>
-              Based on {assessment.questionsAnswered}{" "}
-              questions
+              Based on {assessment.questionsAnswered} questions
             </p>
 
             <div style={{ display: "flex", gap: 10 }}>
@@ -87,6 +107,7 @@ function Dashboard() {
                   Start from your level
                 </button>
               </Link>
+
               <Link to="/assessment">
                 <button style={secondaryBtn}>
                   Re-assess
@@ -99,6 +120,7 @@ function Dashboard() {
             <p>
               You haven’t taken the level assessment yet.
             </p>
+
             <Link to="/assessment">
               <button style={primaryBtn}>
                 Take assessment
@@ -160,9 +182,9 @@ function Dashboard() {
         <h3>➡️ What’s next?</h3>
         <p>
           We recommend continuing with{" "}
-          <strong>Grammar</strong> to strengthen your
-          foundation.
+          <strong>Grammar</strong> to strengthen your foundation.
         </p>
+
         <Link to="/grammar">
           <button style={primaryBtn}>
             Go to Grammar
@@ -176,6 +198,7 @@ function Dashboard() {
 }
 
 /* ===== Styles ===== */
+
 const card = {
   background: "#fff",
   padding: 20,
@@ -186,14 +209,12 @@ const card = {
 
 const cardHero = {
   ...card,
-  background:
-    "linear-gradient(135deg,#f8f6ff,#ffffff)",
+  background: "linear-gradient(135deg,#f8f6ff,#ffffff)",
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns:
-    "repeat(auto-fit,minmax(160px,1fr))",
+  gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
   gap: 16,
 };
 
