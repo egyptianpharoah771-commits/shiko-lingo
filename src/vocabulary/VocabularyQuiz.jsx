@@ -3,6 +3,7 @@ import {
   getWordsForReview,
   updateWordStage,
 } from "./spacedRepetition";
+import { addQuizXP } from "../utils/xpEngine";
 
 function VocabularyQuiz() {
   const [quiz, setQuiz] = useState([]);
@@ -89,6 +90,9 @@ function VocabularyQuiz() {
 
     setScore(correct);
     setSubmitted(true);
+
+    /* XP Auto Tracking */
+    addQuizXP();
   };
 
   if (loading) {

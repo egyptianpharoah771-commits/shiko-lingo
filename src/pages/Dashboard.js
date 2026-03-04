@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useMemo } from "react";
 
 import FeedbackBox from "../components/FeedbackBox";
+import DailyLearning from "../components/DailyLearning";
 import { getUserProgress } from "../adapters/progressAdapter";
 
 /* ===== Mini Progress ===== */
@@ -61,6 +62,9 @@ function Dashboard() {
       <p style={{ color: "#666", marginBottom: 24 }}>
         Welcome back. Let’s continue your journey.
       </p>
+
+      {/* ===== Daily Learning System ===== */}
+      <DailyLearning />
 
       {/* ===== Assessment Hero ===== */}
       <div style={cardHero}>
