@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 function VocabularyQuiz() {
-  const [words, setWords] = useState([]);
   const [quiz, setQuiz] = useState([]);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -52,7 +51,6 @@ function VocabularyQuiz() {
         } catch {}
       }
 
-      setWords(saved);
       setQuiz(questions);
       setLoading(false);
     };
