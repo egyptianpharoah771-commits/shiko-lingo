@@ -34,7 +34,7 @@ function today() {
 }
 
 function DailyLearning() {
-  const [state, setState] = useState(loadState());
+  const [state, setState] = useState(() => loadState());
 
   useEffect(() => {
     const t = today();
@@ -62,22 +62,7 @@ function DailyLearning() {
       setState(updated);
       saveState(updated);
     }
-  }, []);
-
-  const addXP = (amount) => {
-    const updated = {
-      ...state,
-      xp: state.xp + amount,
-      todayXP: state.todayXP + amount,
-    };
-
-    if (updated.todayXP >= updated.goal && state.todayXP < state.goal) {
-      updated.streak = state.streak + 1;
-    }
-
-    setState(updated);
-    saveState(updated);
-  };
+  }, [state]);
 
   const progress = Math.min(
     100,
@@ -114,7 +99,6 @@ function DailyLearning() {
           background: "#eee",
           borderRadius: 10,
           overflow: "hidden",
-          marginBottom: 10,
         }}
       >
         <div
@@ -125,14 +109,6 @@ function DailyLearning() {
           }}
         />
       </div>
-
-      <button onClick={() => addXP(5)} style={{ marginRight: 10 }}>
-        +5 XP (Practice)
-      </button>
-
-      <button onClick={() => addXP(10)}>
-        +10 XP (Lesson)
-      </button>
     </div>
   );
 }
