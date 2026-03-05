@@ -20,6 +20,7 @@ import AIResponseModal from "./components/AIResponseModal";
    ✔ Pronunciation
    ✔ Save Word System
    ✔ Fixed Paragraph Overflow
+   ✔ Fixed Word Breaking Issue
 ========================= */
 
 function ReadingLesson() {
@@ -319,6 +320,7 @@ function ReadingLesson() {
         🤖 AI Lesson Feedback
       </button>
 
+      {/* Reading Text */}
       <div
         style={{
           border: "1px solid #eee",
@@ -329,32 +331,25 @@ function ReadingLesson() {
           lineHeight: 1.9,
           fontSize: 19,
           width: "100%",
-          maxWidth: "100%",
           boxSizing: "border-box",
-          overflowWrap: "break-word",
-          wordBreak: "break-word",
+          wordBreak: "normal",
+          overflowWrap: "normal",
+          whiteSpace: "normal",
         }}
       >
         {textLines.map((line, i) => {
           const words = line.split(" ");
 
           return (
-            <p
-              key={i}
-              style={{
-                marginBottom: 18,
-                wordBreak: "break-word",
-                overflowWrap: "break-word",
-              }}
-            >
+            <p key={i} style={{ marginBottom: 18 }}>
               {words.map((word, j) => (
                 <span
                   key={j}
                   onClick={() => handleWordClick(word)}
                   style={{
                     cursor: "pointer",
-                    marginRight: 4,
-                    display: "inline",
+                    marginRight: 6,
+                    display: "inline-block",
                   }}
                 >
                   {word}
@@ -438,6 +433,7 @@ function ReadingLesson() {
         </>
       )}
 
+      {/* Dictionary Modal */}
       {dictionaryOpen && (
         <div
           style={{
@@ -490,9 +486,7 @@ function ReadingLesson() {
                   </p>
                 )}
 
-                <button
-                  onClick={() => saveWord(dictionaryWord)}
-                >
+                <button onClick={() => saveWord(dictionaryWord)}>
                   ⭐ Save Word
                 </button>
               </>

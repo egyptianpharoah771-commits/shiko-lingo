@@ -15,13 +15,41 @@ function VocabularyQuiz() {
   const normalize = (v) =>
     (v || "").toString().trim().toLowerCase();
 
+  /* Stable pronunciation for Web + Pi Browser */
   const speakWord = (word) => {
+    if (!word) return;
+
+    const synth = window.speechSynthesis;
+
+    if (!synth) {
+      alert("Speech not supported on this device.");
+      return;
+    }
+
     const utter = new SpeechSynthesisUtterance(word);
+    const voices = synth.getVoices();
+
+    if (voices.length > 0) {
+      const englishVoice =
+        voices.find((v) => v.lang.startsWith("en")) || voices[0];
+      utter.voice = englishVoice;
+    }
+
     utter.lang = "en-US";
-    speechSynthesis.speak(utter);
+    utter.rate = 0.9;
+
+    synth.cancel();
+    synth.speak(utter);
   };
 
   useEffect(() => {
+    /* Load voices for some browsers */
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
     const saved = JSON.parse(
       localStorage.getItem("VOCAB_SAVED") || "[]"
     );
@@ -56,6 +84,7 @@ function VocabularyQuiz() {
             definition,
           });
         } catch {}
+
       }
 
       setQuiz(questions);
