@@ -1,7 +1,4 @@
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import { SubscriptionProvider } from "./context/SubscriptionContext";
-import { useSubscriptionContext } from "./context/SubscriptionContext";
-
+import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -12,13 +9,19 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import { useEffect } from "react";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import {
+  SubscriptionProvider,
+  useSubscriptionContext,
+} from "./context/SubscriptionContext";
+
 import { initPiSDK, isPiAvailable } from "./lib/initPi";
 import { migrateLegacyStorage } from "./utils/migrateStorage";
 
 import FeedbackButton from "./components/FeedbackButton";
 import AdminGuard from "./components/AdminGuard";
 
+/* Pages */
 import Dashboard from "./pages/Dashboard";
 import PI from "./pages/PI";
 import Writing from "./pages/Writing";
@@ -36,7 +39,7 @@ import ReadingHome from "./ReadingHome";
 import ReadingLevel from "./ReadingLevel";
 import ReadingLesson from "./ReadingLesson";
 
-/* Other Skills */
+/* Speaking */
 import SpeakingHome from "./speaking/SpeakingHome";
 
 /* Vocabulary */
@@ -55,9 +58,12 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
 
+
+
 /* ======================
    Entry Page
 ====================== */
+
 function Entry() {
   const navigate = useNavigate();
   const insidePi = isPiAvailable();
@@ -69,6 +75,7 @@ function Entry() {
         alt="Shiko Lingo"
         style={{ width: 120, marginBottom: 20 }}
       />
+
       <h1>Shiko Lingo</h1>
       <p>Learn English the smart way</p>
 
@@ -91,9 +98,12 @@ function Entry() {
   );
 }
 
+
+
 /* ======================
    Auth Gate
 ====================== */
+
 function AuthGate({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
@@ -110,9 +120,12 @@ function AuthGate({ children }) {
   return children;
 }
 
+
+
 /* ======================
    Subscription Guard
 ====================== */
+
 function SubscriptionGuard() {
   const { isActive, loading } = useSubscriptionContext();
 
@@ -169,6 +182,7 @@ function SubscriptionGuard() {
             </AdminGuard>
           }
         />
+
         <Route
           path="/admin/feedback"
           element={
@@ -182,9 +196,12 @@ function SubscriptionGuard() {
   );
 }
 
+
+
 /* ======================
    Layout
 ====================== */
+
 function AppLayout({ children }) {
   const location = useLocation();
   const hideLayout = location.pathname === "/";
@@ -195,7 +212,11 @@ function AppLayout({ children }) {
 
   return (
     <div
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
       {!hideLayout && <FeedbackButton />}
 
@@ -225,7 +246,9 @@ function AppLayout({ children }) {
           <Link to="/privacy" style={footerLink}>
             Privacy Policy
           </Link>
+
           <span style={{ margin: "0 10px" }}>•</span>
+
           <Link to="/terms" style={footerLink}>
             Terms & Conditions
           </Link>
@@ -235,6 +258,12 @@ function AppLayout({ children }) {
   );
 }
 
+
+
+/* ======================
+   Navigation Button
+====================== */
+
 function NavButton({ to, label }) {
   return (
     <Link to={to}>
@@ -243,9 +272,12 @@ function NavButton({ to, label }) {
   );
 }
 
+
+
 /* ======================
-   Root
+   Root App
 ====================== */
+
 function App() {
   useEffect(() => {
     initPiSDK();
@@ -276,6 +308,8 @@ function App() {
     </AuthProvider>
   );
 }
+
+
 
 /* ======================
    Styles
