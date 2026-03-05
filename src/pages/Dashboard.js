@@ -3,10 +3,7 @@ import { useMemo } from "react";
 
 import FeedbackBox from "../components/FeedbackBox";
 import DailyLearning from "../components/DailyLearning";
-import Achievements from "../components/Achievements";
-
 import { getUserProgress } from "../adapters/progressAdapter";
-import { getContinueLesson } from "../utils/learningEngine";
 
 /* ===== Mini Progress ===== */
 function MiniProgress({ value = 0, total }) {
@@ -36,9 +33,35 @@ function MiniProgress({ value = 0, total }) {
   );
 }
 
+/* ===== Continue Learning Logic ===== */
+function getContinueLink() {
+  try {
+    const completed =
+      JSON.parse(localStorage.getItem("READING_COMPLETED")) || [];
+
+    const level = "A1";
+
+    let nextLesson = 1;
+
+    while (
+      completed.includes(`${level}-lesson${nextLesson}`)
+    ) {
+      nextLesson++;
+    }
+
+    return `/reading/${level}/lesson${nextLesson}`;
+  } catch {
+    return "/reading/A1/lesson1";
+  }
+}
+
 function Dashboard() {
   const progress = useMemo(() => getUserProgress(), []);
-  const nextLesson = useMemo(() => getContinueLesson(), []);
+
+  const continueLink = useMemo(
+    () => getContinueLink(),
+    []
+  );
 
   const assessment = useMemo(() => {
     try {
@@ -50,7 +73,6 @@ function Dashboard() {
     }
   }, []);
 
-  /* Defensive skills mapping */
   const skills = {
     grammar: progress.skills?.grammar || [],
     vocabulary: progress.skills?.vocabulary || [],
@@ -61,33 +83,32 @@ function Dashboard() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      {/* ===== Header ===== */}
       <h2>🏠 Home</h2>
+
       <p style={{ color: "#666", marginBottom: 24 }}>
         Welcome back. Let’s continue your journey.
       </p>
 
-      {/* ===== Daily Learning ===== */}
+      {/* Daily Learning */}
       <DailyLearning />
 
-      {/* ===== Achievements ===== */}
-      <Achievements />
-
-      {/* ===== Continue Learning ===== */}
+      {/* Continue Learning */}
       <div style={card}>
         <h3>▶ Continue Learning</h3>
+
         <p>
-          Jump back to your last activity and keep progressing.
+          Jump back into your last lesson and keep
+          improving.
         </p>
 
-        <Link to={nextLesson.link}>
+        <Link to={continueLink}>
           <button style={primaryBtn}>
-            {nextLesson.label}
+            Continue Lesson
           </button>
         </Link>
       </div>
 
-      {/* ===== Assessment Hero ===== */}
+      {/* Assessment */}
       <div style={cardHero}>
         <h3>🎯 Level Assessment</h3>
 
@@ -97,8 +118,10 @@ function Dashboard() {
               Your current level:{" "}
               <strong>{assessment.level}</strong>
             </p>
+
             <p style={{ color: "#555" }}>
-              Based on {assessment.questionsAnswered} questions
+              Based on {assessment.questionsAnswered}{" "}
+              questions
             </p>
 
             <div style={{ display: "flex", gap: 10 }}>
@@ -118,7 +141,8 @@ function Dashboard() {
         ) : (
           <>
             <p>
-              You haven’t taken the level assessment yet.
+              You haven’t taken the level assessment
+              yet.
             </p>
 
             <Link to="/assessment">
@@ -130,7 +154,7 @@ function Dashboard() {
         )}
       </div>
 
-      {/* ===== Skills Snapshot ===== */}
+      {/* Skills */}
       <div style={card}>
         <h3>📚 Your Skills</h3>
 
@@ -177,12 +201,14 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* ===== What’s Next ===== */}
+      {/* Next Recommendation */}
       <div style={card}>
         <h3>➡️ What’s next?</h3>
+
         <p>
           We recommend continuing with{" "}
-          <strong>Grammar</strong> to strengthen your foundation.
+          <strong>Grammar</strong> to strengthen your
+          foundation.
         </p>
 
         <Link to="/grammar">
@@ -209,12 +235,14 @@ const card = {
 
 const cardHero = {
   ...card,
-  background: "linear-gradient(135deg,#f8f6ff,#ffffff)",
+  background:
+    "linear-gradient(135deg,#f8f6ff,#ffffff)",
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
+  gridTemplateColumns:
+    "repeat(auto-fit,minmax(160px,1fr))",
   gap: 16,
 };
 
