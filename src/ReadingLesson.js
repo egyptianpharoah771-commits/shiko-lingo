@@ -10,17 +10,17 @@ import LockedFeature from "./components/LockedFeature";
 import { askAITutor } from "./utils/aiClient";
 import AIResponseModal from "./components/AIResponseModal";
 
+import { saveWordToDB } from "./utils/vocabEngine";
+
 /* =========================
    Reading Lesson Page
-   Full File – Clean Stable Version
-   ✔ Sound Feedback
-   ✔ Answer Explanation
+   Full File – Supabase Vocabulary Version
+   ✔ Smart Lesson Unlock (60%)
+   ✔ Retry Lesson
+   ✔ Supabase Save Word
    ✔ Interactive Dictionary
-   ✔ Arabic Translation
    ✔ Pronunciation
-   ✔ Save Word System
-   ✔ Fixed Paragraph Overflow
-   ✔ Fixed Word Breaking Issue
+   ✔ Word Highlight
 ========================= */
 
 function ReadingLesson() {
@@ -38,6 +38,7 @@ function ReadingLesson() {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [passed, setPassed] = useState(false);
 
   const [aiOpen, setAiOpen] = useState(false);
   const [aiStatus, setAiStatus] = useState("IDLE");
@@ -48,7 +49,7 @@ function ReadingLesson() {
   const [dictionaryData, setDictionaryData] = useState(null);
   const [dictionaryLoading, setDictionaryLoading] = useState(false);
 
-  const [, setSavedWords] = useState([]);
+  const [activeWord, setActiveWord] = useState(null);
 
   const selectSound = useRef(null);
   const correctSound = useRef(null);
@@ -113,22 +114,18 @@ function ReadingLesson() {
     speechSynthesis.speak(utter);
   };
 
-  const saveWord = (word) => {
-    const existing = JSON.parse(
-      localStorage.getItem("VOCAB_SAVED") || "[]"
-    );
+  const saveWord = async (word) => {
+    const clean = cleanWord(word);
+    if (!clean || !userId) return;
 
-    if (!existing.includes(word)) {
-      const updated = [...existing, word];
-      localStorage.setItem("VOCAB_SAVED", JSON.stringify(updated));
-      setSavedWords(updated);
-    }
+    await saveWordToDB(userId, clean);
   };
 
   const handleWordClick = async (word) => {
     const clean = cleanWord(word);
     if (!clean) return;
 
+    setActiveWord(clean);
     setDictionaryWord(clean);
     setDictionaryOpen(true);
     setDictionaryLoading(true);
@@ -183,11 +180,6 @@ function ReadingLesson() {
   };
 
   useEffect(() => {
-    const saved = JSON.parse(
-      localStorage.getItem("VOCAB_SAVED") || "[]"
-    );
-    setSavedWords(saved);
-
     if (!canAccess || !lessonId) {
       setLoading(false);
       return;
@@ -204,6 +196,7 @@ function ReadingLesson() {
     setAnswers({});
     setSubmitted(false);
     setScore(0);
+    setPassed(false);
 
     fetch(`/reading/${level}/${folderName}/data.json`)
       .then((res) => {
@@ -231,6 +224,10 @@ function ReadingLesson() {
     ? lesson.text.split("\n\n")
     : [];
 
+  const totalQuestions =
+    lesson.questions?.filter((q) => Array.isArray(q.options))
+      .length || 0;
+
   const handleSubmit = () => {
     if (submitted || Object.keys(answers).length === 0) return;
 
@@ -249,13 +246,25 @@ function ReadingLesson() {
       }
     });
 
+    const percentage = correctCount / totalQuestions;
+
     setScore(correctCount);
     setSubmitted(true);
+    setPassed(percentage >= 0.6);
 
-    markLessonCompleted(
-      STORAGE_KEYS.READING_COMPLETED,
-      `${level}-${lessonId}`
-    );
+    if (percentage >= 0.6) {
+      markLessonCompleted(
+        STORAGE_KEYS.READING_COMPLETED,
+        `${level}-${lessonId}`
+      );
+    }
+  };
+
+  const handleRetry = () => {
+    setAnswers({});
+    setSubmitted(false);
+    setScore(0);
+    setPassed(false);
   };
 
   const handleAIFeedback = async () => {
@@ -278,10 +287,7 @@ function ReadingLesson() {
       text: textLines.join(" "),
       studentAnswers: answers,
       score,
-      total:
-        lesson.questions?.filter((q) =>
-          Array.isArray(q.options)
-        ).length || 0,
+      total: totalQuestions,
       userId,
       packageName,
     });
@@ -314,47 +320,63 @@ function ReadingLesson() {
       <audio ref={correctSound} src="/sounds/correct.mp3" />
       <audio ref={wrongSound} src="/sounds/wrong.mp3" />
 
-      <h2>{lesson.title}</h2>
+      <h2 style={{ marginBottom: 20 }}>{lesson.title}</h2>
 
       <button onClick={handleAIFeedback} disabled={!submitted}>
         🤖 AI Lesson Feedback
       </button>
 
-      {/* Reading Text */}
+      {/* Reading Card */}
       <div
         style={{
-          border: "1px solid #eee",
-          padding: 24,
-          borderRadius: 14,
-          background: "#fafafa",
-          marginBottom: 30,
-          lineHeight: 1.9,
-          fontSize: 19,
+          maxWidth: 720,
+          margin: "40px auto",
+          padding: "48px 42px",
+          background: "#ffffff",
+          borderRadius: 16,
+          boxShadow: "0 10px 40px rgba(0,0,0,0.06)",
+          fontSize: 20,
+          lineHeight: 2,
+          letterSpacing: "0.2px",
           width: "100%",
           boxSizing: "border-box",
-          wordBreak: "normal",
-          overflowWrap: "normal",
-          whiteSpace: "normal",
         }}
       >
         {textLines.map((line, i) => {
           const words = line.split(" ");
 
           return (
-            <p key={i} style={{ marginBottom: 18 }}>
-              {words.map((word, j) => (
-                <span
-                  key={j}
-                  onClick={() => handleWordClick(word)}
-                  style={{
-                    cursor: "pointer",
-                    marginRight: 6,
-                    display: "inline-block",
-                  }}
-                >
-                  {word}
-                </span>
-              ))}
+            <p
+              key={i}
+              style={{
+                marginBottom: 28,
+                color: "#222",
+              }}
+            >
+              {words.map((word, j) => {
+                const clean = cleanWord(word);
+                const isActive = activeWord === clean;
+
+                return (
+                  <span
+                    key={j}
+                    onClick={() => handleWordClick(word)}
+                    style={{
+                      cursor: "pointer",
+                      marginRight: 6,
+                      padding: "2px 4px",
+                      borderRadius: 4,
+                      display: "inline-block",
+                      background: isActive
+                        ? "#fff3cd"
+                        : "transparent",
+                      transition: "background 0.15s",
+                    }}
+                  >
+                    {word}
+                  </span>
+                );
+              })}
             </p>
           );
         })}
@@ -396,9 +418,7 @@ function ReadingLesson() {
                       />
                       {opt}
                     </label>
-                    {submitted && isCorrect && (
-                      <span> ✅</span>
-                    )}
+                    {submitted && isCorrect && <span> ✅</span>}
                   </div>
                 );
               })}
@@ -419,16 +439,29 @@ function ReadingLesson() {
       {submitted && (
         <>
           <p>
-            Score: {score} /{" "}
-            {
-              lesson.questions?.filter((q) =>
-                Array.isArray(q.options)
-              ).length
-            }
+            Score: {score} / {totalQuestions}
           </p>
 
-          {nextLessonLink && (
-            <Link to={nextLessonLink}>Next Lesson</Link>
+          {passed ? (
+            <>
+              <p style={{ color: "green", fontWeight: "bold" }}>
+                Lesson Passed 🎉
+              </p>
+
+              {nextLessonLink && (
+                <Link to={nextLessonLink}>Next Lesson</Link>
+              )}
+            </>
+          ) : (
+            <>
+              <p style={{ color: "red", fontWeight: "bold" }}>
+                You need at least 60% to unlock the next lesson.
+              </p>
+
+              <button onClick={handleRetry}>
+                Retry Lesson
+              </button>
+            </>
           )}
         </>
       )}
