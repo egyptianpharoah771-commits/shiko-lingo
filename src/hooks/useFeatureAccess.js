@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useSubscriptionContext } from "../context/SubscriptionContext";
 
-const DEV_MODE = process.env.NODE_ENV === "development";
-
 export function useFeatureAccess() {
   const { user, loading: authLoading } = useAuth();
   const { isActive: subscriptionActive, loading: subscriptionLoading } =
@@ -13,15 +11,20 @@ export function useFeatureAccess() {
   const [isActive, setIsActive] = useState(false);
   const [packageName, setPackageName] = useState("FREE");
 
+  const isPiBrowser =
+    typeof window !== "undefined" &&
+    typeof window.Pi !== "undefined";
+
   useEffect(() => {
-    // 🔓 DEV MODE → Always unlock everything
-    if (DEV_MODE) {
+    // 🧪 DEV MODE (any normal browser)
+    if (!isPiBrowser) {
       setIsActive(true);
       setPackageName("DEV");
       setLoading(false);
       return;
     }
 
+    // Wait for auth + subscription
     if (authLoading || subscriptionLoading) {
       setLoading(true);
       return;
@@ -34,7 +37,7 @@ export function useFeatureAccess() {
       return;
     }
 
-    // ✅ Production → rely on SubscriptionContext (single source of truth)
+    // Production logic inside Pi Browser
     setIsActive(!!subscriptionActive);
     setPackageName(subscriptionActive ? "PREMIUM" : "FREE");
     setLoading(false);
@@ -43,6 +46,7 @@ export function useFeatureAccess() {
     authLoading,
     subscriptionLoading,
     subscriptionActive,
+    isPiBrowser,
   ]);
 
   return {
@@ -50,7 +54,7 @@ export function useFeatureAccess() {
     canGetAIFeedback: isActive,
     requiresUpgrade: !isActive,
     isAuthenticated: !!user?.id,
-    userId: user?.id || null,
+    userId: user?.id || "dev-user",
     loading,
     packageName,
   };
