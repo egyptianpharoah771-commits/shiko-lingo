@@ -14,12 +14,12 @@ import { saveWordToDB } from "./utils/vocabEngine";
 
 /* =========================
    Reading Lesson Page
-   Full File – Stable Pronunciation Version
+   Full File – Stable TTS Proxy Version
    ✔ Smart Lesson Unlock (60%)
    ✔ Retry Lesson
    ✔ Supabase Save Word
    ✔ Interactive Dictionary
-   ✔ Stable Google TTS
+   ✔ Pronunciation via /api/tts (No CORS)
    ✔ Word Highlight
 ========================= */
 
@@ -109,23 +109,16 @@ function ReadingLesson() {
     word.replace(/[.,!?;:()"']/g, "").toLowerCase();
 
   /* =========================
-     Stable Google TTS
-     Uses client=gtx endpoint
+     Pronunciation via TTS Proxy
+     /api/tts?text=
+     Fixes Google CORS problem
   ========================= */
 
   const speakWord = (word, example = "") => {
     const text = example ? `${word}. ${example}` : word;
+    const url = `/api/tts?text=${encodeURIComponent(text)}`;
 
-    const url =
-      "https://translate.google.com/translate_tts" +
-      "?client=gtx" +
-      "&ie=UTF-8" +
-      "&tl=en" +
-      `&q=${encodeURIComponent(text)}`;
-
-    const audio = new Audio();
-    audio.src = url;
-    audio.crossOrigin = "anonymous";
+    const audio = new Audio(url);
 
     audio.play().catch((err) => {
       console.warn("TTS playback failed:", err);
@@ -176,8 +169,7 @@ function ReadingLesson() {
 
         if (transRes.ok) {
           const transData = await transRes.json();
-          arabic =
-            transData?.responseData?.translatedText || "";
+          arabic = transData?.responseData?.translatedText || "";
         }
       }
 
