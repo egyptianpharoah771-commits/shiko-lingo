@@ -108,20 +108,20 @@ function ReadingLesson() {
   const cleanWord = (word) =>
     word.replace(/[.,!?;:()"']/g, "").toLowerCase();
 
-  const speakWord = (word) => {
-  if (!window.speechSynthesis) return;
+const speakWord = (word, example = "") => {
+  const text = example ? `${word}. ${example}` : word;
 
-  const synth = window.speechSynthesis;
+  const url =
+    "https://translate.google.com/translate_tts?ie=UTF-8" +
+    `&q=${encodeURIComponent(text)}` +
+    "&tl=en" +
+    "&client=tw-ob";
 
-  synth.cancel();
+  const audio = new Audio(url);
 
-  const utter = new SpeechSynthesisUtterance(word);
-  utter.lang = "en-US";
-  utter.rate = 0.9;
-  utter.pitch = 1;
-
-  synth.speak(utter);
-};
+  audio.play().catch((err) => {
+    console.warn("TTS playback failed:", err);
+  });
 
   const saveWord = async (word) => {
     const clean = cleanWord(word);
@@ -503,8 +503,7 @@ function ReadingLesson() {
 
             {dictionaryData && (
               <>
-                <button onClick={() => speakWord(dictionaryWord)}>
-                  🔊 Pronounce
+<button onClick={() => speakWord(dictionaryWord, dictionaryData?.example)}>                  🔊 Pronounce
                 </button>
 
                 {dictionaryData.arabic && (
