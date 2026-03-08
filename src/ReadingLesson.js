@@ -108,20 +108,21 @@ function ReadingLesson() {
   const cleanWord = (word) =>
     word.replace(/[.,!?;:()"']/g, "").toLowerCase();
 
-const speakWord = (word, example = "") => {
-  const text = example ? `${word}. ${example}` : word;
+  const speakWord = (word, example = "") => {
+    const text = example ? `${word}. ${example}` : word;
 
-  const url =
-    "https://translate.google.com/translate_tts?ie=UTF-8" +
-    `&q=${encodeURIComponent(text)}` +
-    "&tl=en" +
-    "&client=tw-ob";
+    const url =
+      "https://translate.google.com/translate_tts?ie=UTF-8" +
+      `&q=${encodeURIComponent(text)}` +
+      "&tl=en" +
+      "&client=tw-ob";
 
-  const audio = new Audio(url);
+    const audio = new Audio(url);
 
-  audio.play().catch((err) => {
-    console.warn("TTS playback failed:", err);
-  });
+    audio.play().catch((err) => {
+      console.warn("TTS playback failed:", err);
+    });
+  };
 
   const saveWord = async (word) => {
     const clean = cleanWord(word);
@@ -335,7 +336,6 @@ const speakWord = (word, example = "") => {
         🤖 AI Lesson Feedback
       </button>
 
-      {/* Reading Card */}
       <div
         style={{
           maxWidth: 720,
@@ -475,7 +475,6 @@ const speakWord = (word, example = "") => {
         </>
       )}
 
-      {/* Dictionary Modal */}
       {dictionaryOpen && (
         <div
           style={{
@@ -503,7 +502,12 @@ const speakWord = (word, example = "") => {
 
             {dictionaryData && (
               <>
-<button onClick={() => speakWord(dictionaryWord, dictionaryData?.example)}>                  🔊 Pronounce
+                <button
+                  onClick={() =>
+                    speakWord(dictionaryWord, dictionaryData?.example)
+                  }
+                >
+                  🔊 Pronounce
                 </button>
 
                 {dictionaryData.arabic && (
@@ -527,7 +531,9 @@ const speakWord = (word, example = "") => {
                   </p>
                 )}
 
-                <button onClick={() => saveWord(dictionaryWord)}>
+                <button
+                  onClick={() => saveWord(dictionaryWord)}
+                >
                   ⭐ Save Word
                 </button>
               </>
