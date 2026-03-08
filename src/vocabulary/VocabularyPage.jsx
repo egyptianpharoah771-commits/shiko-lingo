@@ -28,10 +28,20 @@ function VocabularyPage() {
   const [wordDetails, setWordDetails] = useState({});
   const [loadingWords, setLoadingWords] = useState(true);
 
-  const speakWord = (word) => {
-    const utter = new SpeechSynthesisUtterance(word);
-    utter.lang = "en-US";
-    speechSynthesis.speak(utter);
+  /* =========================
+     Pronunciation (Unified TTS)
+     Uses /api/tts like Reading
+  ========================= */
+  const speakWord = (word, example = "") => {
+    const text = example ? `${word}. ${example}` : word;
+
+    const audio = new Audio(
+      `/api/tts?text=${encodeURIComponent(text)}`
+    );
+
+    audio.play().catch((err) => {
+      console.warn("TTS playback failed:", err);
+    });
   };
 
   const removeWord = (word) => {
@@ -44,11 +54,19 @@ function VocabularyPage() {
     setWordDetails(copy);
   };
 
+  /* =========================
+     Load Saved Words
+  ========================= */
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("VOCAB_SAVED") || "[]");
+    const saved = JSON.parse(
+      localStorage.getItem("VOCAB_SAVED") || "[]"
+    );
     setSavedWords(saved);
   }, []);
 
+  /* =========================
+     Load Definitions
+  ========================= */
   useEffect(() => {
     if (!savedWords.length) {
       setLoadingWords(false);
@@ -141,7 +159,11 @@ function VocabularyPage() {
               >
                 <h3>{word}</h3>
 
-                <button onClick={() => speakWord(word)}>
+                <button
+                  onClick={() =>
+                    speakWord(word, data?.example)
+                  }
+                >
                   🔊 Pronounce
                 </button>
 
@@ -184,7 +206,9 @@ function VocabularyPage() {
           <div key={level} className={`vocab-level level-${level}`}>
             <div className="vocab-level-header">
               <div>
-                <div className="vocab-level-title">{level} Vocabulary</div>
+                <div className="vocab-level-title">
+                  {level} Vocabulary
+                </div>
                 <div className="vocab-level-subtitle">
                   {completed.length} / {units.length} units completed
                 </div>
