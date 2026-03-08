@@ -12,10 +12,12 @@ export const SubscriptionProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   /* =========================
-     🔓 DEV BYPASS
-     Allows full access on localhost only
+     Detect Pi Browser
+     Pi Browser userAgent contains "PiBrowser"
   ========================= */
-  const isDev = process.env.NODE_ENV === "development";
+  const isPiBrowser =
+    typeof navigator !== "undefined" &&
+    navigator.userAgent.includes("PiBrowser");
 
   useEffect(() => {
     let mounted = true;
@@ -23,8 +25,12 @@ export const SubscriptionProvider = ({ children }) => {
     const fetchSubscription = async () => {
       if (authLoading) return;
 
-      /* 🔥 If development mode → auto unlock */
-      if (isDev) {
+      /* =========================
+         🔓 DEV BYPASS
+         Any browser that is NOT Pi Browser
+         gets full access for testing
+      ========================= */
+      if (!isPiBrowser) {
         if (mounted) {
           setSubscription({
             uid: "dev-user",
@@ -37,6 +43,10 @@ export const SubscriptionProvider = ({ children }) => {
         return;
       }
 
+      /* =========================
+         Production logic
+         (Pi Browser only)
+      ========================= */
       if (!user?.id) {
         if (mounted) {
           setSubscription(null);
@@ -94,7 +104,7 @@ export const SubscriptionProvider = ({ children }) => {
     return () => {
       mounted = false;
     };
-  }, [user?.id, authLoading, isDev]);
+  }, [user?.id, authLoading, isPiBrowser]);
 
   return (
     <SubscriptionContext.Provider
