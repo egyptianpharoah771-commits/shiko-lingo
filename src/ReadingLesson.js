@@ -109,10 +109,19 @@ function ReadingLesson() {
     word.replace(/[.,!?;:()"']/g, "").toLowerCase();
 
   const speakWord = (word) => {
-    const utter = new SpeechSynthesisUtterance(word);
-    utter.lang = "en-US";
-    speechSynthesis.speak(utter);
-  };
+  if (!window.speechSynthesis) return;
+
+  const synth = window.speechSynthesis;
+
+  synth.cancel();
+
+  const utter = new SpeechSynthesisUtterance(word);
+  utter.lang = "en-US";
+  utter.rate = 0.9;
+  utter.pitch = 1;
+
+  synth.speak(utter);
+};
 
   const saveWord = async (word) => {
     const clean = cleanWord(word);
