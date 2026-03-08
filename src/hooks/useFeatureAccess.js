@@ -12,11 +12,14 @@ export function useFeatureAccess() {
   const [packageName, setPackageName] = useState("FREE");
 
   const isPiBrowser =
-    typeof window !== "undefined" &&
-    typeof window.Pi !== "undefined";
+    typeof navigator !== "undefined" &&
+    navigator.userAgent.includes("PiBrowser");
 
   useEffect(() => {
-    // 🧪 DEV MODE (any normal browser)
+
+    /* =========================
+       DEV MODE (non Pi browsers)
+    ========================= */
     if (!isPiBrowser) {
       setIsActive(true);
       setPackageName("DEV");
@@ -24,7 +27,6 @@ export function useFeatureAccess() {
       return;
     }
 
-    // Wait for auth + subscription
     if (authLoading || subscriptionLoading) {
       setLoading(true);
       return;
@@ -37,10 +39,10 @@ export function useFeatureAccess() {
       return;
     }
 
-    // Production logic inside Pi Browser
     setIsActive(!!subscriptionActive);
     setPackageName(subscriptionActive ? "PREMIUM" : "FREE");
     setLoading(false);
+
   }, [
     user?.id,
     authLoading,
