@@ -15,41 +15,23 @@ function VocabularyQuiz() {
   const normalize = (v) =>
     (v || "").toString().trim().toLowerCase();
 
-  /* Stable pronunciation for Web + Pi Browser */
+  /* =========================
+     Unified Pronunciation Engine
+     Uses /api/tts (works in Chrome + Pi Browser)
+  ========================= */
   const speakWord = (word) => {
     if (!word) return;
 
-    const synth = window.speechSynthesis;
+    const audio = new Audio(
+      `/api/tts?text=${encodeURIComponent(word)}`
+    );
 
-    if (!synth) {
-      alert("Speech not supported on this device.");
-      return;
-    }
-
-    const utter = new SpeechSynthesisUtterance(word);
-    const voices = synth.getVoices();
-
-    if (voices.length > 0) {
-      const englishVoice =
-        voices.find((v) => v.lang.startsWith("en")) || voices[0];
-      utter.voice = englishVoice;
-    }
-
-    utter.lang = "en-US";
-    utter.rate = 0.9;
-
-    synth.cancel();
-    synth.speak(utter);
+    audio.play().catch((err) => {
+      console.warn("TTS playback failed:", err);
+    });
   };
 
   useEffect(() => {
-    /* Load voices for some browsers */
-    if (window.speechSynthesis) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
-      };
-    }
-
     const saved = JSON.parse(
       localStorage.getItem("VOCAB_SAVED") || "[]"
     );
@@ -84,7 +66,6 @@ function VocabularyQuiz() {
             definition,
           });
         } catch {}
-
       }
 
       setQuiz(questions);
@@ -120,7 +101,7 @@ function VocabularyQuiz() {
     setScore(correct);
     setSubmitted(true);
 
-    /* XP Auto Tracking */
+    /* XP Tracking */
     addQuizXP();
   };
 
@@ -195,7 +176,7 @@ function VocabularyQuiz() {
                   </span>
                 )}
 
-                <div>
+                <div style={{ marginTop: 8 }}>
                   <button
                     onClick={() => speakWord(q.word)}
                   >
