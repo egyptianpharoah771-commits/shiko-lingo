@@ -37,7 +37,7 @@ function VocabularyUnitPage() {
   const [loading, setLoading] = useState(true);
 
   /* ======================
-     Audio Refs (ISOLATED)
+     Audio Refs
   ====================== */
   const wordAudioRef = useRef(null);
   const selectAudioRef = useRef(null);
@@ -47,7 +47,7 @@ function VocabularyUnitPage() {
   const [playingWord, setPlayingWord] = useState(null);
 
   /* ======================
-     Init Feedback Sounds (ONCE)
+     Init Feedback Sounds
   ====================== */
   useEffect(() => {
     selectAudioRef.current = new Audio("/sounds/select.mp3");
@@ -134,23 +134,23 @@ function VocabularyUnitPage() {
   });
 
   /* ======================
-     Word Audio
+     Pronunciation (TTS Proxy)
+     Uses /api/tts to avoid CORS
   ====================== */
-  const playWordAudio = (word) => {
-    if (!normalizedLevel || !unitId) return;
-
-    const cleanWord = word.toLowerCase();
+  const playWordAudio = (word, example = "") => {
+    const text = example ? `${word}. ${example}` : word;
 
     if (wordAudioRef.current) {
       wordAudioRef.current.pause();
       wordAudioRef.current = null;
     }
 
-    const audioPath = `/sounds/vocabulary/${normalizedLevel}/unit${unitId}/${cleanWord}.mp3`;
+    const audio = new Audio(
+      `/api/tts?text=${encodeURIComponent(text)}`
+    );
 
-    const audio = new Audio(audioPath);
     wordAudioRef.current = audio;
-    setPlayingWord(cleanWord);
+    setPlayingWord(word.toLowerCase());
 
     audio.play().catch(() => {});
 
@@ -274,7 +274,10 @@ function VocabularyUnitPage() {
                       : ""
                   }`}
                   onClick={() =>
-                    playWordAudio(item.word)
+                    playWordAudio(
+                      item.word,
+                      item.example
+                    )
                   }
                 >
                   🔊
