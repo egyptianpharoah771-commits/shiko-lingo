@@ -14,12 +14,12 @@ import { saveWordToDB } from "./utils/vocabEngine";
 
 /* =========================
    Reading Lesson Page
-   Full File – Supabase Vocabulary Version
+   Full File – Stable Pronunciation Version
    ✔ Smart Lesson Unlock (60%)
    ✔ Retry Lesson
    ✔ Supabase Save Word
    ✔ Interactive Dictionary
-   ✔ Pronunciation
+   ✔ Stable Google TTS
    ✔ Word Highlight
 ========================= */
 
@@ -108,16 +108,24 @@ function ReadingLesson() {
   const cleanWord = (word) =>
     word.replace(/[.,!?;:()"']/g, "").toLowerCase();
 
+  /* =========================
+     Stable Google TTS
+     Uses client=gtx endpoint
+  ========================= */
+
   const speakWord = (word, example = "") => {
     const text = example ? `${word}. ${example}` : word;
 
     const url =
-      "https://translate.google.com/translate_tts?ie=UTF-8" +
-      `&q=${encodeURIComponent(text)}` +
+      "https://translate.google.com/translate_tts" +
+      "?client=gtx" +
+      "&ie=UTF-8" +
       "&tl=en" +
-      "&client=tw-ob";
+      `&q=${encodeURIComponent(text)}`;
 
-    const audio = new Audio(url);
+    const audio = new Audio();
+    audio.src = url;
+    audio.crossOrigin = "anonymous";
 
     audio.play().catch((err) => {
       console.warn("TTS playback failed:", err);
@@ -355,13 +363,7 @@ function ReadingLesson() {
           const words = line.split(" ");
 
           return (
-            <p
-              key={i}
-              style={{
-                marginBottom: 28,
-                color: "#222",
-              }}
-            >
+            <p key={i} style={{ marginBottom: 28, color: "#222" }}>
               {words.map((word, j) => {
                 const clean = cleanWord(word);
                 const isActive = activeWord === clean;
@@ -531,9 +533,7 @@ function ReadingLesson() {
                   </p>
                 )}
 
-                <button
-                  onClick={() => saveWord(dictionaryWord)}
-                >
+                <button onClick={() => saveWord(dictionaryWord)}>
                   ⭐ Save Word
                 </button>
               </>
