@@ -261,9 +261,7 @@ function ReadingLesson() {
     ? lesson.text.split("\n\n")
     : [];
 
-  const totalQuestions =
-    lesson.questions?.filter((q) => Array.isArray(q.options))
-      .length || 0;
+  const totalQuestions = lesson.questions?.length || 0;
 
   const handleSubmit = () => {
     if (submitted || Object.keys(answers).length === 0) return;
@@ -271,7 +269,7 @@ function ReadingLesson() {
     let correctCount = 0;
 
     lesson.questions?.forEach((q, i) => {
-      if (!Array.isArray(q.options)) return;
+      
 
       const correctAnswer = resolveAnswer(q);
 
@@ -445,6 +443,7 @@ function ReadingLesson() {
                             [i]: opt,
                           });
                         }}
+                        
                       />
                       {opt}
                     </label>
@@ -452,7 +451,27 @@ function ReadingLesson() {
                   </div>
                 );
               })}
-
+{!isMCQ && (
+  <div style={{ marginTop: 10 }}>
+    <input
+      type="text"
+      disabled={submitted}
+      value={answers[i] || ""}
+      onChange={(e) =>
+        setAnswers({
+          ...answers,
+          [i]: e.target.value,
+        })
+      }
+      style={{
+        width: "100%",
+        padding: 10,
+        marginTop: 8,
+      }}
+      placeholder="Type your answer..."
+    />
+  </div>
+)}
             {submitted && explanation && (
               <p>
                 <strong>Explanation:</strong> {explanation}
