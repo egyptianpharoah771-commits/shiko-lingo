@@ -25,11 +25,16 @@ function saveWords(words) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
 }
 
+/* NEW PRONUNCIATION ENGINE */
+
 function speak(word) {
   if (!word) return;
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang = "en-US";
-  speechSynthesis.speak(u);
+
+  const audio = new Audio(
+    `/api/tts?text=${encodeURIComponent(word)}&lang=en`
+  );
+
+  audio.play().catch(() => {});
 }
 
 function ReviewWords() {
@@ -55,9 +60,11 @@ function ReviewWords() {
         const res = await fetch(
           `https://api.dictionaryapi.dev/api/v2/entries/en/${current}`
         );
+
         if (!res.ok) return;
 
         const data = await res.json();
+
         const def =
           data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition;
 

@@ -29,12 +29,25 @@ function VocabularyPage() {
   const [loadingWords, setLoadingWords] = useState(true);
 
   /* =========================
-     Pronunciation (Unified TTS)
-     Uses /api/tts like Reading
+     Unified Pronunciation Engine
+     Hybrid Mode:
+     localhost → SpeechSynthesis
+     production → /api/tts
   ========================= */
   const speakWord = (word, example = "") => {
+    if (!word) return;
+
     const text = example ? `${word}. ${example}` : word;
 
+    /* Localhost fallback */
+    if (window.location.hostname === "localhost") {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      speechSynthesis.speak(utter);
+      return;
+    }
+
+    /* Production TTS */
     const audio = new Audio(
       `/api/tts?text=${encodeURIComponent(text)}`
     );

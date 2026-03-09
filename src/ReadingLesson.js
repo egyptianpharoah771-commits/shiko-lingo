@@ -115,22 +115,49 @@ function ReadingLesson() {
   ========================= */
 
   const speakWord = (word, example = "") => {
-    const text = example ? `${word}. ${example}` : word;
-    const url = `/api/tts?text=${encodeURIComponent(text)}`;
+  if (!word) return;
 
-    const audio = new Audio(url);
+  const text = example ? `${word}. ${example}` : word;
 
-    audio.play().catch((err) => {
-      console.warn("TTS playback failed:", err);
-    });
-  };
+  /* Localhost fallback */
+
+  if (window.location.hostname === "localhost") {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    speechSynthesis.speak(utter);
+    return;
+  }
+
+  /* Production TTS */
+
+  const audio = new Audio(
+    `/api/tts?text=${encodeURIComponent(text)}`
+  );
+
+  audio.play().catch((err) => {
+    console.warn("TTS playback failed:", err);
+  });
+};
 
   const saveWord = async (word) => {
-    const clean = cleanWord(word);
-    if (!clean || !userId) return;
+  const clean = cleanWord(word);
+  if (!clean || !userId) return;
 
-    await saveWordToDB(userId, clean);
-  };
+  /* save to Supabase */
+  await saveWordToDB(userId, clean);
+
+  /* save to localStorage for review system */
+
+  const key = "VOCAB_SAVED";
+
+  const existing =
+    JSON.parse(localStorage.getItem(key)) || [];
+
+  if (!existing.includes(clean)) {
+    existing.push(clean);
+    localStorage.setItem(key, JSON.stringify(existing));
+  }
+};
 
   const handleWordClick = async (word) => {
     const clean = cleanWord(word);

@@ -17,11 +17,22 @@ function VocabularyQuiz() {
 
   /* =========================
      Unified Pronunciation Engine
-     Uses /api/tts (works in Chrome + Pi Browser)
+     Hybrid Mode:
+     localhost → SpeechSynthesis
+     production → /api/tts
   ========================= */
   const speakWord = (word) => {
     if (!word) return;
 
+    /* Localhost fallback */
+    if (window.location.hostname === "localhost") {
+      const utter = new SpeechSynthesisUtterance(word);
+      utter.lang = "en-US";
+      speechSynthesis.speak(utter);
+      return;
+    }
+
+    /* Production TTS */
     const audio = new Audio(
       `/api/tts?text=${encodeURIComponent(word)}`
     );
