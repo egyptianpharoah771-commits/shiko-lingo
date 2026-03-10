@@ -50,7 +50,7 @@ function ReadingLesson() {
   const [dictionaryLoading, setDictionaryLoading] = useState(false);
 
   const [activeWord, setActiveWord] = useState(null);
-
+  const [activeSentence, setActiveSentence] = useState(null);
   const selectSound = useRef(null);
   const correctSound = useRef(null);
   const wrongSound = useRef(null);
@@ -370,42 +370,60 @@ function ReadingLesson() {
       </button>
 
       <div
-        style={{
-          maxWidth: 720,
-          margin: "40px auto",
-          padding: "48px 42px",
-          background: "#ffffff",
-          borderRadius: 16,
-          boxShadow: "0 10px 40px rgba(0,0,0,0.06)",
-          fontSize: 20,
-          lineHeight: 2,
-          letterSpacing: "0.2px",
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-      >
+  style={{
+    maxWidth: 760,
+    margin: "40px auto",
+    padding: "52px 46px",
+    background: "#ffffff",
+    borderRadius: 18,
+    boxShadow: "0 12px 42px rgba(0,0,0,0.06)",
+    fontSize: 21,
+    lineHeight: 2.1,
+    letterSpacing: "0.3px",
+    color: "#222",
+    width: "100%",
+    boxSizing: "border-box",
+  }}
+>
+      
         {textLines.map((line, i) => {
           const words = line.split(" ");
 
           return (
-            <p key={i} style={{ marginBottom: 28, color: "#222" }}>
-              {words.map((word, j) => {
-                const clean = cleanWord(word);
-                const isActive = activeWord === clean;
+  <p
+    key={i}
+    style={{
+      marginBottom: 30,
+      fontSize: 21,
+      lineHeight: 2.1,
+      fontWeight: 400,
+      background: activeSentence === i ? "#fff9db" : "transparent",
+      padding: activeSentence === i ? "8px 10px" : "0",
+      borderRadius: 8,
+      transition: "background 0.2s"
+    }}
+  >
+    {words.map((word, j) => {
+      const clean = cleanWord(word);
+      const isActive = activeWord === clean;
 
                 return (
                   <span
                     key={j}
-                    onClick={() => handleWordClick(word)}
-                    style={{
+onClick={() => {
+  setActiveSentence(i);
+  handleWordClick(word);
+}}                    style={{
                       cursor: "pointer",
                       marginRight: 6,
                       padding: "2px 4px",
                       borderRadius: 4,
                       display: "inline-block",
                       background: isActive
-                        ? "#fff3cd"
-                        : "transparent",
+  ? "#ffd54f"
+  : "transparent",
+color: isActive ? "#000" : "inherit",
+fontWeight: isActive ? "600" : "normal",
                       transition: "background 0.15s",
                     }}
                   >
