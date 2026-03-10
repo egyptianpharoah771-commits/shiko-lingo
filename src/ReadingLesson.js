@@ -139,14 +139,13 @@ function ReadingLesson() {
   });
 };
 
-  const saveWord = async (word) => {
+const saveWord = async (word) => {
   const clean = cleanWord(word);
   if (!clean || !userId) return;
 
-  /* save to Supabase */
-  await saveWordToDB(userId, clean);
+  const definition = dictionaryData?.definition || "";
 
-  /* save to localStorage for review system */
+  await saveWordToDB(userId, clean, definition);
 
   const key = "VOCAB_SAVED";
 
@@ -158,7 +157,6 @@ function ReadingLesson() {
     localStorage.setItem(key, JSON.stringify(existing));
   }
 };
-
   const handleWordClick = async (word) => {
     const clean = cleanWord(word);
     if (!clean) return;

@@ -1,31 +1,14 @@
 import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 /*
   Review Words Page
-  - Reads saved words from localStorage: VOCAB_SAVED
-  - Flashcard view
+  Supabase Version
+  - Reads words from vocab_progress
+  - Flashcard review
   - Pronounce
-  - Mark as Known (remove)
-  - Clear all
+  - Mark as Known
 */
-
-const STORAGE_KEY = "VOCAB_SAVED";
-
-function loadWords() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveWords(words) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
-}
-
-/* NEW PRONUNCIATION ENGINE */
 
 function speak(word) {
   if (!word) return;
@@ -41,43 +24,39 @@ function ReviewWords() {
   const [words, setWords] = useState([]);
   const [index, setIndex] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
-  const [meaning, setMeaning] = useState("");
-
-  useEffect(() => {
-    setWords(loadWords());
-  }, []);
+  const [loading, setLoading] = useState(true);
 
   const current = words[index];
 
   useEffect(() => {
-    let cancelled = false;
+    loadWords();
+  }, []);
 
-    async function loadMeaning() {
-      setMeaning("");
-      if (!current) return;
+  async function loadWords() {
+    try {
+      const { data } = await supabase.auth.getUser();
+      const user = data?.user;
 
-      try {
-        const res = await fetch(
-          `https://api.dictionaryapi.dev/api/v2/entries/en/${current}`
-        );
+      const userId = user?.id || "dev-user";
 
-        if (!res.ok) return;
+      const { data: rows, error } = await supabase
+        .from("vocab_progress")
+        .select("*")
+        .eq("user_id", userId)
+        .order("stage", { ascending: true });
 
-        const data = await res.json();
-
-        const def =
-          data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition;
-
-        if (!cancelled && def) setMeaning(def);
-      } catch {}
+      if (error) {
+        console.error("Fetch words error:", error);
+        setWords([]);
+      } else {
+        setWords(rows || []);
+      }
+    } catch (err) {
+      console.error("Load words error:", err);
     }
 
-    loadMeaning();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [current]);
+    setLoading(false);
+  }
 
   function next() {
     setShowMeaning(false);
@@ -91,18 +70,43 @@ function ReviewWords() {
     );
   }
 
-  function removeWord() {
-    const updated = words.filter((w) => w !== current);
-    saveWords(updated);
+  async function markKnown() {
+    if (!current) return;
+
+    await supabase
+      .from("vocab_progress")
+      .delete()
+      .eq("id", current.id);
+
+    const updated = words.filter((w) => w.id !== current.id);
+
     setWords(updated);
     setIndex(0);
     setShowMeaning(false);
   }
 
-  function clearAll() {
-    saveWords([]);
+  async function clearAll() {
+    const { data } = await supabase.auth.getUser();
+    const user = data?.user;
+
+    const userId = user?.id || "dev-user";
+
+    await supabase
+      .from("vocab_progress")
+      .delete()
+      .eq("user_id", userId);
+
     setWords([]);
     setIndex(0);
+  }
+
+  if (loading) {
+    return (
+      <div style={container}>
+        <h2>📚 Review Words</h2>
+        <p>Loading words...</p>
+      </div>
+    );
   }
 
   if (!words.length) {
@@ -123,9 +127,14 @@ function ReviewWords() {
       </div>
 
       <div style={card}>
-        <h1 style={{ marginBottom: 10 }}>{current}</h1>
+        <h1 style={{ marginBottom: 10 }}>
+          {current.word}
+        </h1>
 
-        <button style={btnSmall} onClick={() => speak(current)}>
+        <button
+          style={btnSmall}
+          onClick={() => speak(current.word)}
+        >
           🔊 Pronounce
         </button>
 
@@ -140,7 +149,8 @@ function ReviewWords() {
           ) : (
             <div>
               <p style={{ fontStyle: "italic" }}>
-                {meaning || "Definition not available"}
+                {current.definition ||
+                  "Definition not available"}
               </p>
             </div>
           )}
@@ -158,7 +168,7 @@ function ReviewWords() {
       </div>
 
       <div style={actionRow}>
-        <button style={btnDanger} onClick={removeWord}>
+        <button style={btnDanger} onClick={markKnown}>
           Mark as Known
         </button>
 

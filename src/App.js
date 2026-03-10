@@ -1,3 +1,4 @@
+import ReviewWordsPage from "./pages/ReviewWordsPage";
 import { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -58,8 +59,6 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
 
-
-
 /* ======================
    Entry Page
 ====================== */
@@ -98,8 +97,6 @@ function Entry() {
   );
 }
 
-
-
 /* ======================
    Auth Gate
 ====================== */
@@ -119,8 +116,6 @@ function AuthGate({ children }) {
 
   return children;
 }
-
-
 
 /* ======================
    Subscription Guard
@@ -155,6 +150,9 @@ function SubscriptionGuard() {
           path="/vocabulary/:level/:unitId"
           element={<VocabularyUnitPage />}
         />
+
+        {/* Review */}
+        <Route path="/review" element={<ReviewWordsPage />} />
 
         {/* Listening */}
         <Route path="/listening" element={<ListeningHome />} />
@@ -196,8 +194,6 @@ function SubscriptionGuard() {
   );
 }
 
-
-
 /* ======================
    Layout
 ====================== */
@@ -230,7 +226,7 @@ function AppLayout({ children }) {
             <NavButton to="/dashboard" label="Dashboard" />
             <NavButton to="/grammar" label="Grammar" />
             <NavButton to="/vocabulary" label="Vocabulary" />
-            <NavButton to="/vocabulary/quiz" label="Review Words" />
+            <NavButton to="/review" label="Daily Review" />
             <NavButton to="/listening" label="Listening" />
             <NavButton to="/reading" label="Reading" />
             <NavButton to="/speaking" label="Speaking" />
@@ -258,8 +254,6 @@ function AppLayout({ children }) {
   );
 }
 
-
-
 /* ======================
    Navigation Button
 ====================== */
@@ -271,8 +265,6 @@ function NavButton({ to, label }) {
     </Link>
   );
 }
-
-
 
 /* ======================
    Root App
@@ -308,8 +300,6 @@ function App() {
     </AuthProvider>
   );
 }
-
-
 
 /* ======================
    Styles
