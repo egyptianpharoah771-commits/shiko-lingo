@@ -264,22 +264,30 @@ function ReadingLesson() {
   const totalQuestions = lesson.questions?.length || 0;
 
   const handleSubmit = () => {
-    if (submitted || Object.keys(answers).length === 0) return;
+  if (submitted || Object.keys(answers).length === 0) return;
 
-    let correctCount = 0;
+  let correctCount = 0;
 
-    lesson.questions?.forEach((q, i) => {
-      
+  lesson.questions?.forEach((q, i) => {
 
-      const correctAnswer = resolveAnswer(q);
+    const correctAnswer = resolveAnswer(q);
 
-      if (normalize(answers[i]) === normalize(correctAnswer)) {
-        correctCount++;
-        playCorrect();
-      } else {
-        playWrong();
-      }
-    });
+    const studentAnswer = normalize(answers[i]);
+
+    const keywords = normalize(correctAnswer).split(" ");
+
+    const match = keywords.some(word =>
+      studentAnswer.includes(word)
+    );
+
+    if (match) {
+      correctCount++;
+      playCorrect();
+    } else {
+      playWrong();
+    }
+
+  });
 
     const percentage = correctCount / totalQuestions;
 
