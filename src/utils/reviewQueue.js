@@ -1,20 +1,32 @@
 import { supabase } from "../lib/supabaseClient";
 
-export async function getDailyReviewQueue(userId) {
+/* =========================
+   Daily Review Queue
+========================= */
+
+export async function getDailyReviewQueue(userId, limit = 20) {
+  const uid = userId || "dev-user";
+
   const now = new Date().toISOString();
 
-  const { data, error } = await supabase
-    .from("vocab_progress")
-    .select("*")
-    .eq("user_id", userId)
-    .lte("next_review", now)
-    .order("next_review", { ascending: true })
-    .limit(20);
+  try {
+    const { data, error } = await supabase
+      .from("vocab_progress")
+      .select("*")
+      .eq("user_id", uid)
+      .lte("next_review", now)
+      .order("stage", { ascending: true })
+      .order("next_review", { ascending: true })
+      .limit(limit);
 
-  if (error) {
-    console.error("Review queue error:", error);
+    if (error) {
+      console.error("Review queue error:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error("Review queue exception:", err);
     return [];
   }
-
-  return data || [];
 }

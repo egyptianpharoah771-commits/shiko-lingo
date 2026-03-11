@@ -1,19 +1,26 @@
 import { supabase } from "../lib/supabaseClient";
+import { getNextReview } from "./spacedRepetition";
 
 /* =========================
    Vocabulary Engine
    Supabase Version
 ========================= */
 
+/* =========================
+   Save Word
+========================= */
+
 export async function saveWordToDB(userId, word, definition = "") {
-  if (!word) return;
+  if (!word) return null;
 
   const cleanWord = word.toLowerCase().trim();
+  if (!cleanWord) return null;
+
   const uid = userId || "dev-user";
 
   const { data: existing } = await supabase
     .from("vocab_progress")
-    .select("*")
+    .select("id")
     .eq("user_id", uid)
     .eq("word", cleanWord)
     .maybeSingle();
@@ -56,7 +63,8 @@ export async function getUserWords(userId) {
   const { data, error } = await supabase
     .from("vocab_progress")
     .select("*")
-    .eq("user_id", uid);
+    .eq("user_id", uid)
+    .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Get words error:", error);
@@ -70,7 +78,9 @@ export async function getUserWords(userId) {
    Update Word Stage
 ========================= */
 
-export async function updateWordStage(userId, word, delta) {
+export async function updateWordStage(userId, word, isCorrect) {
+  if (!word) return;
+
   const cleanWord = word.toLowerCase().trim();
   const uid = userId || "dev-user";
 
@@ -83,16 +93,23 @@ export async function updateWordStage(userId, word, delta) {
 
   if (!existing) return;
 
-  let newStage = existing.stage + delta;
-
-  if (newStage < 0) newStage = 0;
-  if (newStage > 3) newStage = 3;
+  const { nextStage, nextReview } = getNextReview(
+    existing.stage,
+    isCorrect
+  );
 
   const { error } = await supabase
     .from("vocab_progress")
     .update({
-      stage: newStage,
+      stage: nextStage,
       review_count: existing.review_count + 1,
+      correct_count: isCorrect
+        ? existing.correct_count + 1
+        : existing.correct_count,
+      wrong_count: !isCorrect
+        ? existing.wrong_count + 1
+        : existing.wrong_count,
+      next_review: nextReview,
       last_review: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })

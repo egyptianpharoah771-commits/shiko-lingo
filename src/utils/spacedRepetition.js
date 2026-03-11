@@ -1,38 +1,38 @@
+/* =========================
+   Spaced Repetition Engine
+========================= */
+
 export function getNextReview(stage, isCorrect) {
+
   let nextStage = stage;
+
+  /* Move stage up or down */
 
   if (isCorrect) {
     nextStage = Math.min(stage + 1, 3);
   } else {
-    nextStage = 0;
+    nextStage = Math.max(stage - 1, 0);
   }
 
   const now = new Date();
-  let nextReview = new Date(now);
 
-  switch (nextStage) {
-    case 0:
-      nextReview.setMinutes(now.getMinutes() + 10);
-      break;
+  /* Review intervals (minutes) */
 
-    case 1:
-      nextReview.setDate(now.getDate() + 1);
-      break;
+  const intervals = {
+    0: 10,        // new word → 10 minutes
+    1: 60 * 24,   // learning → 1 day
+    2: 60 * 24 * 3, // review → 3 days
+    3: 60 * 24 * 7  // mastered → 7 days
+  };
 
-    case 2:
-      nextReview.setDate(now.getDate() + 3);
-      break;
+  const minutes = intervals[nextStage] ?? 60 * 24;
 
-    case 3:
-      nextReview.setDate(now.getDate() + 7);
-      break;
-
-    default:
-      nextReview.setDate(now.getDate() + 1);
-  }
+  const nextReview = new Date(
+    now.getTime() + minutes * 60000
+  );
 
   return {
     nextStage,
-    nextReview,
+    nextReview: nextReview.toISOString(),
   };
 }

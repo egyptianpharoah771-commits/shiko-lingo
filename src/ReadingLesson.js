@@ -143,9 +143,17 @@ const saveWord = async (word) => {
   const clean = cleanWord(word);
   if (!clean || !userId) return;
 
-  const definition = dictionaryData?.definition || "";
+  let definition = "";
 
-  await saveWordToDB(userId, clean, definition);
+  if (dictionaryData && dictionaryData.definition) {
+    definition = dictionaryData.definition;
+  }
+
+  try {
+    await saveWordToDB(userId, clean, definition);
+  } catch (err) {
+    console.error("Save word failed:", err);
+  }
 
   const key = "VOCAB_SAVED";
 

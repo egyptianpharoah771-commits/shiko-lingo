@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 import FeedbackBox from "../components/FeedbackBox";
 import DailyLearning from "../components/DailyLearning";
 import { getUserProgress } from "../adapters/progressAdapter";
+import { supabase } from "../lib/supabaseClient";
 
 /* ===== Mini Progress ===== */
 function MiniProgress({ value = 0, total }) {
@@ -63,6 +64,8 @@ function Dashboard() {
     []
   );
 
+  const [reviewCount, setReviewCount] = useState(0);
+
   const assessment = useMemo(() => {
     try {
       return JSON.parse(
@@ -72,6 +75,33 @@ function Dashboard() {
       return null;
     }
   }, []);
+
+  useEffect(() => {
+    loadReviewCount();
+  }, []);
+
+  async function loadReviewCount() {
+    try {
+      const { data } = await supabase.auth.getUser();
+      const user = data?.user;
+
+      const userId = user?.id || "dev-user";
+
+      const now = new Date().toISOString();
+
+      const { data: rows, error } = await supabase
+        .from("vocab_progress")
+        .select("id")
+        .eq("user_id", userId)
+        .lte("next_review", now);
+
+      if (!error) {
+        setReviewCount(rows?.length || 0);
+      }
+    } catch (err) {
+      console.warn("Review count load failed:", err);
+    }
+  }
 
   const skills = {
     grammar: progress.skills?.grammar || [],
@@ -91,6 +121,24 @@ function Dashboard() {
 
       {/* Daily Learning */}
       <DailyLearning />
+
+      {/* Vocabulary Review */}
+      {reviewCount > 0 && (
+        <div style={card}>
+          <h3>📚 Vocabulary Review</h3>
+
+          <p>
+            You have <strong>{reviewCount}</strong> words to
+            review today.
+          </p>
+
+          <Link to="/review">
+            <button style={primaryBtn}>
+              Start Review
+            </button>
+          </Link>
+        </div>
+      )}
 
       {/* Continue Learning */}
       <div style={card}>

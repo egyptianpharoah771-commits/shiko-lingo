@@ -6,29 +6,31 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function defaultState() {
+  return {
+    xp: 0,
+    streak: 0,
+    todayXP: 0,
+    goal: 20,
+    lastDate: today(),
+    _goalCompletedToday: false,
+  };
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
 
-    if (!raw) {
-      return {
-        xp: 0,
-        streak: 0,
-        todayXP: 0,
-        goal: 20,
-        lastDate: today(),
-      };
-    }
+    if (!raw) return defaultState();
 
-    return JSON.parse(raw);
-  } catch {
+    const parsed = JSON.parse(raw);
+
     return {
-      xp: 0,
-      streak: 0,
-      todayXP: 0,
-      goal: 20,
-      lastDate: today(),
+      ...defaultState(),
+      ...parsed,
     };
+  } catch {
+    return defaultState();
   }
 }
 
@@ -36,14 +38,20 @@ function saveState(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+/* =========================
+   XP Engine
+========================= */
+
 export function addXP(amount = 5) {
   const state = loadState();
   const t = today();
 
   /* Reset daily XP if new day */
+
   if (state.lastDate !== t) {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
+
     const y = yesterday.toISOString().slice(0, 10);
 
     if (state.lastDate !== y) {
@@ -59,6 +67,7 @@ export function addXP(amount = 5) {
   state.todayXP += amount;
 
   /* Trigger XP animation */
+
   if (typeof window !== "undefined") {
     window.dispatchEvent(
       new CustomEvent("xp-earned", { detail: amount })
@@ -66,6 +75,7 @@ export function addXP(amount = 5) {
   }
 
   /* Streak logic */
+
   if (state.todayXP >= state.goal) {
     if (!state._goalCompletedToday) {
       state.streak += 1;
@@ -74,22 +84,41 @@ export function addXP(amount = 5) {
   }
 
   /* Achievement evaluation */
-  evaluateAchievements({
-    xp: state.xp,
-    streak: state.streak,
-  });
+
+  try {
+    evaluateAchievements({
+      xp: state.xp,
+      streak: state.streak,
+    });
+  } catch (err) {
+    console.warn("Achievement evaluation failed:", err);
+  }
 
   saveState(state);
+
+  return state;
 }
 
+/* =========================
+   XP Helpers
+========================= */
+
 export function addLessonXP() {
-  addXP(10);
+  return addXP(10);
 }
 
 export function addQuizXP() {
-  addXP(5);
+  return addXP(5);
 }
 
 export function addReviewXP() {
-  addXP(3);
+  return addXP(3);
+}
+
+/* =========================
+   State Getters
+========================= */
+
+export function getLearningState() {
+  return loadState();
 }
