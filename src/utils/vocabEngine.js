@@ -27,6 +27,9 @@ export async function saveWordToDB(userId, word, definition = "") {
 
   if (existing) return existing;
 
+  /* Ensure first review is immediately available */
+  const immediateReview = new Date(Date.now() - 1000).toISOString();
+
   const { data, error } = await supabase
     .from("vocab_progress")
     .insert([
@@ -38,7 +41,7 @@ export async function saveWordToDB(userId, word, definition = "") {
         review_count: 0,
         correct_count: 0,
         wrong_count: 0,
-        next_review: new Date().toISOString(),
+        next_review: immediateReview,
         last_review: null,
       },
     ])
