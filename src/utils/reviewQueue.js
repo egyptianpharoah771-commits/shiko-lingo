@@ -8,11 +8,11 @@ Stable Version
 export async function getDailyReviewQueue(userId, limit = 20) {
 const uid = userId || "dev-user";
 
-/* Buffer to avoid timezone edge cases */
+/* Small buffer to avoid timezone edge cases */
 const now = new Date(Date.now() + 60000).toISOString();
 
 try {
-const response = await supabase
+const { data, error } = await supabase
 .from("vocab_progress")
 .select("*")
 .eq("user_id", uid)
@@ -22,16 +22,12 @@ const response = await supabase
 .limit(limit);
 
 ```
-if (response.error) {
-  console.error("Review queue error:", response.error);
+if (error) {
+  console.error("Review queue error:", error);
   return [];
 }
 
-if (!response.data || response.data.length === 0) {
-  return [];
-}
-
-return response.data;
+return data ?? [];
 ```
 
 } catch (err) {
