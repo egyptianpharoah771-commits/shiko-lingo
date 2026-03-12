@@ -2,21 +2,26 @@ import { supabase } from "../lib/supabaseClient";
 
 /* =========================
 Daily Review Queue
-Stable Version
+Production Version
 ========================= */
 
 export async function getDailyReviewQueue(userId, limit = 20) {
-const uid = userId || "dev-user";
 
-/* Small buffer to avoid timezone edge cases */
-const now = new Date(Date.now() + 60000).toISOString();
+/* Require authenticated user */
+if (!userId) {
+console.warn("Review queue requested without userId");
+return [];
+}
+
+/* 5-minute buffer prevents timezone / seconds drift issues */
+const reviewWindow = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
 try {
 const { data, error } = await supabase
 .from("vocab_progress")
 .select("*")
-.eq("user_id", uid)
-.lte("next_review", now)
+.eq("user_id", userId)
+.lte("next_review", reviewWindow)
 .order("next_review", { ascending: true })
 .order("stage", { ascending: true })
 .limit(limit);
