@@ -7,37 +7,31 @@ Production Version
 
 export async function getDailyReviewQueue(userId, limit = 20) {
 
-/* Require authenticated user */
 if (!userId) {
 console.warn("Review queue requested without userId");
 return [];
 }
 
-/* 5-minute buffer prevents timezone / seconds drift issues */
-const reviewWindow = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-
 try {
 
 ```
-const result = await supabase
+const now = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+const response = await supabase
   .from("vocab_progress")
   .select("*")
   .eq("user_id", userId)
-  .lte("next_review", reviewWindow)
+  .lte("next_review", now)
   .order("next_review", { ascending: true })
   .order("stage", { ascending: true })
   .limit(limit);
 
-if (result.error) {
-  console.error("Review queue error:", result.error);
+if (response.error) {
+  console.error("Review queue error:", response.error);
   return [];
 }
 
-if (!result.data || result.data.length === 0) {
-  return [];
-}
-
-return result.data;
+return response.data || [];
 ```
 
 } catch (err) {
