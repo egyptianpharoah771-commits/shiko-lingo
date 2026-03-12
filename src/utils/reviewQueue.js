@@ -17,7 +17,7 @@ return [];
 const reviewWindow = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
 try {
-const { data, error } = await supabase
+const query = await supabase
 .from("vocab_progress")
 .select("*")
 .eq("user_id", userId)
@@ -27,12 +27,19 @@ const { data, error } = await supabase
 .limit(limit);
 
 ```
+const data = query.data;
+const error = query.error;
+
 if (error) {
   console.error("Review queue error:", error);
   return [];
 }
 
-return data ?? [];
+if (!data || data.length === 0) {
+  return [];
+}
+
+return data;
 ```
 
 } catch (err) {
