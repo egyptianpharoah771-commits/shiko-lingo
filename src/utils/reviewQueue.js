@@ -17,26 +17,27 @@ return [];
 const reviewWindow = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
 try {
-const { data, error } = await supabase
-.from("vocab_progress")
-.select("*")
-.eq("user_id", userId)
-.lte("next_review", reviewWindow)
-.order("next_review", { ascending: true })
-.order("stage", { ascending: true })
-.limit(limit);
 
 ```
-if (error) {
-  console.error("Review queue error:", error);
+const result = await supabase
+  .from("vocab_progress")
+  .select("*")
+  .eq("user_id", userId)
+  .lte("next_review", reviewWindow)
+  .order("next_review", { ascending: true })
+  .order("stage", { ascending: true })
+  .limit(limit);
+
+if (result.error) {
+  console.error("Review queue error:", result.error);
   return [];
 }
 
-if (!data || data.length === 0) {
+if (!result.data || result.data.length === 0) {
   return [];
 }
 
-return data;
+return result.data;
 ```
 
 } catch (err) {
