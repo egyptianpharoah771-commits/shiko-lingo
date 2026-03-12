@@ -32,22 +32,33 @@ export default function ReviewWordsPage() {
     setQuestionType(random);
   }
 
-  async function loadWords() {
-    try {
-      const { data } = await supabase.auth.getUser();
-      const user = data?.user;
+async function loadWords() {
+try {
 
-      const userId = user?.id || "dev-user";
+```
+const { data } = await supabase.auth.getUser();
 
-      const queue = await getDailyReviewQueue(userId);
+console.log("AUTH USER:", data);
 
-      setWords(queue || []);
-    } catch (error) {
-      console.error("Error loading review words:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
+const user = data?.user;
+
+const userId = user?.id || "dev-user";
+
+console.log("USER ID USED FOR REVIEW:", userId);
+
+const queue = await getDailyReviewQueue(userId);
+
+console.log("REVIEW QUEUE:", queue);
+
+setWords(queue || []);
+```
+
+} catch (error) {
+console.error("Error loading review words:", error);
+} finally {
+setLoading(false);
+}
+}
 
   function speakWord(word) {
     if (!word) return;
