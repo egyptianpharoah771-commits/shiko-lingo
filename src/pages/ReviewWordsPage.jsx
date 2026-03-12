@@ -68,22 +68,20 @@ export default function ReviewWordsPage() {
 
   const options = useMemo(() => {
 
-    if (!currentWord || questionType !== "mcq") return [];
+  if (!currentWord || questionType !== "mcq") return [];
 
-    const pool = words
-      .filter((w) => w.id !== currentWord.id)
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3);
+  const pool = words
+    .filter((w) => w.id !== currentWord.id)
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 3);
 
-    const combined = [
-      currentWord.definition,
-      ...pool.map((w) => w.definition),
-    ];
+  const combined = [
+    currentWord.definition,
+    ...pool.map((w) => w.definition),
+  ];
 
-    return combined.sort(() => Math.random() - 0.5);
-
-  }, [currentIndex, words, questionType, currentWord]);
-
+  return combined.sort(() => Math.random() - 0.5);
+}, [words, questionType, currentWord]);
   async function handleAnswer(selected) {
 
     if (!currentWord || checking) return;
