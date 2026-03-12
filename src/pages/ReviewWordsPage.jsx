@@ -22,14 +22,15 @@ export default function ReviewWordsPage() {
   }, []);
 
   useEffect(() => {
-    if (currentWord) {
-      generateQuestionType();
+    if (!currentWord) return;
 
-      if (questionType === "listen") {
-        speakWord(currentWord.word);
-      }
+    generateQuestionType();
+
+    if (questionType === "listen") {
+      speakWord(currentWord.word);
     }
-  }, [currentIndex]);
+
+  }, [currentIndex, currentWord, questionType]);
 
   function generateQuestionType() {
     const types = ["type", "mcq", "listen"];
@@ -81,7 +82,7 @@ export default function ReviewWordsPage() {
 
     return combined.sort(() => Math.random() - 0.5);
 
-  }, [currentIndex, words, questionType]);
+  }, [currentIndex, words, questionType, currentWord]);
 
   async function handleAnswer(selected) {
 
