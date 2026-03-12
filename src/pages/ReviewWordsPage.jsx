@@ -24,6 +24,7 @@ export default function ReviewWordsPage() {
   useEffect(() => {
     if (currentWord) {
       generateQuestionType();
+
       if (questionType === "listen") {
         speakWord(currentWord.word);
       }
@@ -48,6 +49,7 @@ export default function ReviewWordsPage() {
       console.log("Review queue:", queue);
 
       setWords(queue || []);
+
     } catch (error) {
       console.error("Error loading review words:", error);
     } finally {
@@ -64,6 +66,7 @@ export default function ReviewWordsPage() {
   }
 
   const options = useMemo(() => {
+
     if (!currentWord || questionType !== "mcq") return [];
 
     const pool = words
@@ -87,7 +90,6 @@ export default function ReviewWordsPage() {
     setChecking(true);
 
     const correctWord = currentWord.word.toLowerCase();
-
     const isCorrect =
       selected.trim().toLowerCase() === correctWord;
 
@@ -97,7 +99,9 @@ export default function ReviewWordsPage() {
         : `❌ Correct word: ${currentWord.word}`
     );
 
-    if (isCorrect) addReviewXP();
+    if (isCorrect) {
+      addReviewXP();
+    }
 
     try {
 
@@ -172,9 +176,7 @@ export default function ReviewWordsPage() {
           <input
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={(e) =>
-              e.key === "Enter" && handleAnswer(answer)
-            }
+            onKeyDown={(e) => e.key === "Enter" && handleAnswer(answer)}
             placeholder="Type here..."
             autoFocus
           />
