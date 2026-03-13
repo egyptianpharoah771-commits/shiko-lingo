@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
-import { supabase } from "../lib/supabaseClient";
 import { getDailyReviewQueue } from "../utils/reviewQueue";
 import { getNextReview } from "../utils/spacedRepetition";
 import { addReviewXP } from "../utils/xpEngine";
+import { supabase } from "../lib/supabaseClient";
 
 export default function ReviewWordsPage() {
 
@@ -22,6 +22,7 @@ export default function ReviewWordsPage() {
   }, []);
 
   useEffect(() => {
+
     if (!currentWord) return;
 
     generateQuestionType();
@@ -33,9 +34,14 @@ export default function ReviewWordsPage() {
   }, [currentIndex, currentWord, questionType]);
 
   function generateQuestionType() {
+
     const types = ["type", "mcq", "listen"];
-    const random = types[Math.floor(Math.random() * types.length)];
+
+    const random =
+      types[Math.floor(Math.random() * types.length)];
+
     setQuestionType(random);
+
   }
 
   async function loadWords() {
@@ -44,19 +50,17 @@ export default function ReviewWordsPage() {
 
       setLoading(true);
 
-      const { data, error } = await supabase.auth.getUser();
+      const userId = localStorage.getItem("pi_uid");
 
-      if (error) {
-        console.error("Auth error:", error);
+      if (!userId) {
+
+        console.log("Pi user not authenticated");
+
+        setWords([]);
+
         return;
-      }
 
-      if (!data?.user) {
-        console.log("User session not ready");
-        return;
       }
-
-      const userId = data.user.id;
 
       const queue = await getDailyReviewQueue(userId);
 
@@ -68,11 +72,14 @@ export default function ReviewWordsPage() {
 
       console.error("Error loading review words:", error);
 
+      setWords([]);
+
     } finally {
 
       setLoading(false);
 
     }
+
   }
 
   function speakWord(word) {
@@ -80,7 +87,9 @@ export default function ReviewWordsPage() {
     if (!word) return;
 
     const utter = new SpeechSynthesisUtterance(word);
+
     utter.lang = "en-US";
+
     window.speechSynthesis.speak(utter);
 
   }
@@ -109,7 +118,8 @@ export default function ReviewWordsPage() {
 
     setChecking(true);
 
-    const correctWord = currentWord.word.toLowerCase();
+    const correctWord =
+      currentWord.word.toLowerCase();
 
     const isCorrect =
       selected.trim().toLowerCase() === correctWord;
@@ -147,6 +157,7 @@ export default function ReviewWordsPage() {
     setTimeout(() => {
 
       setAnswer("");
+
       setFeedback("");
 
       if (currentIndex + 1 < words.length) {
@@ -167,14 +178,23 @@ export default function ReviewWordsPage() {
 
   if (loading) {
 
-    return <div style={{ padding: 40 }}>Loading review...</div>;
+    return (
+      <div style={{ padding: 40 }}>
+        Loading review...
+      </div>
+    );
 
   }
 
   if (isFinished || words.length === 0) {
 
     return (
-      <div style={{ padding: 60, textAlign: "center" }}>
+      <div
+        style={{
+          padding: 60,
+          textAlign: "center"
+        }}
+      >
         <h2>🎉 Great Job!</h2>
         <p>You finished today's review.</p>
       </div>
@@ -183,38 +203,63 @@ export default function ReviewWordsPage() {
   }
 
   return (
-    <div style={{ maxWidth: 520, margin: "40px auto", padding: 20, textAlign: "center" }}>
+    <div
+      style={{
+        maxWidth: 520,
+        margin: "40px auto",
+        padding: 20,
+        textAlign: "center"
+      }}
+    >
 
       <h2>Daily Review</h2>
 
       {questionType === "type" && (
         <>
-          <p><strong>Definition:</strong></p>
-          <p style={{ fontSize: 22 }}>{currentWord.definition}</p>
+          <p>
+            <strong>Definition:</strong>
+          </p>
+
+          <p style={{ fontSize: 22 }}>
+            {currentWord.definition}
+          </p>
         </>
       )}
 
       {questionType === "listen" && (
         <>
           <p>Listen and type the word</p>
-          <button onClick={() => speakWord(currentWord.word)}>
+
+          <button
+            onClick={() =>
+              speakWord(currentWord.word)
+            }
+          >
             🔊 Play
           </button>
         </>
       )}
 
-      {(questionType === "type" || questionType === "listen") && (
+      {(questionType === "type" ||
+        questionType === "listen") && (
         <>
           <input
             value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAnswer(answer)}
+            onChange={(e) =>
+              setAnswer(e.target.value)
+            }
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              handleAnswer(answer)
+            }
             placeholder="Type here..."
             autoFocus
           />
 
           <button
-            onClick={() => handleAnswer(answer)}
+            onClick={() =>
+              handleAnswer(answer)
+            }
             disabled={checking}
           >
             Check
@@ -224,6 +269,7 @@ export default function ReviewWordsPage() {
 
       {questionType === "mcq" && (
         <div>
+
           {options.map((opt, i) => (
             <button
               key={i}
@@ -238,6 +284,7 @@ export default function ReviewWordsPage() {
               {opt}
             </button>
           ))}
+
         </div>
       )}
 
@@ -249,4 +296,5 @@ export default function ReviewWordsPage() {
 
     </div>
   );
+
 }
