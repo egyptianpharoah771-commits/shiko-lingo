@@ -13,9 +13,8 @@ export default function ReviewWordsPage() {
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [questionType, setQuestionType] = useState("type");
-  const [isFinished, setIsFinished] = useState(false);
 
-  const currentWord = words[0];
+  const currentWord = words.length > 0 ? words[0] : null;
 
   useEffect(() => {
     loadWords();
@@ -26,6 +25,7 @@ export default function ReviewWordsPage() {
     if (!currentWord) return;
 
     const types = ["type", "mcq", "listen"];
+
     const random =
       types[Math.floor(Math.random() * types.length)];
 
@@ -156,43 +156,38 @@ export default function ReviewWordsPage() {
 
     setTimeout(() => {
 
-      setAnswer("");
-      setFeedback("");
-
-      const remaining =
-        words.slice(1);
+      const remaining = words.slice(1);
 
       setWords(remaining);
 
-      if (remaining.length === 0) {
-        setIsFinished(true);
-      }
+      setAnswer("");
+      setFeedback("");
 
       setChecking(false);
 
-    }, 800);
+    }, 700);
 
   }
 
   if (loading) {
+
     return (
       <div style={{ padding: 40 }}>
         Loading review...
       </div>
     );
+
   }
 
-  if (isFinished || words.length === 0) {
+  if (!currentWord) {
+
     return (
       <div style={{ padding: 60, textAlign: "center" }}>
         <h2>🎉 Great Job!</h2>
         <p>You finished today's review.</p>
       </div>
     );
-  }
 
-  if (!currentWord) {
-    return null;
   }
 
   return (
@@ -225,26 +220,20 @@ export default function ReviewWordsPage() {
         </>
       )}
 
-      {(questionType === "type" ||
-        questionType === "listen") && (
+      {(questionType === "type" || questionType === "listen") && (
         <>
           <input
             value={answer}
-            onChange={(e) =>
-              setAnswer(e.target.value)
-            }
+            onChange={(e) => setAnswer(e.target.value)}
             onKeyDown={(e) =>
-              e.key === "Enter" &&
-              handleAnswer(answer)
+              e.key === "Enter" && handleAnswer(answer)
             }
             placeholder="Type here..."
             autoFocus
           />
 
           <button
-            onClick={() =>
-              handleAnswer(answer)
-            }
+            onClick={() => handleAnswer(answer)}
             disabled={checking}
           >
             Check
@@ -254,6 +243,7 @@ export default function ReviewWordsPage() {
 
       {questionType === "mcq" && (
         <div>
+
           {options.map((opt, i) => (
             <button
               key={i}
@@ -268,6 +258,7 @@ export default function ReviewWordsPage() {
               {opt}
             </button>
           ))}
+
         </div>
       )}
 
