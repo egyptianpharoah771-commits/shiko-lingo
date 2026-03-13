@@ -3,6 +3,7 @@ import { getDailyReviewQueue } from "../utils/reviewQueue";
 import { getNextReview } from "../utils/spacedRepetition";
 import { addReviewXP } from "../utils/xpEngine";
 import { supabase } from "../lib/supabaseClient";
+import { isPiAvailable } from "../lib/initPi";
 
 export default function ReviewWordsPage() {
 
@@ -50,15 +51,21 @@ export default function ReviewWordsPage() {
 
       setLoading(true);
 
-      const userId = localStorage.getItem("pi_uid");
+      let userId;
 
-      if (!userId) {
+      if (isPiAvailable()) {
 
-        console.log("Pi user not authenticated");
+        userId = localStorage.getItem("pi_uid");
 
-        setWords([]);
+        if (!userId) {
+          console.log("Pi user not authenticated");
+          setWords([]);
+          return;
+        }
 
-        return;
+      } else {
+
+        userId = "dev-user";
 
       }
 
