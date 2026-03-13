@@ -122,19 +122,19 @@ function Dashboard() {
       {/* Daily Learning */}
       <DailyLearning />
 
-      {/* Vocabulary Review */}
+      {/* Daily Review */}
       {reviewCount > 0 && (
         <div style={card}>
-          <h3>📚 Vocabulary Review</h3>
+          <h3>🔁 Daily Review</h3>
 
           <p>
-            You have <strong>{reviewCount}</strong> words to
-            review today.
+            You have <strong>{reviewCount}</strong> reviews
+            waiting today.
           </p>
 
           <Link to="/review">
             <button style={primaryBtn}>
-              Start Review
+              Start Daily Review
             </button>
           </Link>
         </div>
