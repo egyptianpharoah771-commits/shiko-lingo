@@ -102,7 +102,6 @@ function Entry() {
 ====================== */
 
 function AuthGate({ children }) {
-
   const { user, loading } = useAuth();
   const location = useLocation();
   const insidePi = isPiAvailable();
@@ -111,13 +110,7 @@ function AuthGate({ children }) {
     return <div style={{ padding: 40 }}>Initializing session...</div>;
   }
 
-  /* داخل Pi Browser لا نعتمد على Supabase Auth */
-  if (insidePi) {
-    return children;
-  }
-
-  /* خارج Pi Browser نستخدم Supabase login */
-  if (!user) {
+  if (!insidePi && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -144,10 +137,12 @@ function SubscriptionGuard() {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
 
+        {/* Grammar */}
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
         <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
 
+        {/* Vocabulary */}
         <Route path="/vocabulary" element={<VocabularyPage />} />
         <Route path="/vocabulary/quiz" element={<VocabularyQuiz />} />
         <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
@@ -156,12 +151,15 @@ function SubscriptionGuard() {
           element={<VocabularyUnitPage />}
         />
 
+        {/* Review */}
         <Route path="/review" element={<ReviewWordsPage />} />
 
+        {/* Listening */}
         <Route path="/listening" element={<ListeningHome />} />
         <Route path="/listening/:level" element={<ListeningLevel />} />
         <Route path="/listening/:level/:lessonId" element={<Listening />} />
 
+        {/* Reading */}
         <Route path="/reading" element={<ReadingHome />} />
         <Route path="/reading/:level" element={<ReadingLevel />} />
         <Route
@@ -169,9 +167,11 @@ function SubscriptionGuard() {
           element={<ReadingLesson />}
         />
 
+        {/* Other Skills */}
         <Route path="/speaking" element={<SpeakingHome />} />
         <Route path="/writing" element={<Writing />} />
 
+        {/* Admin */}
         <Route
           path="/pi"
           element={
@@ -300,6 +300,10 @@ function App() {
     </AuthProvider>
   );
 }
+
+/* ======================
+   Styles
+====================== */
 
 const headerStyle = {
   backgroundColor: "#ffffff",
