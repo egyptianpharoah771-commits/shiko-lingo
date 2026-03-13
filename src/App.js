@@ -138,12 +138,10 @@ function SubscriptionGuard() {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* Grammar */}
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
         <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
 
-        {/* Vocabulary */}
         <Route path="/vocabulary" element={<VocabularyPage />} />
         <Route path="/vocabulary/quiz" element={<VocabularyQuiz />} />
         <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
@@ -152,7 +150,6 @@ function SubscriptionGuard() {
           element={<VocabularyUnitPage />}
         />
 
-        {/* Review */}
         <Route
           path="/review"
           element={
@@ -162,24 +159,17 @@ function SubscriptionGuard() {
           }
         />
 
-        {/* Listening */}
         <Route path="/listening" element={<ListeningHome />} />
         <Route path="/listening/:level" element={<ListeningLevel />} />
         <Route path="/listening/:level/:lessonId" element={<Listening />} />
 
-        {/* Reading */}
         <Route path="/reading" element={<ReadingHome />} />
         <Route path="/reading/:level" element={<ReadingLevel />} />
-        <Route
-          path="/reading/:level/:lessonId"
-          element={<ReadingLesson />}
-        />
+        <Route path="/reading/:level/:lessonId" element={<ReadingLesson />} />
 
-        {/* Other Skills */}
         <Route path="/speaking" element={<SpeakingHome />} />
         <Route path="/writing" element={<Writing />} />
 
-        {/* Admin */}
         <Route
           path="/pi"
           element={
@@ -280,7 +270,9 @@ function NavButton({ to, label }) {
 
 function App() {
   useEffect(() => {
-    initPiSDK();
+    if (isPiAvailable()) {
+      initPiSDK();
+    }
   }, []);
 
   return (
