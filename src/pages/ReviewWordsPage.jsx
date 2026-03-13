@@ -94,6 +94,16 @@ export default function ReviewWordsPage() {
 
   }
 
+  function playCorrectSound() {
+    const audio = new Audio("/sounds/correct.mp3");
+    audio.play();
+  }
+
+  function playWrongSound() {
+    const audio = new Audio("/sounds/wrong.mp3");
+    audio.play();
+  }
+
   const options = useMemo(() => {
 
     if (!currentWord || questionType !== "mcq") return [];
@@ -124,14 +134,13 @@ export default function ReviewWordsPage() {
     const isCorrect =
       selected.trim().toLowerCase() === correctWord;
 
-    setFeedback(
-      isCorrect
-        ? "✅ Excellent!"
-        : `❌ Correct word: ${currentWord.word}`
-    );
-
     if (isCorrect) {
+      setFeedback("✅ Excellent!");
+      playCorrectSound();
       addReviewXP();
+    } else {
+      setFeedback(`❌ Correct word: ${currentWord.word}`);
+      playWrongSound();
     }
 
     try {
@@ -159,6 +168,7 @@ export default function ReviewWordsPage() {
       setWords((prev) => prev.slice(1));
 
       setAnswer("");
+      setFeedback("");
       setChecking(false);
 
     }, 800);
@@ -187,6 +197,10 @@ export default function ReviewWordsPage() {
   }
 
   const progressDone = initialCount - words.length;
+  const progressPercent =
+    initialCount === 0
+      ? 0
+      : Math.round((progressDone / initialCount) * 100);
 
   return (
     <div
@@ -200,9 +214,27 @@ export default function ReviewWordsPage() {
 
       <h2>Daily Review</h2>
 
-      <p style={{ color: "#666", marginBottom: 20 }}>
+      <p style={{ color: "#666" }}>
         Progress: {progressDone} / {initialCount}
       </p>
+
+      <div
+        style={{
+          height: 8,
+          background: "#eee",
+          borderRadius: 6,
+          overflow: "hidden",
+          marginBottom: 20
+        }}
+      >
+        <div
+          style={{
+            width: `${progressPercent}%`,
+            height: "100%",
+            background: "#4A90E2"
+          }}
+        />
+      </div>
 
       {questionType === "type" && (
         <>
@@ -246,7 +278,7 @@ export default function ReviewWordsPage() {
       {questionType === "mcq" && (
         <div>
 
-          <p style={{ marginBottom: 10 }}>
+          <p>
             <strong>Choose the correct meaning of:</strong>
           </p>
 
