@@ -8,7 +8,6 @@ import { isPiAvailable } from "../lib/initPi";
 export default function ReviewWordsPage() {
 
   const [words, setWords] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(true);
@@ -16,7 +15,7 @@ export default function ReviewWordsPage() {
   const [questionType, setQuestionType] = useState("type");
   const [isFinished, setIsFinished] = useState(false);
 
-  const currentWord = words[currentIndex];
+  const currentWord = words[0];
 
   useEffect(() => {
     loadWords();
@@ -55,7 +54,6 @@ export default function ReviewWordsPage() {
         userId = localStorage.getItem("pi_uid");
 
         if (!userId) {
-          console.log("Pi user not authenticated");
           setWords([]);
           return;
         }
@@ -67,8 +65,6 @@ export default function ReviewWordsPage() {
       }
 
       const queue = await getDailyReviewQueue(userId);
-
-      console.log("Review queue:", queue);
 
       setWords(queue || []);
 
@@ -103,7 +99,7 @@ export default function ReviewWordsPage() {
     if (!currentWord || questionType !== "mcq") return [];
 
     const pool = words
-      .filter((w) => w.id !== currentWord.id)
+      .slice(1)
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
@@ -163,46 +159,36 @@ export default function ReviewWordsPage() {
       setAnswer("");
       setFeedback("");
 
-      if (currentIndex + 1 < words.length) {
+      const remaining =
+        words.slice(1);
 
-        setCurrentIndex((i) => i + 1);
+      setWords(remaining);
 
-      } else {
-
+      if (remaining.length === 0) {
         setIsFinished(true);
-
       }
 
       setChecking(false);
 
-    }, 1000);
+    }, 800);
 
   }
 
   if (loading) {
-
     return (
       <div style={{ padding: 40 }}>
         Loading review...
       </div>
     );
-
   }
 
   if (isFinished || words.length === 0) {
-
     return (
-      <div
-        style={{
-          padding: 60,
-          textAlign: "center"
-        }}
-      >
+      <div style={{ padding: 60, textAlign: "center" }}>
         <h2>🎉 Great Job!</h2>
         <p>You finished today's review.</p>
       </div>
     );
-
   }
 
   if (!currentWord) {
@@ -223,10 +209,7 @@ export default function ReviewWordsPage() {
 
       {questionType === "type" && (
         <>
-          <p>
-            <strong>Definition:</strong>
-          </p>
-
+          <p><strong>Definition:</strong></p>
           <p style={{ fontSize: 22 }}>
             {currentWord.definition}
           </p>
@@ -236,12 +219,7 @@ export default function ReviewWordsPage() {
       {questionType === "listen" && (
         <>
           <p>Listen and type the word</p>
-
-          <button
-            onClick={() =>
-              speakWord(currentWord.word)
-            }
-          >
+          <button onClick={() => speakWord(currentWord.word)}>
             🔊 Play
           </button>
         </>
@@ -276,7 +254,6 @@ export default function ReviewWordsPage() {
 
       {questionType === "mcq" && (
         <div>
-
           {options.map((opt, i) => (
             <button
               key={i}
@@ -291,14 +268,13 @@ export default function ReviewWordsPage() {
               {opt}
             </button>
           ))}
-
         </div>
       )}
 
       {feedback && <p>{feedback}</p>}
 
       <p style={{ marginTop: 20 }}>
-        Progress {currentIndex + 1} / {words.length}
+        Remaining: {words.length}
       </p>
 
     </div>
