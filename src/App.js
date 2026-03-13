@@ -21,6 +21,7 @@ import { migrateLegacyStorage } from "./utils/migrateStorage";
 
 import FeedbackButton from "./components/FeedbackButton";
 import AdminGuard from "./components/AdminGuard";
+import ReviewErrorBoundary from "./components/ReviewErrorBoundary";
 
 /* Pages */
 import Dashboard from "./pages/Dashboard";
@@ -152,16 +153,15 @@ function SubscriptionGuard() {
         />
 
         {/* Review */}
-import ReviewErrorBoundary from "./components/ReviewErrorBoundary";
+        <Route
+          path="/review"
+          element={
+            <ReviewErrorBoundary>
+              <ReviewWordsPage />
+            </ReviewErrorBoundary>
+          }
+        />
 
-<Route
-  path="/review"
-  element={
-    <ReviewErrorBoundary>
-      <ReviewWordsPage />
-    </ReviewErrorBoundary>
-  }
-/>
         {/* Listening */}
         <Route path="/listening" element={<ListeningHome />} />
         <Route path="/listening/:level" element={<ListeningLevel />} />
