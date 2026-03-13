@@ -139,24 +139,26 @@ function Dashboard() {
 
       <DailyLearning />
 
-      {reviewCount > 0 && (
-        <div style={card}>
+      {/* Daily Review */}
+      <div style={card}>
 
-          <h3>🔁 Daily Review</h3>
+        <h3>🔁 Daily Review</h3>
 
-          <p>
-            You have <strong>{reviewCount}</strong> reviews waiting today.
-          </p>
+        <p>
+          {reviewCount > 0
+            ? <>You have <strong>{reviewCount}</strong> reviews waiting today.</>
+            : "You're all caught up for now 🎉"}
+        </p>
 
-          <Link to="/review">
-            <button style={primaryBtn}>
-              Start Daily Review
-            </button>
-          </Link>
+        <Link to="/review">
+          <button style={primaryBtn}>
+            Start Daily Review
+          </button>
+        </Link>
 
-        </div>
-      )}
+      </div>
 
+      {/* Continue Learning */}
       <div style={card}>
         <h3>▶ Continue Learning</h3>
 
@@ -171,6 +173,7 @@ function Dashboard() {
         </Link>
       </div>
 
+      {/* Assessment */}
       <div style={cardHero}>
         <h3>🎯 Level Assessment</h3>
 
@@ -215,6 +218,7 @@ function Dashboard() {
         )}
       </div>
 
+      {/* Skills */}
       <div style={card}>
 
         <h3>📚 Your Skills</h3>
@@ -250,6 +254,7 @@ function Dashboard() {
 
       </div>
 
+      {/* Recommendation */}
       <div style={card}>
         <h3>➡️ What’s next?</h3>
 
