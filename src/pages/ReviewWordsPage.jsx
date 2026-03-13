@@ -25,9 +25,7 @@ export default function ReviewWordsPage() {
     if (!currentWord) return;
 
     const types = ["type", "mcq", "listen"];
-
-    const random =
-      types[Math.floor(Math.random() * types.length)];
+    const random = types[Math.floor(Math.random() * types.length)];
 
     setQuestionType(random);
 
@@ -71,7 +69,6 @@ export default function ReviewWordsPage() {
     } catch (error) {
 
       console.error("Error loading review words:", error);
-
       setWords([]);
 
     } finally {
@@ -87,9 +84,9 @@ export default function ReviewWordsPage() {
     if (!word) return;
 
     const utter = new SpeechSynthesisUtterance(word);
-
     utter.lang = "en-US";
 
+    window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utter);
 
   }
@@ -98,14 +95,15 @@ export default function ReviewWordsPage() {
 
     if (!currentWord || questionType !== "mcq") return [];
 
-    const pool = words
-      .slice(1)
+    const distractors = words
+      .filter((w) => w.id !== currentWord.id)
       .sort(() => 0.5 - Math.random())
-      .slice(0, 3);
+      .slice(0, 3)
+      .map((w) => w.definition);
 
     const combined = [
       currentWord.definition,
-      ...pool.map((w) => w.definition),
+      ...distractors,
     ];
 
     return combined.sort(() => Math.random() - 0.5);
@@ -118,8 +116,7 @@ export default function ReviewWordsPage() {
 
     setChecking(true);
 
-    const correctWord =
-      currentWord.word.toLowerCase();
+    const correctWord = currentWord.word.toLowerCase();
 
     const isCorrect =
       selected.trim().toLowerCase() === correctWord;
@@ -156,13 +153,10 @@ export default function ReviewWordsPage() {
 
     setTimeout(() => {
 
-      const remaining = words.slice(1);
-
-      setWords(remaining);
+      setWords((prev) => prev.slice(1));
 
       setAnswer("");
       setFeedback("");
-
       setChecking(false);
 
     }, 700);
@@ -244,9 +238,22 @@ export default function ReviewWordsPage() {
       {questionType === "mcq" && (
         <div>
 
+          <p style={{ marginBottom: 15 }}>
+            <strong>Choose the correct meaning of:</strong>
+          </p>
+
+          <p style={{ fontSize: 22, marginBottom: 20 }}>
+            {currentWord.word}
+          </p>
+
           {options.map((opt, i) => (
             <button
               key={i}
+              style={{
+                display: "block",
+                margin: "8px auto",
+                padding: "10px 16px"
+              }}
               onClick={() =>
                 handleAnswer(
                   opt === currentWord.definition
