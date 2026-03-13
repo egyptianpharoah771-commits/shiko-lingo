@@ -14,6 +14,8 @@ export default function ReviewWordsPage() {
   const [checking, setChecking] = useState(false);
   const [questionType, setQuestionType] = useState("type");
 
+  const [initialCount, setInitialCount] = useState(0);
+
   const currentWord = words.length > 0 ? words[0] : null;
 
   useEffect(() => {
@@ -65,6 +67,7 @@ export default function ReviewWordsPage() {
       const queue = await getDailyReviewQueue(userId);
 
       setWords(queue || []);
+      setInitialCount(queue?.length || 0);
 
     } catch (error) {
 
@@ -156,10 +159,9 @@ export default function ReviewWordsPage() {
       setWords((prev) => prev.slice(1));
 
       setAnswer("");
-      setFeedback("");
       setChecking(false);
 
-    }, 700);
+    }, 800);
 
   }
 
@@ -184,6 +186,8 @@ export default function ReviewWordsPage() {
 
   }
 
+  const progressDone = initialCount - words.length;
+
   return (
     <div
       style={{
@@ -195,6 +199,10 @@ export default function ReviewWordsPage() {
     >
 
       <h2>Daily Review</h2>
+
+      <p style={{ color: "#666", marginBottom: 20 }}>
+        Progress: {progressDone} / {initialCount}
+      </p>
 
       {questionType === "type" && (
         <>
@@ -238,7 +246,7 @@ export default function ReviewWordsPage() {
       {questionType === "mcq" && (
         <div>
 
-          <p style={{ marginBottom: 15 }}>
+          <p style={{ marginBottom: 10 }}>
             <strong>Choose the correct meaning of:</strong>
           </p>
 
@@ -269,7 +277,11 @@ export default function ReviewWordsPage() {
         </div>
       )}
 
-      {feedback && <p>{feedback}</p>}
+      {feedback && (
+        <p style={{ marginTop: 20, fontWeight: "bold" }}>
+          {feedback}
+        </p>
+      )}
 
       <p style={{ marginTop: 20 }}>
         Remaining: {words.length}
