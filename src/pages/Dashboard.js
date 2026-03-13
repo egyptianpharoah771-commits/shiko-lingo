@@ -5,6 +5,7 @@ import FeedbackBox from "../components/FeedbackBox";
 import DailyLearning from "../components/DailyLearning";
 import { getUserProgress } from "../adapters/progressAdapter";
 import { supabase } from "../lib/supabaseClient";
+import { isPiAvailable } from "../lib/initPi";
 
 /* ===== Mini Progress ===== */
 function MiniProgress({ value = 0, total }) {
@@ -57,12 +58,9 @@ function getContinueLink() {
 }
 
 function Dashboard() {
-  const progress = useMemo(() => getUserProgress(), []);
 
-  const continueLink = useMemo(
-    () => getContinueLink(),
-    []
-  );
+  const progress = useMemo(() => getUserProgress(), []);
+  const continueLink = useMemo(() => getContinueLink(), []);
 
   const [reviewCount, setReviewCount] = useState(0);
 
@@ -81,26 +79,45 @@ function Dashboard() {
   }, []);
 
   async function loadReviewCount() {
-    try {
-      const { data } = await supabase.auth.getUser();
-      const user = data?.user;
 
-      const userId = user?.id || "dev-user";
+    try {
+
+      let userId;
+
+      if (isPiAvailable()) {
+
+        userId = localStorage.getItem("pi_uid");
+
+        if (!userId) {
+          setReviewCount(0);
+          return;
+        }
+
+      } else {
+
+        userId = "dev-user";
+
+      }
 
       const now = new Date().toISOString();
 
-      const { data: rows, error } = await supabase
+      const { data, error } = await supabase
         .from("vocab_progress")
         .select("id")
         .eq("user_id", userId)
         .lte("next_review", now);
 
       if (!error) {
-        setReviewCount(rows?.length || 0);
+        setReviewCount(data?.length || 0);
       }
+
     } catch (err) {
+
       console.warn("Review count load failed:", err);
+      setReviewCount(0);
+
     }
+
   }
 
   const skills = {
@@ -113,23 +130,22 @@ function Dashboard() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
+
       <h2>🏠 Home</h2>
 
       <p style={{ color: "#666", marginBottom: 24 }}>
         Welcome back. Let’s continue your journey.
       </p>
 
-      {/* Daily Learning */}
       <DailyLearning />
 
-      {/* Daily Review */}
       {reviewCount > 0 && (
         <div style={card}>
+
           <h3>🔁 Daily Review</h3>
 
           <p>
-            You have <strong>{reviewCount}</strong> reviews
-            waiting today.
+            You have <strong>{reviewCount}</strong> reviews waiting today.
           </p>
 
           <Link to="/review">
@@ -137,16 +153,15 @@ function Dashboard() {
               Start Daily Review
             </button>
           </Link>
+
         </div>
       )}
 
-      {/* Continue Learning */}
       <div style={card}>
         <h3>▶ Continue Learning</h3>
 
         <p>
-          Jump back into your last lesson and keep
-          improving.
+          Jump back into your last lesson and keep improving.
         </p>
 
         <Link to={continueLink}>
@@ -156,23 +171,21 @@ function Dashboard() {
         </Link>
       </div>
 
-      {/* Assessment */}
       <div style={cardHero}>
         <h3>🎯 Level Assessment</h3>
 
         {assessment ? (
           <>
             <p>
-              Your current level:{" "}
-              <strong>{assessment.level}</strong>
+              Your current level: <strong>{assessment.level}</strong>
             </p>
 
             <p style={{ color: "#555" }}>
-              Based on {assessment.questionsAnswered}{" "}
-              questions
+              Based on {assessment.questionsAnswered} questions
             </p>
 
             <div style={{ display: "flex", gap: 10 }}>
+
               <Link to="/dashboard">
                 <button style={primaryBtn}>
                   Start from your level
@@ -184,13 +197,13 @@ function Dashboard() {
                   Re-assess
                 </button>
               </Link>
+
             </div>
           </>
         ) : (
           <>
             <p>
-              You haven’t taken the level assessment
-              yet.
+              You haven’t taken the level assessment yet.
             </p>
 
             <Link to="/assessment">
@@ -202,61 +215,46 @@ function Dashboard() {
         )}
       </div>
 
-      {/* Skills */}
       <div style={card}>
+
         <h3>📚 Your Skills</h3>
 
         <div style={grid}>
+
           <div>
             <strong>Grammar</strong>
-            <MiniProgress
-              value={skills.grammar.length}
-              total={5}
-            />
+            <MiniProgress value={skills.grammar.length} total={5} />
           </div>
 
           <div>
             <strong>Vocabulary</strong>
-            <MiniProgress
-              value={skills.vocabulary.length}
-              total={20}
-            />
+            <MiniProgress value={skills.vocabulary.length} total={20} />
           </div>
 
           <div>
             <strong>Listening</strong>
-            <MiniProgress
-              value={skills.listening.length}
-              total={42}
-            />
+            <MiniProgress value={skills.listening.length} total={42} />
           </div>
 
           <div>
             <strong>Reading</strong>
-            <MiniProgress
-              value={skills.reading.length}
-              total={17}
-            />
+            <MiniProgress value={skills.reading.length} total={17} />
           </div>
 
           <div>
             <strong>Speaking</strong>
-            <MiniProgress
-              value={skills.speaking.length}
-              total={17}
-            />
+            <MiniProgress value={skills.speaking.length} total={17} />
           </div>
+
         </div>
+
       </div>
 
-      {/* Next Recommendation */}
       <div style={card}>
         <h3>➡️ What’s next?</h3>
 
         <p>
-          We recommend continuing with{" "}
-          <strong>Grammar</strong> to strengthen your
-          foundation.
+          We recommend continuing with <strong>Grammar</strong>.
         </p>
 
         <Link to="/grammar">
@@ -267,6 +265,7 @@ function Dashboard() {
       </div>
 
       <FeedbackBox />
+
     </div>
   );
 }
@@ -283,14 +282,12 @@ const card = {
 
 const cardHero = {
   ...card,
-  background:
-    "linear-gradient(135deg,#f8f6ff,#ffffff)",
+  background: "linear-gradient(135deg,#f8f6ff,#ffffff)",
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns:
-    "repeat(auto-fit,minmax(160px,1fr))",
+  gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
   gap: 16,
 };
 
