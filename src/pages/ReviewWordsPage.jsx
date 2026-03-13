@@ -39,11 +39,24 @@ export default function ReviewWordsPage() {
   }
 
   async function loadWords() {
+
     try {
+
       setLoading(true);
 
-      const { data } = await supabase.auth.getUser();
-      const userId = data?.user?.id || "dev-user";
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error("Auth error:", error);
+        return;
+      }
+
+      if (!data?.user) {
+        console.log("User session not ready");
+        return;
+      }
+
+      const userId = data.user.id;
 
       const queue = await getDailyReviewQueue(userId);
 
@@ -52,36 +65,44 @@ export default function ReviewWordsPage() {
       setWords(queue || []);
 
     } catch (error) {
+
       console.error("Error loading review words:", error);
+
     } finally {
+
       setLoading(false);
+
     }
   }
 
   function speakWord(word) {
+
     if (!word) return;
 
     const utter = new SpeechSynthesisUtterance(word);
     utter.lang = "en-US";
     window.speechSynthesis.speak(utter);
+
   }
 
   const options = useMemo(() => {
 
-  if (!currentWord || questionType !== "mcq") return [];
+    if (!currentWord || questionType !== "mcq") return [];
 
-  const pool = words
-    .filter((w) => w.id !== currentWord.id)
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 3);
+    const pool = words
+      .filter((w) => w.id !== currentWord.id)
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 3);
 
-  const combined = [
-    currentWord.definition,
-    ...pool.map((w) => w.definition),
-  ];
+    const combined = [
+      currentWord.definition,
+      ...pool.map((w) => w.definition),
+    ];
 
-  return combined.sort(() => Math.random() - 0.5);
-}, [words, questionType, currentWord]);
+    return combined.sort(() => Math.random() - 0.5);
+
+  }, [words, questionType, currentWord]);
+
   async function handleAnswer(selected) {
 
     if (!currentWord || checking) return;
@@ -89,6 +110,7 @@ export default function ReviewWordsPage() {
     setChecking(true);
 
     const correctWord = currentWord.word.toLowerCase();
+
     const isCorrect =
       selected.trim().toLowerCase() === correctWord;
 
@@ -117,7 +139,9 @@ export default function ReviewWordsPage() {
         .eq("id", currentWord.id);
 
     } catch (error) {
+
       console.error("Update error:", error);
+
     }
 
     setTimeout(() => {
@@ -126,27 +150,36 @@ export default function ReviewWordsPage() {
       setFeedback("");
 
       if (currentIndex + 1 < words.length) {
+
         setCurrentIndex((i) => i + 1);
+
       } else {
+
         setIsFinished(true);
+
       }
 
       setChecking(false);
 
     }, 1000);
+
   }
 
   if (loading) {
+
     return <div style={{ padding: 40 }}>Loading review...</div>;
+
   }
 
   if (isFinished || words.length === 0) {
+
     return (
       <div style={{ padding: 60, textAlign: "center" }}>
         <h2>🎉 Great Job!</h2>
         <p>You finished today's review.</p>
       </div>
     );
+
   }
 
   return (
