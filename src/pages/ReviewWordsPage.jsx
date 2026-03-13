@@ -26,24 +26,21 @@ export default function ReviewWordsPage() {
 
     if (!currentWord) return;
 
-    generateQuestionType();
-
-    if (questionType === "listen") {
-      speakWord(currentWord.word);
-    }
-
-  }, [currentIndex, currentWord, questionType]);
-
-  function generateQuestionType() {
-
     const types = ["type", "mcq", "listen"];
-
     const random =
       types[Math.floor(Math.random() * types.length)];
 
     setQuestionType(random);
 
-  }
+  }, [currentIndex]);
+
+  useEffect(() => {
+
+    if (questionType === "listen" && currentWord) {
+      speakWord(currentWord.word);
+    }
+
+  }, [questionType, currentWord]);
 
   async function loadWords() {
 
@@ -164,7 +161,6 @@ export default function ReviewWordsPage() {
     setTimeout(() => {
 
       setAnswer("");
-
       setFeedback("");
 
       if (currentIndex + 1 < words.length) {
@@ -207,6 +203,10 @@ export default function ReviewWordsPage() {
       </div>
     );
 
+  }
+
+  if (!currentWord) {
+    return null;
   }
 
   return (
