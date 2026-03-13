@@ -2,16 +2,17 @@ import { supabase } from "../lib/supabaseClient";
 
 /*
 Daily Review Queue
-Stable Version
+Production Safe Version
 */
 
 export async function getDailyReviewQueue(userId, limit = 20) {
 
 if (!userId) {
+console.warn("ReviewQueue: Missing userId");
 return [];
 }
 
-const now = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+const now = new Date().toISOString();
 
 const { data, error } = await supabase
 .from("vocab_progress")
@@ -22,8 +23,12 @@ const { data, error } = await supabase
 .limit(limit);
 
 if (error) {
-console.error(error);
+console.error("ReviewQueue Error:", error);
 return [];
+}
+
+if (!data || data.length === 0) {
+console.log("ReviewQueue: No due words");
 }
 
 return data || [];
