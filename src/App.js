@@ -152,8 +152,16 @@ function SubscriptionGuard() {
         />
 
         {/* Review */}
-        <Route path="/review" element={<ReviewWordsPage />} />
+import ReviewErrorBoundary from "./components/ReviewErrorBoundary";
 
+<Route
+  path="/review"
+  element={
+    <ReviewErrorBoundary>
+      <ReviewWordsPage />
+    </ReviewErrorBoundary>
+  }
+/>
         {/* Listening */}
         <Route path="/listening" element={<ListeningHome />} />
         <Route path="/listening/:level" element={<ListeningLevel />} />
