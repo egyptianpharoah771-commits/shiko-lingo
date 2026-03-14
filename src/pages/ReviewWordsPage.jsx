@@ -20,6 +20,15 @@ export default function ReviewWordsPage() {
 
   const currentWord = words.length > 0 ? words[0] : null;
 
+  /* ======================
+     Debug (لمعرفة شكل الكلمة القادمة من DB)
+  ====================== */
+  useEffect(() => {
+    if (currentWord) {
+      console.log("Review word:", currentWord);
+    }
+  }, [currentWord]);
+
   useEffect(() => {
     loadWords();
     loadStreak();
@@ -250,6 +259,10 @@ export default function ReviewWordsPage() {
 
   }
 
+  /* ======================
+     Loading
+  ====================== */
+
   if (loading) {
 
     return (
@@ -277,6 +290,12 @@ export default function ReviewWordsPage() {
     initialCount === 0
       ? 0
       : Math.round((progressDone / initialCount) * 100);
+
+  const arabicMeaning =
+    currentWord.meaning ||
+    currentWord.arabic ||
+    currentWord.translation ||
+    null;
 
   return (
     <div
@@ -321,20 +340,20 @@ export default function ReviewWordsPage() {
       )}
 
       {questionType === "type" && (
-  <>
-    <p><strong>Meaning:</strong></p>
+        <>
+          <p><strong>Meaning:</strong></p>
 
-    <p style={{ fontSize: 22 }}>
-      {currentWord.definition || currentWord.meaning}
-    </p>
+          <p style={{ fontSize: 22 }}>
+            {currentWord.definition || currentWord.word}
+          </p>
 
-    {currentWord.meaning && (
-      <p style={{ fontSize: 18, color: "#666" }}>
-        {currentWord.meaning}
-      </p>
-    )}
-  </>
-)}
+          {arabicMeaning && (
+            <p style={{ fontSize: 18, color: "#666", marginTop: 6 }}>
+              {arabicMeaning}
+            </p>
+          )}
+        </>
+      )}
 
       {questionType === "listen" && (
         <>
