@@ -66,7 +66,8 @@ import Login from "./pages/Login";
 
 function Entry() {
   const navigate = useNavigate();
-  const insidePi = isPiAvailable();
+  const insidePi =
+    isPiAvailable() || !!localStorage.getItem("pi_uid");
 
   return (
     <div style={entryStyle}>
@@ -105,7 +106,9 @@ function Entry() {
 function AuthGate({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  const insidePi = isPiAvailable();
+
+  const insidePi =
+    isPiAvailable() || !!localStorage.getItem("pi_uid");
 
   if (loading) {
     return <div style={{ padding: 40 }}>Initializing session...</div>;
@@ -252,10 +255,6 @@ function AppLayout({ children }) {
   );
 }
 
-/* ======================
-   Navigation Button
-====================== */
-
 function NavButton({ to, label }) {
   return (
     <Link to={to}>
@@ -263,10 +262,6 @@ function NavButton({ to, label }) {
     </Link>
   );
 }
-
-/* ======================
-   Root App
-====================== */
 
 function App() {
   useEffect(() => {
@@ -300,10 +295,6 @@ function App() {
     </AuthProvider>
   );
 }
-
-/* ======================
-   Styles
-====================== */
 
 const headerStyle = {
   backgroundColor: "#ffffff",
