@@ -406,14 +406,16 @@ if (cache[definition]) {
 
       <div
   style={{
-    maxWidth: 760,
+    maxWidth: 680,
     margin: "40px auto",
     padding: "52px 46px",
     background: "#ffffff",
     borderRadius: 18,
     boxShadow: "0 12px 42px rgba(0,0,0,0.06)",
-    fontSize: 21,
-    lineHeight: 2.1,
+    fontFamily: "Times New Roman, serif",
+fontSize: 16,
+lineHeight: 1.8,
+
     letterSpacing: "0.3px",
     color: "#222",
     width: "100%",
@@ -429,8 +431,9 @@ if (cache[definition]) {
     key={i}
     style={{
       marginBottom: 30,
-      fontSize: 21,
-      lineHeight: 2.1,
+fontFamily: "Times New Roman, serif",
+fontSize: 16,
+lineHeight: 1.8,
       fontWeight: 400,
       background: activeSentence === i ? "#fff9db" : "transparent",
       padding: activeSentence === i ? "8px 10px" : "0",
