@@ -232,7 +232,7 @@ function AppLayout({ children }) {
             <NavButton to="/learn" label="📚 Learn" />
             <NavButton to="/review" label="🔁 Review" />
             <NavButton to="/listening" label="🎧 Practice" />
-            <NavButton to="/speaking" label="👤 Profile" />
+            <NavButton to="/profile" label="👤 Profile" />
           </nav>
         </>
       )}
