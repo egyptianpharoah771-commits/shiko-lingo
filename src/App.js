@@ -251,11 +251,52 @@ function AppLayout({ children }) {
     </div>
   );
 }
+function getIcon(label) {
 
+  switch (label) {
+
+    case "Dashboard":
+      return "🏠";
+
+    case "Grammar":
+      return "📘";
+
+    case "Vocabulary":
+      return "📚";
+
+    case "Daily Review":
+      return "🔁";
+
+    case "Listening":
+      return "🎧";
+
+    case "Reading":
+      return "📖";
+
+    case "Speaking":
+      return "🗣️";
+
+    case "Writing":
+      return "✍️";
+
+    default:
+      return "•";
+
+  }
+
+}
 function NavButton({ to, label }) {
+
+  const location = useLocation();
+
+  const active = location.pathname.startsWith(to);
+
   return (
     <Link to={to} style={{ textDecoration: "none" }}>
-      <button className="nav-btn">
+      <button
+        className={`nav-btn ${active ? "active" : ""}`}
+      >
+        <span>{getIcon(label)}</span>
         {label}
       </button>
     </Link>
