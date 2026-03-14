@@ -36,9 +36,6 @@ function VocabularyUnitPage() {
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  /* ======================
-     Audio Refs
-  ====================== */
   const wordAudioRef = useRef(null);
   const selectAudioRef = useRef(null);
   const correctAudioRef = useRef(null);
@@ -46,9 +43,6 @@ function VocabularyUnitPage() {
 
   const [playingWord, setPlayingWord] = useState(null);
 
-  /* ======================
-     Init Feedback Sounds
-  ====================== */
   useEffect(() => {
     selectAudioRef.current = new Audio("/sounds/select.mp3");
     correctAudioRef.current = new Audio("/sounds/correct.mp3");
@@ -73,9 +67,6 @@ function VocabularyUnitPage() {
     wrongAudioRef.current.play().catch(() => {});
   };
 
-  /* ======================
-     Load Unit
-  ====================== */
   useEffect(() => {
     setLoading(true);
 
@@ -113,9 +104,6 @@ function VocabularyUnitPage() {
     setLoading(false);
   }, [normalizedLevel, unitKey, unitId]);
 
-  /* ======================
-     Quiz Engine
-  ====================== */
   const quizData = useMemo(() => {
     if (!Array.isArray(questions) || questions.length === 0)
       return [];
@@ -133,10 +121,6 @@ function VocabularyUnitPage() {
     questions: quizData,
   });
 
-  /* ======================
-     Pronunciation (TTS Proxy)
-     Uses /api/tts to avoid CORS
-  ====================== */
   const playWordAudio = (word, example = "") => {
     const text = example ? `${word}. ${example}` : word;
 
@@ -160,9 +144,6 @@ function VocabularyUnitPage() {
     };
   };
 
-  /* ======================
-     Save Progress
-  ====================== */
   const saveProgress = () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -182,9 +163,6 @@ function VocabularyUnitPage() {
     } catch {}
   };
 
-  /* ======================
-     Guards
-  ====================== */
   if (loading) {
     return <div className="vocab-loading">Loading...</div>;
   }
@@ -205,9 +183,6 @@ function VocabularyUnitPage() {
   const isLastQuestion =
     currentQuestion === questions.length - 1;
 
-  /* ======================
-     Handlers
-  ====================== */
   const handleCheck = () => {
     if (!question || !selected) return;
 
@@ -237,9 +212,6 @@ function VocabularyUnitPage() {
     }
   };
 
-  /* ======================
-     Render
-  ====================== */
   return (
     <div className="vocab-page vocab-unit-page">
       <div className="vocab-unit-header">
@@ -288,6 +260,13 @@ function VocabularyUnitPage() {
                 <strong>Meaning:</strong>{" "}
                 {item.meaning}
               </div>
+
+              {item.arabic && (
+                <div className="vocab-item-meaning-ar">
+                  <strong>Arabic:</strong>{" "}
+                  {item.arabic}
+                </div>
+              )}
 
               <div className="vocab-item-example">
                 <strong>Example:</strong>{" "}
