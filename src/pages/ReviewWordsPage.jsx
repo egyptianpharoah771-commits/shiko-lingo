@@ -15,11 +15,14 @@ export default function ReviewWordsPage() {
   const [questionType, setQuestionType] = useState("type");
 
   const [initialCount, setInitialCount] = useState(0);
+  const [xpFlash, setXpFlash] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   const currentWord = words.length > 0 ? words[0] : null;
 
   useEffect(() => {
     loadWords();
+    loadStreak();
   }, []);
 
   useEffect(() => {
@@ -104,6 +107,63 @@ export default function ReviewWordsPage() {
     audio.play();
   }
 
+  function loadStreak() {
+
+    try {
+
+      const saved = JSON.parse(
+        localStorage.getItem("review_streak")
+      );
+
+      if (!saved) {
+        setStreak(0);
+        return;
+      }
+
+      const today = new Date().toDateString();
+      const last = new Date(saved.lastDate).toDateString();
+
+      if (today === last) {
+        setStreak(saved.count);
+        return;
+      }
+
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (new Date(saved.lastDate).toDateString() === yesterday.toDateString()) {
+        setStreak(saved.count + 1);
+
+        localStorage.setItem(
+          "review_streak",
+          JSON.stringify({
+            count: saved.count + 1,
+            lastDate: new Date().toISOString()
+          })
+        );
+
+      } else {
+
+        setStreak(1);
+
+        localStorage.setItem(
+          "review_streak",
+          JSON.stringify({
+            count: 1,
+            lastDate: new Date().toISOString()
+          })
+        );
+
+      }
+
+    } catch {
+
+      setStreak(0);
+
+    }
+
+  }
+
   const options = useMemo(() => {
 
     if (!currentWord || questionType !== "mcq") return [];
@@ -135,12 +195,19 @@ export default function ReviewWordsPage() {
       selected.trim().toLowerCase() === correctWord;
 
     if (isCorrect) {
+
       setFeedback("✅ Excellent!");
       playCorrectSound();
       addReviewXP();
+
+      setXpFlash(true);
+      setTimeout(() => setXpFlash(false), 700);
+
     } else {
+
       setFeedback(`❌ Correct word: ${currentWord.word}`);
       playWrongSound();
+
     }
 
     try {
@@ -214,6 +281,8 @@ export default function ReviewWordsPage() {
 
       <h2>Daily Review</h2>
 
+      <p>🔥 Streak: {streak} days</p>
+
       <p style={{ color: "#666" }}>
         Progress: {progressDone} / {initialCount}
       </p>
@@ -235,6 +304,12 @@ export default function ReviewWordsPage() {
           }}
         />
       </div>
+
+      {xpFlash && (
+        <div style={{ color: "#27ae60", fontWeight: "bold" }}>
+          +XP
+        </div>
+      )}
 
       {questionType === "type" && (
         <>
