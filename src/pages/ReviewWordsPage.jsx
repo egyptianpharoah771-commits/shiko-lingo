@@ -321,13 +321,20 @@ export default function ReviewWordsPage() {
       )}
 
       {questionType === "type" && (
-        <>
-          <p><strong>Definition:</strong></p>
-          <p style={{ fontSize: 22 }}>
-            {currentWord.definition}
-          </p>
-        </>
-      )}
+  <>
+    <p><strong>Meaning:</strong></p>
+
+    <p style={{ fontSize: 22 }}>
+      {currentWord.definition || currentWord.meaning}
+    </p>
+
+    {currentWord.meaning && (
+      <p style={{ fontSize: 18, color: "#666" }}>
+        {currentWord.meaning}
+      </p>
+    )}
+  </>
+)}
 
       {questionType === "listen" && (
         <>
