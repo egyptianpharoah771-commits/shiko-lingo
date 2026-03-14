@@ -28,18 +28,11 @@ function VocabularyPage() {
   const [wordDetails, setWordDetails] = useState({});
   const [loadingWords, setLoadingWords] = useState(true);
 
-  /* =========================
-     Unified Pronunciation Engine
-     Hybrid Mode:
-     localhost → SpeechSynthesis
-     production → /api/tts
-  ========================= */
   const speakWord = (word, example = "") => {
     if (!word) return;
 
     const text = example ? `${word}. ${example}` : word;
 
-    /* Localhost fallback */
     if (window.location.hostname === "localhost") {
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "en-US";
@@ -47,14 +40,11 @@ function VocabularyPage() {
       return;
     }
 
-    /* Production TTS */
     const audio = new Audio(
       `/api/tts?text=${encodeURIComponent(text)}`
     );
 
-    audio.play().catch((err) => {
-      console.warn("TTS playback failed:", err);
-    });
+    audio.play().catch(() => {});
   };
 
   const removeWord = (word) => {
@@ -67,9 +57,6 @@ function VocabularyPage() {
     setWordDetails(copy);
   };
 
-  /* =========================
-     Load Saved Words
-  ========================= */
   useEffect(() => {
     const saved = JSON.parse(
       localStorage.getItem("VOCAB_SAVED") || "[]"
@@ -77,9 +64,6 @@ function VocabularyPage() {
     setSavedWords(saved);
   }, []);
 
-  /* =========================
-     Load Definitions
-  ========================= */
   useEffect(() => {
     if (!savedWords.length) {
       setLoadingWords(false);
@@ -156,7 +140,13 @@ function VocabularyPage() {
           <p>No saved words yet. Click a word in Reading to save it.</p>
         )}
 
-        <div style={{ display: "grid", gap: 16 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+            gap: 18,
+          }}
+        >
           {savedWords.map((word) => {
             const data = wordDetails[word];
 
@@ -165,12 +155,16 @@ function VocabularyPage() {
                 key={word}
                 style={{
                   border: "1px solid #eee",
-                  padding: 18,
-                  borderRadius: 12,
-                  background: "#fafafa",
+                  padding: 20,
+                  borderRadius: 14,
+                  background: "#ffffff",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
                 }}
               >
-                <h3>{word}</h3>
+                <h3 style={{ margin: 0 }}>{word}</h3>
 
                 <button
                   onClick={() =>
