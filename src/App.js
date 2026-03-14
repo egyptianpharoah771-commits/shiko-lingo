@@ -66,6 +66,7 @@ import Login from "./pages/Login";
 
 function Entry() {
   const navigate = useNavigate();
+
   const insidePi =
     isPiAvailable() || !!localStorage.getItem("pi_uid");
 
@@ -224,16 +225,33 @@ function AppLayout({ children }) {
           </header>
 
           <nav className="navbar">
-  <NavButton to="/dashboard" label="🏠 Home" />
-  <NavButton to="/vocabulary" label="📚 Learn" />
-  <NavButton to="/review" label="🔁 Review" />
-  <NavButton to="/listening" label="🎧 Practice" />
-  <NavButton to="/speaking" label="👤 Profile" />
-</nav>
+            <NavButton to="/dashboard" label="🏠 Home" />
+            <NavButton to="/vocabulary" label="📚 Learn" />
+            <NavButton to="/review" label="🔁 Review" />
+            <NavButton to="/listening" label="🎧 Practice" />
+            <NavButton to="/speaking" label="👤 Profile" />
+          </nav>
         </>
       )}
 
-      <div style={{ padding: 20, flex: 1 }}>{children}</div>
+      {/* MAIN CONTAINER FIX */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 1100,
+            padding: "24px 20px",
+          }}
+        >
+          {children}
+        </div>
+      </div>
 
       {!hideLayout && (
         <footer style={footerStyle}>
@@ -251,57 +269,20 @@ function AppLayout({ children }) {
     </div>
   );
 }
-function getIcon(label) {
 
-  switch (label) {
-
-    case "Dashboard":
-      return "🏠";
-
-    case "Grammar":
-      return "📘";
-
-    case "Vocabulary":
-      return "📚";
-
-    case "Daily Review":
-      return "🔁";
-
-    case "Listening":
-      return "🎧";
-
-    case "Reading":
-      return "📖";
-
-    case "Speaking":
-      return "🗣️";
-
-    case "Writing":
-      return "✍️";
-
-    default:
-      return "•";
-
-  }
-
-}
 function NavButton({ to, label }) {
-
   const location = useLocation();
-
   const active = location.pathname.startsWith(to);
 
   return (
     <Link to={to} style={{ textDecoration: "none" }}>
-      <button
-        className={`nav-btn ${active ? "active" : ""}`}
-      >
-        <span>{getIcon(label)}</span>
+      <button className={`nav-btn ${active ? "active" : ""}`}>
         {label}
       </button>
     </Link>
   );
 }
+
 function App() {
   useEffect(() => {
     if (isPiAvailable()) {
@@ -335,13 +316,15 @@ function App() {
   );
 }
 
+/* ======================
+   Styles
+====================== */
+
 const headerStyle = {
   backgroundColor: "#ffffff",
   padding: 15,
   borderBottom: "1px solid #e2d7ee",
 };
-
-
 
 const footerStyle = {
   padding: 15,
