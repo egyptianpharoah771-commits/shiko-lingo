@@ -38,7 +38,7 @@ export default function ReviewWordsPage() {
 
   useEffect(() => {
 
-    if (questionType === "listen" && currentWord) {
+    if (questionType === "listen" && currentWord?.word) {
       speakWord(currentWord.word);
     }
 
@@ -69,8 +69,10 @@ export default function ReviewWordsPage() {
 
       const queue = await getDailyReviewQueue(userId);
 
-      setWords(queue || []);
-      setInitialCount(queue?.length || 0);
+      const safeQueue = Array.isArray(queue) ? queue : [];
+
+      setWords(safeQueue);
+      setInitialCount(safeQueue.length);
 
     } catch (error) {
 
@@ -99,12 +101,12 @@ export default function ReviewWordsPage() {
 
   function playCorrectSound() {
     const audio = new Audio("/sounds/correct.mp3");
-    audio.play();
+    audio.play().catch(() => {});
   }
 
   function playWrongSound() {
     const audio = new Audio("/sounds/wrong.mp3");
-    audio.play();
+    audio.play().catch(() => {});
   }
 
   function loadStreak() {
@@ -131,14 +133,20 @@ export default function ReviewWordsPage() {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
 
-      if (new Date(saved.lastDate).toDateString() === yesterday.toDateString()) {
-        setStreak(saved.count + 1);
+      if (
+        new Date(saved.lastDate).toDateString() ===
+        yesterday.toDateString()
+      ) {
+
+        const newCount = saved.count + 1;
+
+        setStreak(newCount);
 
         localStorage.setItem(
           "review_streak",
           JSON.stringify({
-            count: saved.count + 1,
-            lastDate: new Date().toISOString()
+            count: newCount,
+            lastDate: new Date().toISOString(),
           })
         );
 
@@ -150,7 +158,7 @@ export default function ReviewWordsPage() {
           "review_streak",
           JSON.stringify({
             count: 1,
-            lastDate: new Date().toISOString()
+            lastDate: new Date().toISOString(),
           })
         );
 
@@ -169,7 +177,7 @@ export default function ReviewWordsPage() {
     if (!currentWord || questionType !== "mcq") return [];
 
     const distractors = words
-      .filter((w) => w.id !== currentWord.id)
+      .filter((w) => w.id !== currentWord.id && w.definition)
       .sort(() => 0.5 - Math.random())
       .slice(0, 3)
       .map((w) => w.definition);
@@ -189,10 +197,10 @@ export default function ReviewWordsPage() {
 
     setChecking(true);
 
-    const correctWord = currentWord.word.toLowerCase();
+    const correctWord = currentWord.word?.toLowerCase() || "";
 
     const isCorrect =
-      selected.trim().toLowerCase() === correctWord;
+      selected?.trim().toLowerCase() === correctWord;
 
     if (isCorrect) {
 
@@ -264,6 +272,7 @@ export default function ReviewWordsPage() {
   }
 
   const progressDone = initialCount - words.length;
+
   const progressPercent =
     initialCount === 0
       ? 0
@@ -275,7 +284,7 @@ export default function ReviewWordsPage() {
         maxWidth: 520,
         margin: "40px auto",
         padding: 20,
-        textAlign: "center"
+        textAlign: "center",
       }}
     >
 
@@ -293,14 +302,14 @@ export default function ReviewWordsPage() {
           background: "#eee",
           borderRadius: 6,
           overflow: "hidden",
-          marginBottom: 20
+          marginBottom: 20,
         }}
       >
         <div
           style={{
             width: `${progressPercent}%`,
             height: "100%",
-            background: "#4A90E2"
+            background: "#4A90E2",
           }}
         />
       </div>
@@ -367,7 +376,7 @@ export default function ReviewWordsPage() {
               style={{
                 display: "block",
                 margin: "8px auto",
-                padding: "10px 16px"
+                padding: "10px 16px",
               }}
               onClick={() =>
                 handleAnswer(
