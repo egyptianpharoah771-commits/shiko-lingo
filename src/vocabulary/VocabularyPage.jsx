@@ -22,13 +22,17 @@ function getProgress(level) {
 }
 
 function VocabularyPage() {
+
   const levels = Object.keys(VOCABULARY_DATA || {});
+
+  const [view, setView] = useState("main");
 
   const [savedWords, setSavedWords] = useState([]);
   const [wordDetails, setWordDetails] = useState({});
   const [loadingWords, setLoadingWords] = useState(true);
 
   const speakWord = (word, example = "") => {
+
     if (!word) return;
 
     const text = example ? `${word}. ${example}` : word;
@@ -48,8 +52,11 @@ function VocabularyPage() {
   };
 
   const removeWord = (word) => {
+
     const updated = savedWords.filter((w) => w !== word);
+
     localStorage.setItem("VOCAB_SAVED", JSON.stringify(updated));
+
     setSavedWords(updated);
 
     const copy = { ...wordDetails };
@@ -58,23 +65,30 @@ function VocabularyPage() {
   };
 
   useEffect(() => {
+
     const saved = JSON.parse(
       localStorage.getItem("VOCAB_SAVED") || "[]"
     );
+
     setSavedWords(saved);
+
   }, []);
 
   useEffect(() => {
+
     if (!savedWords.length) {
       setLoadingWords(false);
       return;
     }
 
     const loadDefinitions = async () => {
+
       const results = {};
 
       for (const word of savedWords) {
+
         try {
+
           const dictRes = await fetch(
             `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
           );
@@ -84,6 +98,7 @@ function VocabularyPage() {
           let arabic = "";
 
           if (dictRes.ok) {
+
             const data = await dictRes.json();
 
             definition =
@@ -94,6 +109,7 @@ function VocabularyPage() {
           }
 
           if (definition) {
+
             const transRes = await fetch(
               `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
                 definition
@@ -101,18 +117,23 @@ function VocabularyPage() {
             );
 
             if (transRes.ok) {
+
               const t = await transRes.json();
+
               arabic = t?.responseData?.translatedText || "";
             }
           }
 
           results[word] = { definition, example, arabic };
+
         } catch {
+
           results[word] = {
             definition: "Definition not available",
             example: "",
             arabic: "",
           };
+
         }
       }
 
@@ -121,167 +142,165 @@ function VocabularyPage() {
     };
 
     loadDefinitions();
+
   }, [savedWords]);
 
   return (
+
     <div className="vocab-page">
+
       <h1>📘 Vocabulary</h1>
 
-      {/* =========================
-          Saved Words Section
-      ========================= */}
+      {/* MAIN ICON */}
 
-      <div style={{ marginBottom: 40 }}>
-        <h2>⭐ My Saved Words</h2>
-
-        {loadingWords && <p>Loading saved words...</p>}
-
-        {!loadingWords && savedWords.length === 0 && (
-          <p>No saved words yet. Click a word in Reading to save it.</p>
-        )}
+      {view === "main" && (
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-            gap: 18,
+            marginTop: 40,
+            display: "flex",
+            justifyContent: "center"
           }}
         >
-          {savedWords.map((word) => {
-            const data = wordDetails[word];
 
-            return (
-              <div
-                key={word}
-                style={{
-                  border: "1px solid #eee",
-                  padding: 20,
-                  borderRadius: 14,
-                  background: "#ffffff",
-                  boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                }}
-              >
-                <h3 style={{ margin: 0 }}>{word}</h3>
-
-                <button
-                  onClick={() =>
-                    speakWord(word, data?.example)
-                  }
-                >
-                  🔊 Pronounce
-                </button>
-
-                {data?.arabic && (
-                  <p>
-                    <strong>🇸🇦 Arabic:</strong> {data.arabic}
-                  </p>
-                )}
-
-                {data?.definition && (
-                  <p>
-                    <strong>📖 Definition:</strong> {data.definition}
-                  </p>
-                )}
-
-                {data?.example && (
-                  <p>
-                    <strong>💡 Example:</strong> {data.example}
-                  </p>
-                )}
-
-                <button onClick={() => removeWord(word)}>
-                  ❌ Remove Word
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* =========================
-          Vocabulary Units
-      ========================= */}
-
-      {levels.map((level) => {
-        const units = Object.values(VOCABULARY_DATA[level] || {});
-        const completed = getProgress(level);
-
-        return (
-          <div key={level} className={`vocab-level level-${level}`}>
-            <div className="vocab-level-header">
-              <div>
-                <div className="vocab-level-title">
-                  {level} Vocabulary
-                </div>
-                <div className="vocab-level-subtitle">
-                  {completed.length} / {units.length} units completed
-                </div>
-              </div>
-            </div>
-
-            <div className="vocab-progress">
-              <div
-                className="vocab-progress-fill"
-                style={{
-                  width: `${
-                    Math.round((completed.length / units.length) * 100) || 0
-                  }%`,
-                  background: LEVEL_COLORS[level],
-                }}
-              />
-            </div>
-
-            <div className="vocab-units">
-              {units.map((unit, index) => {
-                const unitNumber = index + 1;
-
-                const unlocked =
-                  unitNumber === 1 ||
-                  completed.includes(unitNumber - 1);
-
-                return unlocked ? (
-                  <Link
-                    key={unitNumber}
-                    to={`/vocabulary/${level}/${unitNumber}`}
-                    style={{ textDecoration: "none" }}
-                  >
-                    <div className="vocab-card">
-                      <div className="vocab-card-icon">📗</div>
-
-                      <div className="vocab-card-title">
-                        Unit {unitNumber}
-                      </div>
-
-                      <div className="vocab-card-desc">
-                        <strong>{unit.content?.title}</strong>
-                        <br />
-                        {unit.content?.description}
-                      </div>
-                    </div>
-                  </Link>
-                ) : (
-                  <div key={unitNumber} className="vocab-card locked">
-                    <div className="vocab-card-icon">🔒</div>
-
-                    <div className="vocab-card-title">
-                      Unit {unitNumber}
-                    </div>
-
-                    <div className="vocab-card-desc">
-                      Complete previous unit
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          <div
+            onClick={() => setView("menu")}
+            style={{
+              padding: 40,
+              borderRadius: 18,
+              background: "#ffffff",
+              boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
+              cursor: "pointer",
+              textAlign: "center"
+            }}
+          >
+            <h2>📘 Vocabulary</h2>
+            <p>Open vocabulary tools</p>
           </div>
-        );
-      })}
-    </div>
-  );
-}
 
-export default VocabularyPage;
+        </div>
+
+      )}
+
+      {/* SECOND LEVEL MENU */}
+
+      {view === "menu" && (
+
+        <div
+          style={{
+            marginTop: 40,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px,1fr))",
+            gap: 20
+          }}
+        >
+
+          <div
+            onClick={() => setView("saved")}
+            style={{
+              padding: 28,
+              borderRadius: 16,
+              background: "#ffffff",
+              boxShadow: "0 8px 28px rgba(0,0,0,0.08)",
+              cursor: "pointer"
+            }}
+          >
+            <h2>⭐ Saved Words</h2>
+          </div>
+
+          <div
+            onClick={() => setView("units")}
+            style={{
+              padding: 28,
+              borderRadius: 16,
+              background: "#ffffff",
+              boxShadow: "0 8px 28px rgba(0,0,0,0.08)",
+              cursor: "pointer"
+            }}
+          >
+            <h2>📚 Vocabulary Units</h2>
+          </div>
+
+        </div>
+
+      )}
+
+      {/* SAVED WORDS */}
+
+      {view === "saved" && (
+
+        <>
+          <button onClick={() => setView("menu")}>← Back</button>
+
+          <h2>⭐ My Saved Words</h2>
+
+          {loadingWords && <p>Loading...</p>}
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(240px,1fr))",
+              gap: 18
+            }}
+          >
+
+            {savedWords.map((word) => {
+
+              const data = wordDetails[word];
+
+              return (
+
+                <div
+                  key={word}
+                  style={{
+                    border: "1px solid #eee",
+                    padding: 20,
+                    borderRadius: 14,
+                    background: "#ffffff",
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.06)"
+                  }}
+                >
+
+                  <h3>{word}</h3>
+
+                  <button
+                    onClick={() => speakWord(word, data?.example)}
+                  >
+                    🔊 Pronounce
+                  </button>
+
+                  {data?.arabic && (
+                    <p><strong>🇸🇦 Arabic:</strong> {data.arabic}</p>
+                  )}
+
+                  {data?.definition && (
+                    <p><strong>Definition:</strong> {data.definition}</p>
+                  )}
+
+                  {data?.example && (
+                    <p><strong>Example:</strong> {data.example}</p>
+                  )}
+
+                  <button onClick={() => removeWord(word)}>
+                    ❌ Remove Word
+                  </button>
+
+                </div>
+
+              );
+            })}
+
+          </div>
+
+        </>
+
+      )}
+
+      {/* VOCAB UNITS */}
+
+      {view === "units" && (
+
+        <>
+          <button onClick={() => setView("menu")}>← Back</button>
+
+          {levels.map((level) => {
