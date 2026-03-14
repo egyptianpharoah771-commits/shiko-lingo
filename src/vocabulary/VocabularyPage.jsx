@@ -22,7 +22,6 @@ function getProgress(level) {
 }
 
 function VocabularyPage() {
-
   const levels = Object.keys(VOCABULARY_DATA || {});
 
   const [view, setView] = useState("main");
@@ -32,7 +31,6 @@ function VocabularyPage() {
   const [loadingWords, setLoadingWords] = useState(true);
 
   const speakWord = (word, example = "") => {
-
     if (!word) return;
 
     const text = example ? `${word}. ${example}` : word;
@@ -52,7 +50,6 @@ function VocabularyPage() {
   };
 
   const removeWord = (word) => {
-
     const updated = savedWords.filter((w) => w !== word);
 
     localStorage.setItem("VOCAB_SAVED", JSON.stringify(updated));
@@ -65,30 +62,24 @@ function VocabularyPage() {
   };
 
   useEffect(() => {
-
     const saved = JSON.parse(
       localStorage.getItem("VOCAB_SAVED") || "[]"
     );
 
     setSavedWords(saved);
-
   }, []);
 
   useEffect(() => {
-
     if (!savedWords.length) {
       setLoadingWords(false);
       return;
     }
 
     const loadDefinitions = async () => {
-
       const results = {};
 
       for (const word of savedWords) {
-
         try {
-
           const dictRes = await fetch(
             `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
           );
@@ -98,7 +89,6 @@ function VocabularyPage() {
           let arabic = "";
 
           if (dictRes.ok) {
-
             const data = await dictRes.json();
 
             definition =
@@ -109,7 +99,6 @@ function VocabularyPage() {
           }
 
           if (definition) {
-
             const transRes = await fetch(
               `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
                 definition
@@ -117,9 +106,7 @@ function VocabularyPage() {
             );
 
             if (transRes.ok) {
-
               const t = await transRes.json();
-
               arabic = t?.responseData?.translatedText || "";
             }
           }
@@ -127,13 +114,11 @@ function VocabularyPage() {
           results[word] = { definition, example, arabic };
 
         } catch {
-
           results[word] = {
             definition: "Definition not available",
             example: "",
             arabic: "",
           };
-
         }
       }
 
@@ -146,15 +131,11 @@ function VocabularyPage() {
   }, [savedWords]);
 
   return (
-
     <div className="vocab-page">
 
       <h1>📘 Vocabulary</h1>
 
-      {/* MAIN ICON */}
-
       {view === "main" && (
-
         <div
           style={{
             marginTop: 40,
@@ -162,7 +143,6 @@ function VocabularyPage() {
             justifyContent: "center"
           }}
         >
-
           <div
             onClick={() => setView("menu")}
             style={{
@@ -177,15 +157,10 @@ function VocabularyPage() {
             <h2>📘 Vocabulary</h2>
             <p>Open vocabulary tools</p>
           </div>
-
         </div>
-
       )}
 
-      {/* SECOND LEVEL MENU */}
-
       {view === "menu" && (
-
         <div
           style={{
             marginTop: 40,
@@ -194,7 +169,6 @@ function VocabularyPage() {
             gap: 20
           }}
         >
-
           <div
             onClick={() => setView("saved")}
             style={{
@@ -220,15 +194,10 @@ function VocabularyPage() {
           >
             <h2>📚 Vocabulary Units</h2>
           </div>
-
         </div>
-
       )}
 
-      {/* SAVED WORDS */}
-
       {view === "saved" && (
-
         <>
           <button onClick={() => setView("menu")}>← Back</button>
 
@@ -243,13 +212,11 @@ function VocabularyPage() {
               gap: 18
             }}
           >
-
             {savedWords.map((word) => {
 
               const data = wordDetails[word];
 
               return (
-
                 <div
                   key={word}
                   style={{
@@ -263,9 +230,7 @@ function VocabularyPage() {
 
                   <h3>{word}</h3>
 
-                  <button
-                    onClick={() => speakWord(word, data?.example)}
-                  >
+                  <button onClick={() => speakWord(word, data?.example)}>
                     🔊 Pronounce
                   </button>
 
@@ -286,21 +251,118 @@ function VocabularyPage() {
                   </button>
 
                 </div>
-
               );
             })}
-
           </div>
-
         </>
-
       )}
 
-      {/* VOCAB UNITS */}
-
       {view === "units" && (
-
         <>
           <button onClick={() => setView("menu")}>← Back</button>
 
           {levels.map((level) => {
+
+            const units = Object.values(VOCABULARY_DATA[level] || {});
+            const completed = getProgress(level);
+
+            return (
+
+              <div key={level} className={`vocab-level level-${level}`}>
+
+                <div className="vocab-level-header">
+                  <div>
+                    <div className="vocab-level-title">
+                      {level} Vocabulary
+                    </div>
+
+                    <div className="vocab-level-subtitle">
+                      {completed.length} / {units.length} units completed
+                    </div>
+                  </div>
+                </div>
+
+                <div className="vocab-progress">
+                  <div
+                    className="vocab-progress-fill"
+                    style={{
+                      width: `${
+                        Math.round((completed.length / units.length) * 100) || 0
+                      }%`,
+                      background: LEVEL_COLORS[level],
+                    }}
+                  />
+                </div>
+
+                <div className="vocab-units">
+
+                  {units.map((unit, index) => {
+
+                    const unitNumber = index + 1;
+
+                    const unlocked =
+                      unitNumber === 1 ||
+                      completed.includes(unitNumber - 1);
+
+                    return unlocked ? (
+
+                      <Link
+                        key={unitNumber}
+                        to={`/vocabulary/${level}/${unitNumber}`}
+                        style={{ textDecoration: "none" }}
+                      >
+
+                        <div className="vocab-card">
+
+                          <div className="vocab-card-icon">📗</div>
+
+                          <div className="vocab-card-title">
+                            Unit {unitNumber}
+                          </div>
+
+                          <div className="vocab-card-desc">
+                            <strong>{unit.content?.title}</strong>
+                            <br />
+                            {unit.content?.description}
+                          </div>
+
+                        </div>
+
+                      </Link>
+
+                    ) : (
+
+                      <div key={unitNumber} className="vocab-card locked">
+
+                        <div className="vocab-card-icon">🔒</div>
+
+                        <div className="vocab-card-title">
+                          Unit {unitNumber}
+                        </div>
+
+                        <div className="vocab-card-desc">
+                          Complete previous unit
+                        </div>
+
+                      </div>
+
+                    );
+
+                  })}
+
+                </div>
+
+              </div>
+
+            );
+
+          })}
+
+        </>
+      )}
+
+    </div>
+  );
+}
+
+export default VocabularyPage;
