@@ -193,19 +193,48 @@ const saveWord = async (word) => {
 
       let arabic = "";
 
-      if (definition) {
-        const transRes = await fetch(
-          `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
-            definition
-          )}&langpair=en|ar`
-        );
+const CACHE_KEY = "TRANSLATION_CACHE";
 
-        if (transRes.ok) {
-          const transData = await transRes.json();
-          arabic = transData?.responseData?.translatedText || "";
-        }
-      }
+const cache =
+  JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
 
+if (cache[definition]) {
+
+  arabic = cache[definition];
+
+} else if (definition) {
+
+  try {
+
+    const transRes = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+        definition
+      )}&langpair=en|ar`
+    );
+
+    if (transRes.ok) {
+
+      const transData = await transRes.json();
+
+      arabic =
+        transData?.responseData?.translatedText || "";
+
+      cache[definition] = arabic;
+
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify(cache)
+      );
+
+    }
+
+  } catch (err) {
+
+    console.warn("Translation failed:", err);
+
+  }
+
+}
       setDictionaryData({
         definition,
         example,

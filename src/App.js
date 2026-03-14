@@ -223,16 +223,13 @@ function AppLayout({ children }) {
             <strong style={{ fontSize: 20 }}>Shiko Lingo</strong>
           </header>
 
-          <nav style={navStyle}>
-            <NavButton to="/dashboard" label="Dashboard" />
-            <NavButton to="/grammar" label="Grammar" />
-            <NavButton to="/vocabulary" label="Vocabulary" />
-            <NavButton to="/review" label="Daily Review" />
-            <NavButton to="/listening" label="Listening" />
-            <NavButton to="/reading" label="Reading" />
-            <NavButton to="/speaking" label="Speaking" />
-            <NavButton to="/writing" label="Writing" />
-          </nav>
+          <nav className="navbar">
+  <NavButton to="/dashboard" label="🏠 Home" />
+  <NavButton to="/vocabulary" label="📚 Learn" />
+  <NavButton to="/review" label="🔁 Review" />
+  <NavButton to="/listening" label="🎧 Practice" />
+  <NavButton to="/speaking" label="👤 Profile" />
+</nav>
         </>
       )}
 
@@ -257,12 +254,13 @@ function AppLayout({ children }) {
 
 function NavButton({ to, label }) {
   return (
-    <Link to={to}>
-      <button style={navBtnStyle}>{label}</button>
+    <Link to={to} style={{ textDecoration: "none" }}>
+      <button className="nav-btn">
+        {label}
+      </button>
     </Link>
   );
 }
-
 function App() {
   useEffect(() => {
     if (isPiAvailable()) {
