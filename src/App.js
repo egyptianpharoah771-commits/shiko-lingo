@@ -300,21 +300,7 @@ const headerStyle = {
   borderBottom: "1px solid #e2d7ee",
 };
 
-const navStyle = {
-  display: "flex",
-  gap: 10,
-  flexWrap: "wrap",
-  marginBottom: 20,
-};
 
-const navBtnStyle = {
-  padding: "8px 14px",
-  borderRadius: 8,
-  border: "1px solid #e2d7ee",
-  cursor: "pointer",
-  backgroundColor: "#faf7fc",
-  fontWeight: "bold",
-};
 
 const footerStyle = {
   padding: 15,
