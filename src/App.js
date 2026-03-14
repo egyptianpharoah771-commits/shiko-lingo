@@ -30,6 +30,7 @@ import Writing from "./pages/Writing";
 import AdminFeedback from "./pages/AdminFeedback";
 import Upgrade from "./pages/Upgrade";
 import AssessmentPage from "./assessment/AssessmentPage";
+import LearnPage from "./pages/LearnPage";
 
 /* Listening */
 import ListeningHome from "./pages/ListeningHome";
@@ -142,6 +143,8 @@ function SubscriptionGuard() {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
 
+        <Route path="/learn" element={<LearnPage />} />
+
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
         <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
@@ -226,7 +229,7 @@ function AppLayout({ children }) {
 
           <nav className="navbar">
             <NavButton to="/dashboard" label="🏠 Home" />
-            <NavButton to="/vocabulary" label="📚 Learn" />
+            <NavButton to="/learn" label="📚 Learn" />
             <NavButton to="/review" label="🔁 Review" />
             <NavButton to="/listening" label="🎧 Practice" />
             <NavButton to="/speaking" label="👤 Profile" />
@@ -234,7 +237,6 @@ function AppLayout({ children }) {
         </>
       )}
 
-      {/* MAIN CONTAINER FIX */}
       <div
         style={{
           flex: 1,
