@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 
 const SESSION_SIZE = 10;
 
+const WORD_BANK = [
+  "abandon","accept","achieve","arrive","avoid","believe",
+  "build","create","decide","discover","improve","include",
+  "increase","learn","leave","provide","remember","return",
+  "support","understand","develop","choose","continue","explain",
+  "follow","grow","help","join","keep","move","open","play",
+  "read","start","study","talk","try","use","work","write"
+];
+
 function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -18,6 +27,8 @@ function SavedWordsReview() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
+  const [mistakes, setMistakes] = useState([]);
+  const [reviewMistakes, setReviewMistakes] = useState(false);
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("VOCAB_SAVED") || "[]");
@@ -57,8 +68,10 @@ function SavedWordsReview() {
         const correct = dict[word];
         if (!correct) continue;
 
-        const wrongPool = words.filter((w) => w !== word);
-        const wrongChoices = shuffleArray(wrongPool).slice(0, 3);
+        const wrongChoices = shuffleArray(
+          WORD_BANK.filter((w) => w !== word)
+        ).slice(0, 3);
+
         const options = shuffleArray([word, ...wrongChoices]);
 
         qs.push({
@@ -82,8 +95,12 @@ function SavedWordsReview() {
 
     setSelected(option);
 
-    if (option === questions[current].correct) {
+    const correct = questions[current].correct;
+
+    if (option === correct) {
       setScore((s) => s + 1);
+    } else {
+      setMistakes((m) => [...m, questions[current]]);
     }
   };
 
@@ -96,7 +113,16 @@ function SavedWordsReview() {
     setCurrent(0);
     setScore(0);
     setSelected(null);
+    setMistakes([]);
+    setReviewMistakes(false);
     setQuestions((q) => shuffleArray(q));
+  };
+
+  const practiceMistakes = () => {
+    setQuestions(shuffleArray(mistakes));
+    setCurrent(0);
+    setSelected(null);
+    setReviewMistakes(true);
   };
 
   if (loading) {
@@ -124,10 +150,28 @@ function SavedWordsReview() {
           Score: {score} / {questions.length}
         </p>
 
+        {mistakes.length > 0 && !reviewMistakes && (
+          <button
+            onClick={practiceMistakes}
+            style={{
+              marginTop: 15,
+              marginRight: 10,
+              padding: "10px 18px",
+              border: "none",
+              borderRadius: 8,
+              background: "#f39c12",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            Practice Mistakes
+          </button>
+        )}
+
         <button
           onClick={restart}
           style={{
-            marginTop: 20,
+            marginTop: 15,
             padding: "10px 18px",
             border: "none",
             borderRadius: 8,
