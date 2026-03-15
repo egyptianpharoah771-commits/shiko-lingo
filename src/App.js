@@ -1,4 +1,5 @@
 import ReviewWordsPage from "./pages/ReviewWordsPage";
+import SavedWordsReview from "./vocabulary/SavedWordsReview";
 import { useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -150,6 +151,7 @@ function SubscriptionGuard() {
         <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
 
         <Route path="/vocabulary" element={<VocabularyPage />} />
+        <Route path="/vocabulary/review" element={<SavedWordsReview />} />
         <Route path="/vocabulary/quiz" element={<VocabularyQuiz />} />
         <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
         <Route
