@@ -23,14 +23,19 @@ function getProgress(level) {
 
 function VocabularyPage() {
   const levels = Object.keys(VOCABULARY_DATA || {});
+
   const [view, setView] = useState("main");
 
   const [savedWords, setSavedWords] = useState([]);
   const [filteredWords, setFilteredWords] = useState([]);
-  const [search, setSearch] = useState("");
+  const [searchSaved, setSearchSaved] = useState("");
 
   const [wordDetails, setWordDetails] = useState({});
   const [loadingWords, setLoadingWords] = useState(true);
+
+  const [searchWord, setSearchWord] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const speakWord = (word, example = "") => {
     if (!word) return;
@@ -61,6 +66,19 @@ function VocabularyPage() {
     setWordDetails(copy);
   };
 
+  const saveWord = (word) => {
+    if (!word) return;
+
+    if (savedWords.includes(word)) return;
+
+    const updated = [...savedWords, word];
+
+    localStorage.setItem("VOCAB_SAVED", JSON.stringify(updated));
+
+    setSavedWords(updated);
+    setFilteredWords(updated);
+  };
+
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("VOCAB_SAVED") || "[]");
 
@@ -69,7 +87,7 @@ function VocabularyPage() {
   }, []);
 
   useEffect(() => {
-    const q = search.trim().toLowerCase();
+    const q = searchSaved.trim().toLowerCase();
 
     if (!q) {
       setFilteredWords(savedWords);
@@ -81,7 +99,7 @@ function VocabularyPage() {
     );
 
     setFilteredWords(filtered);
-  }, [search, savedWords]);
+  }, [searchSaved, savedWords]);
 
   useEffect(() => {
     if (!savedWords.length) {
@@ -142,6 +160,65 @@ function VocabularyPage() {
     loadDefinitions();
   }, [savedWords]);
 
+  useEffect(() => {
+    const handler = setTimeout(async () => {
+      if (!searchWord || searchWord.length < 2) {
+        setSearchResult(null);
+        return;
+      }
+
+      setSearchLoading(true);
+
+      try {
+        const dictRes = await fetch(
+          `https://api.dictionaryapi.dev/api/v2/entries/en/${searchWord}`
+        );
+
+        if (!dictRes.ok) {
+          setSearchResult(null);
+          setSearchLoading(false);
+          return;
+        }
+
+        const data = await dictRes.json();
+
+        const definition =
+          data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition || "";
+
+        const example =
+          data?.[0]?.meanings?.[0]?.definitions?.[0]?.example || "";
+
+        let arabic = "";
+
+        if (definition) {
+          const transRes = await fetch(
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+              definition
+            )}&langpair=en|ar`
+          );
+
+          if (transRes.ok) {
+            const t = await transRes.json();
+            arabic = t?.responseData?.translatedText || "";
+          }
+        }
+
+        setSearchResult({
+          word: searchWord,
+          definition,
+          example,
+          arabic,
+        });
+      } catch {
+        setSearchResult(null);
+      }
+
+      setSearchLoading(false);
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchWord]);
+
   return (
     <div className="vocab-page">
       <h1>📘 Vocabulary</h1>
@@ -181,6 +258,19 @@ function VocabularyPage() {
           }}
         >
           <div
+            onClick={() => setView("search")}
+            style={{
+              padding: 28,
+              borderRadius: 16,
+              background: "#ffffff",
+              boxShadow: "0 8px 28px rgba(0,0,0,0.08)",
+              cursor: "pointer",
+            }}
+          >
+            <h2>🔎 Search Word</h2>
+          </div>
+
+          <div
             onClick={() => setView("saved")}
             style={{
               padding: 28,
@@ -208,6 +298,74 @@ function VocabularyPage() {
         </div>
       )}
 
+      {view === "search" && (
+        <>
+          <button onClick={() => setView("menu")}>← Back</button>
+
+          <h2>🔎 Search Vocabulary</h2>
+
+          <input
+            type="text"
+            placeholder="Type a word..."
+            value={searchWord}
+            onChange={(e) => setSearchWord(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              borderRadius: 8,
+              border: "1px solid #ddd",
+              marginBottom: 20,
+            }}
+          />
+
+          {searchLoading && <p>Searching...</p>}
+
+          {searchResult && (
+            <div
+              style={{
+                border: "1px solid #eee",
+                padding: 20,
+                borderRadius: 14,
+                background: "#ffffff",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h3>{searchResult.word}</h3>
+
+              <button
+                onClick={() =>
+                  speakWord(searchResult.word, searchResult.example)
+                }
+              >
+                🔊 Pronounce
+              </button>
+
+              {searchResult.arabic && (
+                <p>
+                  <strong>🇸🇦 Arabic:</strong> {searchResult.arabic}
+                </p>
+              )}
+
+              {searchResult.definition && (
+                <p>
+                  <strong>Definition:</strong> {searchResult.definition}
+                </p>
+              )}
+
+              {searchResult.example && (
+                <p>
+                  <strong>Example:</strong> {searchResult.example}
+                </p>
+              )}
+
+              <button onClick={() => saveWord(searchResult.word)}>
+                ⭐ Save Word
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
       {view === "saved" && (
         <>
           <button onClick={() => setView("menu")}>← Back</button>
@@ -217,8 +375,8 @@ function VocabularyPage() {
           <input
             type="text"
             placeholder="Search saved words..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchSaved}
+            onChange={(e) => setSearchSaved(e.target.value)}
             style={{
               width: "100%",
               padding: "10px 14px",
@@ -229,10 +387,6 @@ function VocabularyPage() {
           />
 
           {loadingWords && <p>Loading...</p>}
-
-          {!loadingWords && filteredWords.length === 0 && (
-            <p>No saved words found.</p>
-          )}
 
           <div
             style={{
@@ -316,7 +470,8 @@ function VocabularyPage() {
                     className="vocab-progress-fill"
                     style={{
                       width: `${
-                        Math.round((completed.length / units.length) * 100) || 0
+                        Math.round((completed.length / units.length) * 100) ||
+                        0
                       }%`,
                       background: LEVEL_COLORS[level],
                     }}
