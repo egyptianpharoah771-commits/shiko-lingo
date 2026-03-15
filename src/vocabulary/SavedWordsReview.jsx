@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+const SESSION_SIZE = 10;
+
 function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -53,13 +55,10 @@ function SavedWordsReview() {
 
       for (const word of words) {
         const correct = dict[word];
-
         if (!correct) continue;
 
         const wrongPool = words.filter((w) => w !== word);
-
         const wrongChoices = shuffleArray(wrongPool).slice(0, 3);
-
         const options = shuffleArray([word, ...wrongChoices]);
 
         qs.push({
@@ -69,7 +68,9 @@ function SavedWordsReview() {
         });
       }
 
-      setQuestions(shuffleArray(qs));
+      const shuffled = shuffleArray(qs).slice(0, SESSION_SIZE);
+
+      setQuestions(shuffled);
       setLoading(false);
     };
 
@@ -89,6 +90,13 @@ function SavedWordsReview() {
   const next = () => {
     setSelected(null);
     setCurrent((c) => c + 1);
+  };
+
+  const restart = () => {
+    setCurrent(0);
+    setScore(0);
+    setSelected(null);
+    setQuestions((q) => shuffleArray(q));
   };
 
   if (loading) {
@@ -111,18 +119,57 @@ function SavedWordsReview() {
     return (
       <div style={{ padding: 30 }}>
         <h2>Review Complete 🎉</h2>
-        <p>
+
+        <p style={{ fontSize: 18 }}>
           Score: {score} / {questions.length}
         </p>
+
+        <button
+          onClick={restart}
+          style={{
+            marginTop: 20,
+            padding: "10px 18px",
+            border: "none",
+            borderRadius: 8,
+            background: "#4A90E2",
+            color: "#fff",
+            cursor: "pointer",
+          }}
+        >
+          Review Again
+        </button>
       </div>
     );
   }
 
   const q = questions[current];
+  const progress = ((current + 1) / questions.length) * 100;
 
   return (
     <div style={{ padding: 30 }}>
       <h2>Saved Words Review</h2>
+
+      <p style={{ marginTop: 10 }}>
+        Question {current + 1} / {questions.length}
+      </p>
+
+      <div
+        style={{
+          height: 8,
+          background: "#eee",
+          borderRadius: 6,
+          overflow: "hidden",
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            width: `${progress}%`,
+            background: "#4A90E2",
+            height: "100%",
+          }}
+        />
+      </div>
 
       <div
         style={{
@@ -130,7 +177,6 @@ function SavedWordsReview() {
           padding: 24,
           borderRadius: 14,
           boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
-          marginTop: 20,
         }}
       >
         <p>
