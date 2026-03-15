@@ -23,10 +23,12 @@ function getProgress(level) {
 
 function VocabularyPage() {
   const levels = Object.keys(VOCABULARY_DATA || {});
-
   const [view, setView] = useState("main");
 
   const [savedWords, setSavedWords] = useState([]);
+  const [filteredWords, setFilteredWords] = useState([]);
+  const [search, setSearch] = useState("");
+
   const [wordDetails, setWordDetails] = useState({});
   const [loadingWords, setLoadingWords] = useState(true);
 
@@ -42,10 +44,7 @@ function VocabularyPage() {
       return;
     }
 
-    const audio = new Audio(
-      `/api/tts?text=${encodeURIComponent(text)}`
-    );
-
+    const audio = new Audio(`/api/tts?text=${encodeURIComponent(text)}`);
     audio.play().catch(() => {});
   };
 
@@ -55,6 +54,7 @@ function VocabularyPage() {
     localStorage.setItem("VOCAB_SAVED", JSON.stringify(updated));
 
     setSavedWords(updated);
+    setFilteredWords(updated);
 
     const copy = { ...wordDetails };
     delete copy[word];
@@ -62,12 +62,26 @@ function VocabularyPage() {
   };
 
   useEffect(() => {
-    const saved = JSON.parse(
-      localStorage.getItem("VOCAB_SAVED") || "[]"
-    );
+    const saved = JSON.parse(localStorage.getItem("VOCAB_SAVED") || "[]");
 
     setSavedWords(saved);
+    setFilteredWords(saved);
   }, []);
+
+  useEffect(() => {
+    const q = search.trim().toLowerCase();
+
+    if (!q) {
+      setFilteredWords(savedWords);
+      return;
+    }
+
+    const filtered = savedWords.filter((w) =>
+      w.toLowerCase().includes(q)
+    );
+
+    setFilteredWords(filtered);
+  }, [search, savedWords]);
 
   useEffect(() => {
     if (!savedWords.length) {
@@ -112,7 +126,6 @@ function VocabularyPage() {
           }
 
           results[word] = { definition, example, arabic };
-
         } catch {
           results[word] = {
             definition: "Definition not available",
@@ -127,12 +140,10 @@ function VocabularyPage() {
     };
 
     loadDefinitions();
-
   }, [savedWords]);
 
   return (
     <div className="vocab-page">
-
       <h1>📘 Vocabulary</h1>
 
       {view === "main" && (
@@ -140,7 +151,7 @@ function VocabularyPage() {
           style={{
             marginTop: 40,
             display: "flex",
-            justifyContent: "center"
+            justifyContent: "center",
           }}
         >
           <div
@@ -151,7 +162,7 @@ function VocabularyPage() {
               background: "#ffffff",
               boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
               cursor: "pointer",
-              textAlign: "center"
+              textAlign: "center",
             }}
           >
             <h2>📘 Vocabulary</h2>
@@ -166,7 +177,7 @@ function VocabularyPage() {
             marginTop: 40,
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(260px,1fr))",
-            gap: 20
+            gap: 20,
           }}
         >
           <div
@@ -176,7 +187,7 @@ function VocabularyPage() {
               borderRadius: 16,
               background: "#ffffff",
               boxShadow: "0 8px 28px rgba(0,0,0,0.08)",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             <h2>⭐ Saved Words</h2>
@@ -189,7 +200,7 @@ function VocabularyPage() {
               borderRadius: 16,
               background: "#ffffff",
               boxShadow: "0 8px 28px rgba(0,0,0,0.08)",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             <h2>📚 Vocabulary Units</h2>
@@ -203,17 +214,34 @@ function VocabularyPage() {
 
           <h2>⭐ My Saved Words</h2>
 
+          <input
+            type="text"
+            placeholder="Search saved words..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 14px",
+              marginBottom: 20,
+              borderRadius: 8,
+              border: "1px solid #ddd",
+            }}
+          />
+
           {loadingWords && <p>Loading...</p>}
+
+          {!loadingWords && filteredWords.length === 0 && (
+            <p>No saved words found.</p>
+          )}
 
           <div
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(240px,1fr))",
-              gap: 18
+              gap: 18,
             }}
           >
-            {savedWords.map((word) => {
-
+            {filteredWords.map((word) => {
               const data = wordDetails[word];
 
               return (
@@ -224,10 +252,9 @@ function VocabularyPage() {
                     padding: 20,
                     borderRadius: 14,
                     background: "#ffffff",
-                    boxShadow: "0 6px 18px rgba(0,0,0,0.06)"
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
                   }}
                 >
-
                   <h3>{word}</h3>
 
                   <button onClick={() => speakWord(word, data?.example)}>
@@ -235,21 +262,26 @@ function VocabularyPage() {
                   </button>
 
                   {data?.arabic && (
-                    <p><strong>🇸🇦 Arabic:</strong> {data.arabic}</p>
+                    <p>
+                      <strong>🇸🇦 Arabic:</strong> {data.arabic}
+                    </p>
                   )}
 
                   {data?.definition && (
-                    <p><strong>Definition:</strong> {data.definition}</p>
+                    <p>
+                      <strong>Definition:</strong> {data.definition}
+                    </p>
                   )}
 
                   {data?.example && (
-                    <p><strong>Example:</strong> {data.example}</p>
+                    <p>
+                      <strong>Example:</strong> {data.example}
+                    </p>
                   )}
 
                   <button onClick={() => removeWord(word)}>
                     ❌ Remove Word
                   </button>
-
                 </div>
               );
             })}
@@ -262,14 +294,11 @@ function VocabularyPage() {
           <button onClick={() => setView("menu")}>← Back</button>
 
           {levels.map((level) => {
-
             const units = Object.values(VOCABULARY_DATA[level] || {});
             const completed = getProgress(level);
 
             return (
-
               <div key={level} className={`vocab-level level-${level}`}>
-
                 <div className="vocab-level-header">
                   <div>
                     <div className="vocab-level-title">
@@ -295,9 +324,7 @@ function VocabularyPage() {
                 </div>
 
                 <div className="vocab-units">
-
                   {units.map((unit, index) => {
-
                     const unitNumber = index + 1;
 
                     const unlocked =
@@ -305,15 +332,12 @@ function VocabularyPage() {
                       completed.includes(unitNumber - 1);
 
                     return unlocked ? (
-
                       <Link
                         key={unitNumber}
                         to={`/vocabulary/${level}/${unitNumber}`}
                         style={{ textDecoration: "none" }}
                       >
-
                         <div className="vocab-card">
-
                           <div className="vocab-card-icon">📗</div>
 
                           <div className="vocab-card-title">
@@ -325,15 +349,10 @@ function VocabularyPage() {
                             <br />
                             {unit.content?.description}
                           </div>
-
                         </div>
-
                       </Link>
-
                     ) : (
-
                       <div key={unitNumber} className="vocab-card locked">
-
                         <div className="vocab-card-icon">🔒</div>
 
                         <div className="vocab-card-title">
@@ -343,24 +362,15 @@ function VocabularyPage() {
                         <div className="vocab-card-desc">
                           Complete previous unit
                         </div>
-
                       </div>
-
                     );
-
                   })}
-
                 </div>
-
               </div>
-
             );
-
           })}
-
         </>
       )}
-
     </div>
   );
 }
