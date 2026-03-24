@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { generateMCQOptions } from "utils/mcqGenerator";
-import TypeQuestion from "./TypeQuestion";
+import { generateMCQOptions } from "../../utils/mcqGenerator";import TypeQuestion from "./TypeQuestion";
 
 export default function MCQQuestion({ word, words, onAnswer }) {
   const options = useMemo(() => {
