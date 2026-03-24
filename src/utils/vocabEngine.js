@@ -68,5 +68,28 @@ export function getDueWords(words) {
     return new Date(w.next_review) <= now;
   });
 }
+/**
+ * Save word progress to DB (safe fallback)
+ */
+export async function saveWordToDB(supabase, word) {
+  if (!supabase || !word) return;
 
+  try {
+    const { error } = await supabase
+      .from("words_progress")
+      .upsert({
+        word_id: word.id,
+        interval: word.interval,
+        ease_factor: word.ease_factor,
+        repetitions: word.repetitions,
+        next_review: word.next_review,
+      });
+
+    if (error) {
+      console.error("saveWordToDB error:", error);
+    }
+  } catch (err) {
+    console.error("saveWordToDB exception:", err);
+  }
+}
 
