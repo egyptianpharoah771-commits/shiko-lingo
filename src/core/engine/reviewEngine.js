@@ -1,6 +1,6 @@
 // src/core/engine/reviewEngine.js
 
-import { generateMCQOptions } from "utils/mcqGenerator";
+import { generateMCQOptions } from "../../utils/mcqGenerator";
 
 /**
  * Normalize text
@@ -50,5 +50,3 @@ export function filterValidWords(words) {
       (w.simple_definition || w.definition)
   );
 }
-
-
