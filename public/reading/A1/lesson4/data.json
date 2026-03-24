@@ -1,0 +1,42 @@
+{
+  "id": "A1-lesson4",
+  "level": "A1",
+  "title": "My Favorite Food",
+  "text": [
+    "My name is Omar. My favorite food is pizza.",
+    "I like pizza because it is delicious and easy to eat.",
+    "I usually eat pizza with my friends on weekends.",
+    "Sometimes, I eat pizza at home while watching TV.",
+    "Pizza makes me happy."
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is Omar’s favorite food?",
+      "options": ["Burger", "Pizza", "Pasta"],
+      "correctAnswer": "Pizza"
+    },
+    {
+      "id": 2,
+      "question": "Why does Omar like pizza?",
+      "options": [
+        "Because it is cheap",
+        "Because it is delicious and easy to eat",
+        "Because it is healthy"
+      ],
+      "correctAnswer": "Because it is delicious and easy to eat"
+    },
+    {
+      "id": 3,
+      "question": "When does Omar usually eat pizza?",
+      "options": ["Every day", "On weekends", "In the morning"],
+      "correctAnswer": "On weekends"
+    },
+    {
+      "id": 4,
+      "question": "What does Omar do while eating pizza at home?",
+      "options": ["Reading a book", "Watching TV", "Studying"],
+      "correctAnswer": "Watching TV"
+    }
+  ]
+}

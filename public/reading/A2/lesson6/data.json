@@ -1,0 +1,47 @@
+{
+  "id": "A2-lesson6",
+  "level": "A2",
+  "title": "Plans for the Future",
+  "text": [
+    "Mona likes thinking about her future and making simple plans. She wants to improve herself and have a better life. She believes that planning helps her feel more confident and organized.",
+    "In the near future, Mona plans to learn a new language and find a better job. She knows that these goals will take time, but she is ready to work hard. Although the future is not always clear, she stays positive and motivated.",
+    "Having plans for the future gives Mona hope and direction in her daily life."
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "question": "Why does Mona like planning for the future?",
+      "answer": "Because it helps her feel confident and organized"
+    },
+    {
+      "id": 2,
+      "question": "What does Mona want to improve?",
+      "answer": "Herself and her life"
+    },
+    {
+      "id": 3,
+      "question": "What are Mona's future plans?",
+      "answer": "To learn a new language and find a better job"
+    },
+    {
+      "id": 4,
+      "question": "Does Mona think her goals will be easy?",
+      "answer": "No, she knows they will take time"
+    },
+    {
+      "id": 5,
+      "question": "How does Mona feel about the future?",
+      "answer": "Positive and motivated"
+    },
+    {
+      "id": 6,
+      "question": "What do plans for the future give Mona?",
+      "answer": "Hope and direction"
+    },
+    {
+      "id": 7,
+      "question": "Why do you think Mona stays positive even though her goals take time?",
+      "answer": "Because she believes planning and hard work will help her reach a better future"
+    }
+  ]
+}

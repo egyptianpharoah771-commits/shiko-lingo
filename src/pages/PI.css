@@ -1,0 +1,221 @@
+/* GENERAL ----------------------------------------- */
+.pi-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #faf7ff;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(140, 77, 255, 0.15);
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pi-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: #6b2cff;
+  margin-bottom: 10px;
+}
+
+.pi-desc {
+  text-align: center;
+  font-size: 16px;
+  color: #5b4a8f;
+  margin-bottom: 25px;
+}
+
+/* BOXES -------------------------------------------- */
+.pi-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(105, 60, 220, 0.12);
+  transition: 0.2s ease;
+}
+
+.pi-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(105, 60, 220, 0.20);
+}
+
+.pi-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #6b2cff;
+}
+
+/* BUTTONS ------------------------------------------ */
+.pi-button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #7d42ff, #b08bff);
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pi-button:hover {
+  background: linear-gradient(135deg, #6a23ff, #a174ff);
+  transform: translateY(-2px);
+}
+
+.pi-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* LOADER ------------------------------------------- */
+.loader {
+  margin-left: 10px;
+  border: 3px solid #d8caff;
+  border-top: 3px solid #6b2cff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* DASHBOARD ---------------------------------------- */
+.dashboard .dash-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.dash-title {
+  color: #5a4e7a;
+  font-weight: bold;
+}
+
+.dash-value {
+  color: #6a23ff;
+  font-weight: 600;
+}
+
+/* PREMIUM BADGE ------------------------------------ */
+.premium-badge {
+  margin-top: 12px;
+  padding: 10px;
+  background: #ffe97a;
+  border: 1px solid #d7b300;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #5a4200;
+  box-shadow: 0 2px 6px rgba(121, 92, 0, 0.15);
+}
+
+/* PREMIUM CONTENT ---------------------------------- */
+.premium-box {
+  background: #fff8d6;
+  border-left: 4px solid #ffcc32;
+}
+
+.premium-box ul {
+  padding-left: 20px;
+  margin-top: 10px;
+}
+
+.premium-box li {
+  margin: 6px 0;
+  color: #5a4e7a;
+}
+
+/* SUBSCRIPTION INFO -------------------------------- */
+.subscription-info {
+  margin-top: 12px;
+  padding: 10px;
+  background: #f4ecff;
+  border-radius: 8px;
+  color: #5a4e7a;
+  text-align: center;
+  font-weight: 500;
+}
+
+.subscription-info.expired {
+  background: #ffeaea;
+  border: 1px solid #ff5c5c;
+  color: #c40000;
+}
+
+/* TRANSACTION HISTORY ------------------------------- */
+.tx-box {
+  background: #f3ecff;
+}
+
+.tx-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(105, 60, 220, 0.12);
+}
+
+.tx-item span:first-child {
+  font-weight: bold;
+  color: #6b2cff;
+}
+
+.tx-item span:last-child {
+  color: #6a6a6a;
+  font-size: 12px;
+}
+
+/* STATUS -------------------------------------------- */
+.pi-status {
+  text-align: center;
+  margin-top: 15px;
+  padding: 10px;
+  background: #f4ecff;
+  border-radius: 10px;
+  border: 1px solid #d3befc;
+  color: #6b2cff;
+  font-weight: bold;
+}
+
+/* LOGO ANIMATION ----------------------------------- */
+.logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.pi-logo {
+  width: 80px;
+  filter: drop-shadow(0 0 8px rgba(130, 75, 255, 0.5));
+  animation: fadePulse 2.8s ease-in-out infinite;
+  transition: 0.3s ease;
+  cursor: pointer;
+}
+
+.pi-logo:hover {
+  transform: scale(1.08) rotate(3deg);
+  filter: drop-shadow(0 0 14px rgba(150, 95, 255, 0.9));
+}
+
+@keyframes fadePulse {
+  0% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.07); }
+  100% { opacity: 0.75; transform: scale(1); }
+}
