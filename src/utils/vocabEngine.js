@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
-import { getNextReview } from "./spacedRepetition";
+import { getNextReview } from "../vocabulary/spacedRepetition";
 
 /* =========================
 Vocabulary Engine
@@ -32,6 +32,30 @@ function normalizeWord(row) {
 }
 
 /* =========================
+Safe Fallback (CRITICAL FIX)
+========================= */
+
+function safeNextReview(stage, isCorrect) {
+  try {
+    return getNextReview(stage, isCorrect);
+  } catch (e) {
+    console.warn("Fallback spaced repetition used");
+
+    const nextStage = isCorrect
+      ? Math.min((stage || 0) + 1, 4)
+      : 0;
+
+    const delayMinutes = [0, 5, 30, 180, 1440][nextStage] || 5;
+
+    const nextReview = new Date(
+      Date.now() + delayMinutes * 60000
+    ).toISOString();
+
+    return { nextStage, nextReview };
+  }
+}
+
+/* =========================
 Save Word
 ========================= */
 
@@ -44,8 +68,6 @@ export async function saveWordToDB(userId, word, definition = "") {
 
   const uid = userId || "dev-user";
 
-  /* Check if word already exists */
-
   const { data: existing } = await supabase
     .from("vocab_progress")
     .select("id")
@@ -56,8 +78,6 @@ export async function saveWordToDB(userId, word, definition = "") {
   if (existing) {
     return existing;
   }
-
-  /* First review available immediately */
 
   const immediateReview =
     new Date(Date.now() - 1000).toISOString();
@@ -133,7 +153,7 @@ export async function updateWordStage(userId, word, isCorrect) {
   if (!existing) return;
 
   const { nextStage, nextReview } =
-    getNextReview(existing.stage, isCorrect);
+    safeNextReview(existing.stage, isCorrect);
 
   const { error } = await supabase
     .from("vocab_progress")
@@ -165,8 +185,6 @@ Get Words For Review
 export async function getWordsForReview(userId, limit = 20) {
 
   const uid = userId || "dev-user";
-
-  /* Small buffer for timezone differences */
 
   const now =
     new Date(Date.now() + 60000).toISOString();
