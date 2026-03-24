@@ -18,7 +18,6 @@ import {
 } from "./context/SubscriptionContext";
 
 import { initPiSDK, isPiAvailable } from "./lib/initPi";
-import { migrateLegacyStorage } from "./utils/migrateStorage";
 
 import FeedbackButton from "./components/FeedbackButton";
 import AdminGuard from "./components/AdminGuard";
@@ -61,9 +60,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
 
-/* ======================
-   Entry Page
-====================== */
+/* ====================== Entry ====================== */
 
 function Entry() {
   const navigate = useNavigate();
@@ -101,9 +98,7 @@ function Entry() {
   );
 }
 
-/* ======================
-   Auth Gate
-====================== */
+/* ====================== Auth Gate ====================== */
 
 function AuthGate({ children }) {
   const { user, loading } = useAuth();
@@ -123,9 +118,7 @@ function AuthGate({ children }) {
   return children;
 }
 
-/* ======================
-   Subscription Guard
-====================== */
+/* ====================== Subscription Guard ====================== */
 
 function SubscriptionGuard() {
   const { isActive, loading } = useSubscriptionContext();
@@ -142,7 +135,6 @@ function SubscriptionGuard() {
     <AppLayout>
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
-
         <Route path="/learn" element={<LearnPage />} />
 
         <Route path="/grammar" element={<GrammarLevels />} />
@@ -152,7 +144,6 @@ function SubscriptionGuard() {
         <Route path="/vocabulary" element={<VocabularyPage />} />
         <Route path="/vocabulary/review" element={<SavedWordsReview />} />
 
-        {/* 💣 FIX: replace broken quiz engine */}
         <Route
           path="/vocabulary/quiz"
           element={
@@ -210,26 +201,14 @@ function SubscriptionGuard() {
   );
 }
 
-/* ======================
-   Layout
-====================== */
+/* ====================== Layout ====================== */
 
 function AppLayout({ children }) {
   const location = useLocation();
   const hideLayout = location.pathname === "/";
 
-  useEffect(() => {
-    migrateLegacyStorage();
-  }, []);
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {!hideLayout && <FeedbackButton />}
 
       {!hideLayout && (
@@ -318,9 +297,7 @@ function App() {
   );
 }
 
-/* ======================
-   Styles
-====================== */
+/* ====================== Styles ====================== */
 
 const headerStyle = {
   backgroundColor: "#ffffff",
