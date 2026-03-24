@@ -42,3 +42,5 @@ export const successBadge = {
   fontSize: "12px",
   display: "inline-block",
 };
+
+

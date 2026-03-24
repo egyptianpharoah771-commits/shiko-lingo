@@ -21,3 +21,5 @@ It focuses on what is in progress, not on habits or permanent situations.
 };
 
 export default content;
+
+

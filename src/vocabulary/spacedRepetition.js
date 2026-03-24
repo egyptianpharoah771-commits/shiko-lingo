@@ -57,3 +57,5 @@ export function getWordsForReview(words) {
 
   return result.length ? result : words.slice(0, 5);
 }
+
+

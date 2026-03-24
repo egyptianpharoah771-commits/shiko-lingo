@@ -16,3 +16,5 @@ export { default as AssessmentResult } from "./ui/AssessmentResult";
 
 // Logic
 export { evaluateAssessment } from "./logic/evaluation";
+
+

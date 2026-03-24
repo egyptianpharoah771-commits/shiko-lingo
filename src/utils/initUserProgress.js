@@ -86,3 +86,5 @@ export async function initUserProgress(userId) {
     console.error("❌ INIT CRASH:", err);
   }
 }
+
+

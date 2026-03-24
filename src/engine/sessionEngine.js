@@ -142,3 +142,5 @@ export function prepareSession(rawWords, weakMap = {}, sessionSize = 10) {
 
   return finalSession;
 }
+
+

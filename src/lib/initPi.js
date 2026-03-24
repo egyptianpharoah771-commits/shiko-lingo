@@ -63,3 +63,5 @@ export function isPiAvailable() {
     typeof window.Pi !== "undefined"
   );
 }
+
+

@@ -1,3 +1,5 @@
+// src/utils/mcqGenerator.js
+
 function normalize(text) {
   return text?.toLowerCase().trim();
 }
@@ -17,20 +19,20 @@ function shuffle(arr) {
 }
 
 /**
- * Deduplicate definitions safely
+ * Deduplicate definitions safely (supports simple_definition)
  */
 function getUniqueDefinitions(words) {
   const map = new Map();
 
   for (const w of words) {
-    if (!w?.definition) continue;
+    const def = w?.simple_definition || w?.definition;
+    if (!def) continue;
 
-    const norm = normalize(w.definition);
+    const norm = normalize(def);
     if (!norm) continue;
 
-    // keep first occurrence only
     if (!map.has(norm)) {
-      map.set(norm, w.definition);
+      map.set(norm, def);
     }
   }
 
@@ -38,28 +40,36 @@ function getUniqueDefinitions(words) {
 }
 
 /**
- * MCQ Generator — Stable, Deterministic Fallback, No Empty State
+ * MCQ Generator — Stable, Supports DB schema, No Empty State
  */
 export function generateMCQOptions(currentWord, words) {
-  if (!currentWord || !currentWord.definition || !words?.length) return [];
+  if (!currentWord || !words?.length) return [];
 
-  const correct = currentWord.definition;
+  const correct =
+    currentWord.simple_definition || currentWord.definition;
+
+  if (!correct) return [];
+
   const normalizedCorrect = normalize(correct);
 
   // 🟢 Clean pool
   const filtered = words.filter((w) => {
-    if (!w || !w.definition) return false;
+    if (!w) return false;
+
+    const def = w.simple_definition || w.definition;
+    if (!def) return false;
+
     if (w.id === currentWord.id) return false;
 
-    return normalize(w.definition) !== normalizedCorrect;
+    return normalize(def) !== normalizedCorrect;
   });
 
   // 🧠 Unique pool
   const uniquePool = getUniqueDefinitions(filtered);
 
-  // 🔥 Fallback: لو مفيش بيانات كفاية → رجع سؤال TYPE بدل crash
+  // 🔥 Fallback: لو مفيش distractors كفاية → TYPE mode
   if (uniquePool.length < 3) {
-    return [correct]; // 👈 signal للـ engine إنه مش MCQ
+    return [correct];
   }
 
   const distractors = shuffle(uniquePool).slice(0, 3);

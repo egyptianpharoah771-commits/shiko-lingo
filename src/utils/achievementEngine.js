@@ -35,3 +35,5 @@ export function evaluateAchievements({ xp, streak }) {
   if (xp >= 50) unlockAchievement("xp50");
   if (streak >= 7) unlockAchievement("streak7");
 }
+
+

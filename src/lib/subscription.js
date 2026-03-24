@@ -22,3 +22,5 @@ export async function activateSubscription(user_id) {
     throw error;
   }
 }
+
+

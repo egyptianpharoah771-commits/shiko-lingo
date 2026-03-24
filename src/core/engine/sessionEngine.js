@@ -1,6 +1,6 @@
 // src/core/engine/sessionEngine.js
 
-import { generateMCQOptions } from "../../utils/mcqGenerator";
+import { generateMCQOptions } from "utils/mcqGenerator";
 
 /**
  * Normalize text
@@ -38,3 +38,5 @@ export function validateAnswer(selected, correctAnswer) {
   if (!selected || !correctAnswer) return false;
   return normalize(selected) === normalize(correctAnswer);
 }
+
+

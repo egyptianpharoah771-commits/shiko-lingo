@@ -66,3 +66,5 @@ export function clearUserIdentity() {
   localStorage.removeItem(GUEST_KEY);
   localStorage.removeItem(PI_USER_KEY);
 }
+
+

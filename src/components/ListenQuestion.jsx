@@ -24,3 +24,5 @@ export default function ListenQuestion({ word, onAnswer }) {
     </div>
   );
 }
+
+

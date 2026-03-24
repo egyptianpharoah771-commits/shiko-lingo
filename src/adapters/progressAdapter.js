@@ -27,3 +27,5 @@ export function getUserProgress(uid = null) {
     updatedAt: new Date().toISOString(),
   };
 }
+
+

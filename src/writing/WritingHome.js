@@ -196,3 +196,5 @@ const btnStyle = {
 };
 
 export default WritingHome;
+
+

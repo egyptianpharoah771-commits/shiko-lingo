@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { generateMCQOptions } from "../utils/mcqGenerator";
+import { generateMCQOptions } from "utils/mcqGenerator";
 
 export function useQuizEngine(words) {
   const [index, setIndex] = useState(0);
@@ -36,3 +36,5 @@ export function useQuizEngine(words) {
     next,
   };
 }
+
+
