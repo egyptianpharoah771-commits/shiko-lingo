@@ -37,12 +37,11 @@ export default function ReviewWordsPage() {
         localStorage.getItem("level_assessment_result") || "{}"
       );
 
-      const currentLevel = assessment.level || "A1";
+      const currentLevel = (assessment.level || "A1").toString().trim().toUpperCase();
       setUserLevel(currentLevel);
 
       console.log("LEVEL:", currentLevel);
 
-      // 🔥 FIX: remove strict filter + ignore case
       const { data, error } = await supabase
         .from("words")
         .select("id, word, definition, simple_definition, level, audio_url")
@@ -51,13 +50,20 @@ export default function ReviewWordsPage() {
 
       if (error) throw error;
 
-      console.log("RAW:", data);
+      console.log("RAW:", data?.length);
 
-      // 🔥 FIX: fallback definition
+      // 🔥 FIX الحقيقي هنا
       const cleaned = (data || [])
         .map((w, i) => {
+          const simple = w.simple_definition?.trim();
+          const fallback = w.definition?.trim();
+
           const definition =
-            w.simple_definition || w.definition;
+            simple && simple.length > 2
+              ? simple
+              : fallback && fallback.length > 2
+              ? fallback
+              : null;
 
           if (!definition) return null;
 
