@@ -5,25 +5,6 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
-// 🔊 SAFE SOUND PLAYER (CREATED ON DEMAND)
-function playSound(type) {
-  try {
-    const src =
-      type === "correct"
-        ? "/sounds/correct.mp3"
-        : "/sounds/wrong.mp3";
-
-    const audio = new Audio(src);
-
-    // 🔥 force user-interaction playback
-    audio.play().catch(() => {
-      console.warn("🔇 Sound blocked or file missing:", src);
-    });
-  } catch (e) {
-    console.warn("🔇 Audio error:", e);
-  }
-}
-
 // 🔥 A1 MAP
 const A1_MAP = {
   strong: "very powerful",
@@ -56,6 +37,20 @@ function isA1Word(w) {
 
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
+
+  // 🔊 AUDIO REFS (STRONG FIX)
+  const correctRef = useRef(null);
+  const wrongRef = useRef(null);
+
+  const playSound = (type) => {
+    try {
+      const ref = type === "correct" ? correctRef.current : wrongRef.current;
+      if (!ref) return;
+
+      ref.currentTime = 0;
+      ref.play().catch(() => {});
+    } catch {}
+  };
 
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -158,7 +153,7 @@ export default function ReviewWordsPage() {
     setChecking(true);
     setFeedback(isCorrect ? "correct" : "wrong");
 
-    // 🔊 SOUND (guaranteed trigger)
+    // 🔊 PLAY SOUND (WORKS WITH USER INTERACTION)
     playSound(isCorrect ? "correct" : "wrong");
 
     if (mode === "mcq") setSelected(answer);
@@ -185,11 +180,14 @@ export default function ReviewWordsPage() {
     <div style={{ padding: 20 }}>
       <h2>Review</h2>
 
+      {/* 🔊 AUDIO ELEMENTS (MUST EXIST) */}
+      <audio ref={correctRef} src="/sounds/correct.mp3" preload="auto" />
+      <audio ref={wrongRef} src="/sounds/wrong.mp3" preload="auto" />
+
       <p>
         {currentIndex + 1} / {words.length}
       </p>
 
-      {/* TYPE */}
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
@@ -206,7 +204,6 @@ export default function ReviewWordsPage() {
         </div>
       )}
 
-      {/* MCQ */}
       {mode === "mcq" && (
         <div>
           <h3>{currentWord.word}</h3>
