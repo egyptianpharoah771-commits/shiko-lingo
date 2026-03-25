@@ -2,76 +2,49 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 function normalize(word) {
-  return word?.toLowerCase().trim() || "";
+  return word?.toLowerCase().trim();
 }
 
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
-  const audioRef = useRef(null);
 
   const [words, setWords] = useState([]);
-  const [question, setQuestion] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [mode, setMode] = useState("mcq"); // mcq | type | listen
+  const [selected, setSelected] = useState(null);
+  const [input, setInput] = useState("");
   const [checking, setChecking] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const [userLevel, setUserLevel] = useState("A1");
-  const [userInput, setUserInput] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const correctSound = useRef(null);
-  const wrongSound = useRef(null);
-
-  useEffect(() => {
-    correctSound.current = new Audio("/sounds/correct.mp3");
-    wrongSound.current = new Audio("/sounds/wrong.mp3");
-  }, []);
-
-  const loadWords = useCallback(async () => {
+  // 🔥 SAFE FETCH (ISOLATED)
+  const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
-
-      const assessment = JSON.parse(
-        localStorage.getItem("level_assessment_result") || "{}"
-      );
-
-      const currentLevel = (assessment.level || "A1")
-        .toString()
-        .trim()
-        .toUpperCase();
-
-      setUserLevel(currentLevel);
-
-      console.log("LEVEL:", currentLevel);
+      setError(null);
 
       const { data, error } = await supabase
         .from("words")
-        .select("id, word, definition, simple_definition, level, audio_url")
-        .limit(30);
+        .select("id, word, simple_definition, audio_url")
+        .limit(50);
 
       if (error) throw error;
 
-      console.log("RAW:", data);
+      if (!data || data.length === 0) {
+        throw new Error("EMPTY_DATA");
+      }
 
-      const cleaned = (data || [])
-        .map((w, i) => {
-          const definition =
-            w.simple_definition?.trim() ||
-            w.definition?.trim();
+      const mapped = data.map((w) => ({
+        id: w.id,
+        word: w.word,
+        definition: w.simple_definition,
+        audio: w.audio_url || null,
+      }));
 
-          if (!definition || definition.length < 2) return null;
-
-          return {
-            ...w,
-            definition,
-            stage: i % 6,
-          };
-        })
-        .filter(Boolean);
-
-      console.log("CLEANED:", cleaned.length);
-
-      setWords(cleaned);
+      setWords(mapped);
     } catch (err) {
-      console.error("Load Error:", err);
+      console.error("❌ FETCH WORDS ERROR:", err.message);
+      setError(err.message);
       setWords([]);
     } finally {
       setLoading(false);
@@ -79,140 +52,171 @@ export default function ReviewWordsPage() {
   }, []);
 
   useEffect(() => {
-    loadWords();
-    return () => timeoutRef.current && clearTimeout(timeoutRef.current);
-  }, [loadWords]);
+    fetchWords();
+  }, [fetchWords]);
 
-  const currentWord = words[0];
+  const currentWord = words[currentIndex];
 
-  useEffect(() => {
-    if (!currentWord) return;
+  // 🔥 GENERATE MCQ OPTIONS (SAFE)
+  const generateOptions = useCallback(() => {
+    if (!currentWord || words.length < 4) return [];
 
-    const definition = currentWord.definition;
+    const correct = currentWord.definition;
 
-    let type = "MCQ";
-    if (currentWord.stage >= 2 && currentWord.stage <= 3) type = "TYPE";
-    if (currentWord.stage >= 4) type = "LISTEN";
+    const shuffled = [...words]
+      .filter((w) => w.definition && w.definition !== correct)
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 3);
 
-    let options = [];
-
-    if (type === "MCQ") {
-      const pool = words
-        .map((w) => w.word)
-        .filter((w) => w && w !== currentWord.word);
-
-      const unique = [...new Set(pool)];
-
-      if (unique.length >= 3) {
-        const shuffled = [...unique].sort(() => 0.5 - Math.random());
-
-        options = [
-          currentWord.word,
-          ...shuffled.slice(0, 3),
-        ].sort(() => 0.5 - Math.random());
-      } else {
-        type = "TYPE";
-      }
-    }
-
-    const audioUrl =
-      currentWord.audio_url ||
-      `/api/tts?text=${encodeURIComponent(currentWord.word)}`;
-
-    setQuestion({
-      type,
-      prompt: definition,
-      correct: currentWord.word,
-      audio: audioUrl,
-      options,
-    });
+    return [...shuffled, currentWord]
+      .sort(() => 0.5 - Math.random())
+      .map((w) => w.definition);
   }, [currentWord, words]);
 
-  function handleAnswer(selected) {
-    if (!question || checking) return;
+  const [options, setOptions] = useState([]);
+
+  useEffect(() => {
+    if (mode === "mcq") {
+      setOptions(generateOptions());
+    }
+  }, [currentWord, mode, generateOptions]);
+
+  // 🔥 NEXT WORD
+  const goNext = () => {
+    setSelected(null);
+    setInput("");
+    setChecking(false);
+
+    setCurrentIndex((prev) => {
+      if (prev + 1 >= words.length) return 0;
+      return prev + 1;
+    });
+
+    // rotate mode
+    setMode((prev) => {
+      if (prev === "mcq") return "type";
+      if (prev === "type") return "listen";
+      return "mcq";
+    });
+  };
+
+  // 🔥 HANDLE ANSWER
+  const handleAnswer = (answer) => {
+    if (!currentWord || checking) return;
 
     setChecking(true);
 
-    const isCorrect =
-      normalize(selected) === normalize(question.correct);
+    let isCorrect = false;
 
-    const sound = isCorrect ? correctSound.current : wrongSound.current;
-
-    if (sound) {
-      sound.currentTime = 0;
-      sound.play().catch(() => {});
+    if (mode === "mcq") {
+      isCorrect =
+        normalize(answer) === normalize(currentWord.definition);
+      setSelected(answer);
     }
 
-    setFeedback(isCorrect ? "✅ صحيح" : `❌ ${question.correct}`);
+    if (mode === "type") {
+      isCorrect =
+        normalize(answer) === normalize(currentWord.word);
+    }
+
+    if (mode === "listen") {
+      isCorrect =
+        normalize(answer) === normalize(currentWord.word);
+    }
+
+    console.log(
+      isCorrect ? "✅ Correct" : "❌ Wrong",
+      "| Input:",
+      answer,
+      "| Expected:",
+      mode === "mcq"
+        ? currentWord.definition
+        : currentWord.word
+    );
 
     timeoutRef.current = setTimeout(() => {
-      const updatedWord = {
-        ...currentWord,
-        stage: (currentWord.stage + 1) % 6,
-      };
+      goNext();
+    }, 800);
+  };
 
-      setWords((prev) => [...prev.slice(1), updatedWord]);
+  // 🔥 UI STATES
 
-      setFeedback("");
-      setUserInput("");
-      setChecking(false);
-      setQuestion(null);
-    }, 1000);
+  if (loading) {
+    return <div style={{ padding: 20 }}>Loading...</div>;
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (error) {
+    return (
+      <div style={{ padding: 20 }}>
+        ❌ Error: {error}
+        <button onClick={fetchWords}>Retry</button>
+      </div>
+    );
+  }
 
-  if (!words.length)
-    return <div style={{ padding: 40 }}>No words available</div>;
-
-  if (!question) return <div>...</div>;
+  if (!words.length) {
+    return <div style={{ padding: 20 }}>⚠️ No words available</div>;
+  }
 
   return (
-    <div style={{ maxWidth: 400, margin: "auto" }}>
-      <div>
-        Level: {currentWord.level} | Type: {question.type}
-      </div>
+    <div style={{ padding: 20 }}>
+      <h2>Review</h2>
 
-      {question.type === "LISTEN" ? (
-        <div>
-          <audio ref={audioRef} src={question.audio} />
-          <button
-            onClick={() => {
-              if (audioRef.current) {
-                audioRef.current.currentTime = 0;
-                audioRef.current.play().catch(() => {});
-              }
-            }}
-          >
-            🔊 Play
-          </button>
-        </div>
-      ) : (
-        <h2>{question.prompt}</h2>
-      )}
+      <p>
+        {currentIndex + 1} / {words.length}
+      </p>
 
-      {question.type === "MCQ" ? (
+      <h3>{currentWord.word}</h3>
+
+      {/* MCQ */}
+      {mode === "mcq" && (
         <div>
-          {question.options.map((opt, i) => (
-            <button key={i} onClick={() => handleAnswer(opt)}>
+          {options.map((opt, i) => (
+            <button
+              key={i}
+              onClick={() => handleAnswer(opt)}
+              style={{
+                display: "block",
+                margin: "8px 0",
+                background:
+                  selected === opt ? "#ddd" : "#fff",
+              }}
+            >
               {opt}
             </button>
           ))}
         </div>
-      ) : (
+      )}
+
+      {/* TYPE */}
+      {mode === "type" && (
         <div>
+          <p>{currentWord.definition}</p>
           <input
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Type the word"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
           />
-          <button onClick={() => handleAnswer(userInput)}>
+          <button onClick={() => handleAnswer(input)}>
             Submit
           </button>
         </div>
       )}
 
-      {feedback && <div>{feedback}</div>}
+      {/* LISTEN */}
+      {mode === "listen" && (
+        <div>
+          {currentWord.audio && (
+            <audio controls src={currentWord.audio} />
+          )}
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+          <button onClick={() => handleAnswer(input)}>
+            Submit
+          </button>
+        </div>
+      )}
     </div>
   );
 }
