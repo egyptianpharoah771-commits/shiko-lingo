@@ -10,14 +10,14 @@ export default function ReviewWordsPage() {
 
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [mode, setMode] = useState("mcq"); // mcq | type | listen
+  const [mode, setMode] = useState("mcq"); // mcq | type
   const [selected, setSelected] = useState(null);
   const [input, setInput] = useState("");
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 SAFE FETCH (ISOLATED)
+  // 🔥 SAFE FETCH (NO audio_url)
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
@@ -25,7 +25,7 @@ export default function ReviewWordsPage() {
 
       const { data, error } = await supabase
         .from("words")
-        .select("id, word, simple_definition, audio_url")
+        .select("id, word, simple_definition")
         .limit(50);
 
       if (error) throw error;
@@ -38,7 +38,6 @@ export default function ReviewWordsPage() {
         id: w.id,
         word: w.word,
         definition: w.simple_definition,
-        audio: w.audio_url || null,
       }));
 
       setWords(mapped);
@@ -57,7 +56,7 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 GENERATE MCQ OPTIONS (SAFE)
+  // 🔥 MCQ OPTIONS
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -92,12 +91,7 @@ export default function ReviewWordsPage() {
       return prev + 1;
     });
 
-    // rotate mode
-    setMode((prev) => {
-      if (prev === "mcq") return "type";
-      if (prev === "type") return "listen";
-      return "mcq";
-    });
+    setMode((prev) => (prev === "mcq" ? "type" : "mcq"));
   };
 
   // 🔥 HANDLE ANSWER
@@ -119,11 +113,6 @@ export default function ReviewWordsPage() {
         normalize(answer) === normalize(currentWord.word);
     }
 
-    if (mode === "listen") {
-      isCorrect =
-        normalize(answer) === normalize(currentWord.word);
-    }
-
     console.log(
       isCorrect ? "✅ Correct" : "❌ Wrong",
       "| Input:",
@@ -139,7 +128,7 @@ export default function ReviewWordsPage() {
     }, 800);
   };
 
-  // 🔥 UI STATES
+  // 🔥 UI
 
   if (loading) {
     return <div style={{ padding: 20 }}>Loading...</div>;
@@ -192,22 +181,6 @@ export default function ReviewWordsPage() {
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
-          <button onClick={() => handleAnswer(input)}>
-            Submit
-          </button>
-        </div>
-      )}
-
-      {/* LISTEN */}
-      {mode === "listen" && (
-        <div>
-          {currentWord.audio && (
-            <audio controls src={currentWord.audio} />
-          )}
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
