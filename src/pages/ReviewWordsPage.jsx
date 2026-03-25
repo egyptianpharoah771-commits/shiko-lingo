@@ -62,6 +62,9 @@ export default function ReviewWordsPage() {
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState([]);
 
+  // 🔥 NEW: review queue
+  const [reviewQueue, setReviewQueue] = useState([]);
+
   // 🔥 FETCH
   const fetchWords = useCallback(async () => {
     try {
@@ -102,7 +105,7 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 MCQ (IMPROVED)
+  // 🔥 MCQ
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -113,10 +116,7 @@ export default function ReviewWordsPage() {
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
-    // ضمان 4 اختيارات
-    const all = [...wrong, currentWord];
-
-    return all
+    return [...wrong, currentWord]
       .sort(() => 0.5 - Math.random())
       .map((w) => w.definition);
   }, [currentWord, words]);
@@ -127,22 +127,36 @@ export default function ReviewWordsPage() {
     }
   }, [currentWord, mode, generateOptions]);
 
-  // 🔥 NEXT (NO REPEAT)
+  // 🔥 NEXT (WITH QUEUE)
   const goNext = () => {
     setSelected(null);
     setInput("");
     setChecking(false);
     setFeedback(null);
 
-    setCurrentIndex((prev) => {
-      if (words.length <= 1) return prev;
+    // لو فيه كلمات غلط → ترجّع بعد شوية
+    if (reviewQueue.length > 0) {
+      const nextItem = reviewQueue[0];
 
-      let next = prev;
-      while (next === prev) {
-        next = Math.floor(Math.random() * words.length);
+      setReviewQueue((prev) => prev.slice(1));
+
+      const index = words.findIndex((w) => w.id === nextItem.id);
+
+      if (index !== -1) {
+        setCurrentIndex(index);
       }
-      return next;
-    });
+    } else {
+      setCurrentIndex((prev) => {
+        if (words.length <= 1) return prev;
+
+        let next;
+        do {
+          next = Math.floor(Math.random() * words.length);
+        } while (next === prev);
+
+        return next;
+      });
+    }
 
     setMode((prev) => (prev === "mcq" ? "type" : "mcq"));
   };
@@ -151,7 +165,6 @@ export default function ReviewWordsPage() {
   const handleAnswer = (answer) => {
     if (!currentWord || checking) return;
 
-    // ❌ منع submit فاضي
     if (mode === "type" && !normalize(answer)) return;
 
     const correctAnswer =
@@ -166,6 +179,11 @@ export default function ReviewWordsPage() {
     setFeedback(isCorrect ? "correct" : "wrong");
 
     playSound(isCorrect ? "correct" : "wrong");
+
+    if (!isCorrect) {
+      // 🔥 add to queue (delay effect)
+      setReviewQueue((prev) => [...prev, currentWord]);
+    }
 
     if (mode === "mcq") setSelected(answer);
 
