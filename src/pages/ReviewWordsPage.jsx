@@ -5,22 +5,26 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
-// 🔊 SOUND SYSTEM (SAFE)
-const correctSound = typeof Audio !== "undefined" ? new Audio("/sounds/correct.mp3") : null;
-const wrongSound = typeof Audio !== "undefined" ? new Audio("/sounds/wrong.mp3") : null;
-
+// 🔊 SAFE SOUND PLAYER (CREATED ON DEMAND)
 function playSound(type) {
   try {
-    const sound = type === "correct" ? correctSound : wrongSound;
-    if (!sound) return;
-    sound.currentTime = 0;
-    sound.play();
-  } catch {
-    // silent fail
+    const src =
+      type === "correct"
+        ? "/sounds/correct.mp3"
+        : "/sounds/wrong.mp3";
+
+    const audio = new Audio(src);
+
+    // 🔥 force user-interaction playback
+    audio.play().catch(() => {
+      console.warn("🔇 Sound blocked or file missing:", src);
+    });
+  } catch (e) {
+    console.warn("🔇 Audio error:", e);
   }
 }
 
-// 🔥 A1 CONTROLLED DICTIONARY
+// 🔥 A1 MAP
 const A1_MAP = {
   strong: "very powerful",
   big: "large",
@@ -45,7 +49,6 @@ const A1_MAP = {
   bad: "not good",
 };
 
-// 🔥 STRICT FILTER
 function isA1Word(w) {
   if (!w.word) return false;
   return !!A1_MAP[w.word.toLowerCase()];
@@ -155,7 +158,7 @@ export default function ReviewWordsPage() {
     setChecking(true);
     setFeedback(isCorrect ? "correct" : "wrong");
 
-    // 🔊 SOUND (FIXED PROPERLY)
+    // 🔊 SOUND (guaranteed trigger)
     playSound(isCorrect ? "correct" : "wrong");
 
     if (mode === "mcq") setSelected(answer);
