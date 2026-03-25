@@ -5,7 +5,22 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
-// 🔥 A1 CONTROLLED DICTIONARY (ONLY SOURCE OF TRUTH)
+// 🔊 SOUND SYSTEM (SAFE)
+const correctSound = typeof Audio !== "undefined" ? new Audio("/sounds/correct.mp3") : null;
+const wrongSound = typeof Audio !== "undefined" ? new Audio("/sounds/wrong.mp3") : null;
+
+function playSound(type) {
+  try {
+    const sound = type === "correct" ? correctSound : wrongSound;
+    if (!sound) return;
+    sound.currentTime = 0;
+    sound.play();
+  } catch {
+    // silent fail
+  }
+}
+
+// 🔥 A1 CONTROLLED DICTIONARY
 const A1_MAP = {
   strong: "very powerful",
   big: "large",
@@ -30,7 +45,7 @@ const A1_MAP = {
   bad: "not good",
 };
 
-// 🔥 STRICT FILTER (NO FALLBACK)
+// 🔥 STRICT FILTER
 function isA1Word(w) {
   if (!w.word) return false;
   return !!A1_MAP[w.word.toLowerCase()];
@@ -49,7 +64,7 @@ export default function ReviewWordsPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 FETCH ONLY VALID WORDS
+  // 🔥 FETCH
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
@@ -139,6 +154,9 @@ export default function ReviewWordsPage() {
 
     setChecking(true);
     setFeedback(isCorrect ? "correct" : "wrong");
+
+    // 🔊 SOUND (FIXED PROPERLY)
+    playSound(isCorrect ? "correct" : "wrong");
 
     if (mode === "mcq") setSelected(answer);
 
