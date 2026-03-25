@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { initUserProgress } from "../utils/initUserProgress";
 
 function normalize(word) {
   return word?.toLowerCase().trim() || "";
@@ -30,9 +29,6 @@ export default function ReviewWordsPage() {
     try {
       setLoading(true);
 
-      const userId = localStorage.getItem("pi_uid") || "dev-user";
-      await initUserProgress(userId);
-
       const assessment = JSON.parse(
         localStorage.getItem("level_assessment_result") || "{}"
       );
@@ -49,12 +45,11 @@ export default function ReviewWordsPage() {
       const { data, error } = await supabase
         .from("words")
         .select("id, word, definition, simple_definition, level, audio_url")
-        // ❌ شيلنا الفلتر مؤقتًا للتشخيص
         .limit(30);
 
       if (error) throw error;
 
-      console.log("RAW:", data?.length);
+      console.log("RAW:", data);
 
       const cleaned = (data || [])
         .map((w, i) => {
