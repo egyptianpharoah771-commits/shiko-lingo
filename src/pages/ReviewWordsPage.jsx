@@ -5,6 +5,27 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
+// 🔥 A1 FILTER (REALISTIC)
+function isA1Word(wordObj) {
+  if (!wordObj.word || !wordObj.simple_definition) return false;
+
+  const word = wordObj.word.trim();
+  const def = wordObj.simple_definition.trim();
+
+  // ❌ reject long/complex words
+  if (word.length > 5) return false;
+
+  // ❌ reject dictionary style
+  if (def.includes(";")) return false;
+  if (def.includes("especially")) return false;
+  if (def.includes("the act of")) return false;
+
+  // ❌ reject long definitions
+  if (def.length > 60) return false;
+
+  return true;
+}
+
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
 
@@ -14,11 +35,11 @@ export default function ReviewWordsPage() {
   const [selected, setSelected] = useState(null);
   const [input, setInput] = useState("");
   const [checking, setChecking] = useState(false);
-  const [feedback, setFeedback] = useState(null); // correct | wrong
+  const [feedback, setFeedback] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 FETCH
+  // 🔥 FETCH + CLEAN DATA
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
@@ -27,20 +48,27 @@ export default function ReviewWordsPage() {
       const { data, error } = await supabase
         .from("words")
         .select("id, word, simple_definition")
-        .limit(50);
+        .limit(200);
 
       if (error) throw error;
       if (!data || data.length === 0) throw new Error("EMPTY_DATA");
 
+      // 🔥 APPLY A1 FILTER
+      const filtered = data.filter(isA1Word);
+
+      if (filtered.length < 10) {
+        throw new Error("DATA_TOO_COMPLEX");
+      }
+
       setWords(
-        data.map((w) => ({
+        filtered.map((w) => ({
           id: w.id,
           word: w.word,
           definition: w.simple_definition,
         }))
       );
     } catch (err) {
-      console.error(err);
+      console.error("❌ FETCH ERROR:", err.message);
       setError(err.message);
       setWords([]);
     } finally {
@@ -54,14 +82,20 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 MCQ OPTIONS
+  // 🔥 BETTER MCQ OPTIONS (LESS RANDOM)
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
     const correct = currentWord.definition;
 
+    // 🧠 pick similar length definitions (better distractors)
     const wrong = words
-      .filter((w) => w.definition && w.definition !== correct)
+      .filter(
+        (w) =>
+          w.definition &&
+          w.definition !== correct &&
+          Math.abs(w.definition.length - correct.length) < 20
+      )
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
@@ -107,12 +141,6 @@ export default function ReviewWordsPage() {
 
     if (mode === "mcq") setSelected(answer);
 
-    console.log({
-      input: answer,
-      expected: correctAnswer,
-      isCorrect,
-    });
-
     timeoutRef.current = setTimeout(goNext, 1200);
   };
 
@@ -129,7 +157,7 @@ export default function ReviewWordsPage() {
     );
 
   if (!words.length)
-    return <div style={{ padding: 20 }}>No words</div>;
+    return <div style={{ padding: 20 }}>No suitable A1 words</div>;
 
   return (
     <div style={{ padding: 20 }}>
@@ -139,7 +167,7 @@ export default function ReviewWordsPage() {
         {currentIndex + 1} / {words.length}
       </p>
 
-      {/* 🔥 TYPE MODE */}
+      {/* TYPE */}
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
@@ -156,7 +184,7 @@ export default function ReviewWordsPage() {
         </div>
       )}
 
-      {/* 🔥 MCQ */}
+      {/* MCQ */}
       {mode === "mcq" && (
         <div>
           <h3>{currentWord.word}</h3>
@@ -166,9 +194,9 @@ export default function ReviewWordsPage() {
 
             if (checking) {
               if (opt === currentWord.definition)
-                bg = "#4CAF50"; // correct
+                bg = "#4CAF50";
               else if (opt === selected)
-                bg = "#f44336"; // wrong
+                bg = "#f44336";
             }
 
             return (
@@ -189,7 +217,7 @@ export default function ReviewWordsPage() {
         </div>
       )}
 
-      {/* 🔥 FEEDBACK */}
+      {/* FEEDBACK */}
       {feedback === "correct" && (
         <p style={{ color: "green" }}>✅ Correct</p>
       )}
