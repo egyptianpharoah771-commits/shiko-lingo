@@ -58,4 +58,44 @@ export function getWordsForReview(words) {
   return result.length ? result : words.slice(0, 5);
 }
 
+/* ======================
+   🔥 ADD THIS (Required by vocabEngine)
+====================== */
 
+export function calculateNextReview({
+  interval = 1,
+  easeFactor = 2.5,
+  repetitions = 0,
+  quality = 5,
+}) {
+  let newInterval = interval;
+  let newEF = easeFactor;
+  let newReps = repetitions;
+
+  if (quality < 3) {
+    newReps = 0;
+    newInterval = 1;
+  } else {
+    newReps += 1;
+
+    if (newReps === 1) newInterval = 1;
+    else if (newReps === 2) newInterval = 6;
+    else newInterval = Math.round(interval * newEF);
+
+    newEF =
+      easeFactor +
+      (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+
+    if (newEF < 1.3) newEF = 1.3;
+  }
+
+  const nextReview = new Date();
+  nextReview.setDate(nextReview.getDate() + newInterval);
+
+  return {
+    interval: newInterval,
+    easeFactor: newEF,
+    repetitions: newReps,
+    nextReview: nextReview.toISOString(),
+  };
+}
