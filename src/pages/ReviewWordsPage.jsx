@@ -5,7 +5,7 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
-// 🔥 A1 DICTIONARY (CONTROLLED)
+// 🔥 A1 CONTROLLED DICTIONARY (ONLY SOURCE OF TRUTH)
 const A1_MAP = {
   strong: "very powerful",
   big: "large",
@@ -30,29 +30,10 @@ const A1_MAP = {
   bad: "not good",
 };
 
-// 🔥 PICK A1 DEFINITION
-function getDefinition(word, fallback) {
-  const w = word?.toLowerCase();
-  if (A1_MAP[w]) return A1_MAP[w];
-
-  // fallback (shortened)
-  if (!fallback) return "";
-
-  let d = fallback.toLowerCase().split(";")[0].split(",")[0];
-
-  if (d.length > 40) d = d.slice(0, 40);
-
-  return d;
-}
-
-// 🔥 FILTER WORDS WE CAN CONTROL
-function isUsable(w) {
+// 🔥 STRICT FILTER (NO FALLBACK)
+function isA1Word(w) {
   if (!w.word) return false;
-
-  const word = w.word.toLowerCase();
-
-  // فقط الكلمات اللي عندنا ليها تعريف مضمون
-  return A1_MAP[word] || word.length <= 5;
+  return !!A1_MAP[w.word.toLowerCase()];
 }
 
 export default function ReviewWordsPage() {
@@ -68,7 +49,7 @@ export default function ReviewWordsPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 FETCH CONTROLLED DATA
+  // 🔥 FETCH ONLY VALID WORDS
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
@@ -76,21 +57,21 @@ export default function ReviewWordsPage() {
 
       const { data, error } = await supabase
         .from("words")
-        .select("id, word, simple_definition")
+        .select("id, word")
         .limit(200);
 
       if (error) throw error;
       if (!data || data.length === 0) throw new Error("EMPTY_DATA");
 
-      const filtered = data.filter(isUsable);
+      const filtered = data.filter(isA1Word);
 
       const mapped = filtered.map((w) => ({
         id: w.id,
         word: w.word,
-        definition: getDefinition(w.word, w.simple_definition),
+        definition: A1_MAP[w.word.toLowerCase()],
       }));
 
-      if (mapped.length < 5) throw new Error("NO_A1_DATA");
+      if (mapped.length < 5) throw new Error("NO_A1_MATCHES");
 
       setWords(mapped);
     } catch (err) {
@@ -177,7 +158,7 @@ export default function ReviewWordsPage() {
     );
 
   if (!words.length)
-    return <div style={{ padding: 20 }}>No A1 words</div>;
+    return <div style={{ padding: 20 }}>No A1 words available</div>;
 
   return (
     <div style={{ padding: 20 }}>
