@@ -5,6 +5,18 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
+// 🔥 MOCK SUBSCRIPTION CHECK (هنربطه بعدين بالـ DB)
+function useSubscription() {
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const sub = localStorage.getItem("is_subscribed");
+    setActive(sub === "true");
+  }, []);
+
+  return active;
+}
+
 // 🔥 A1 MAP
 const A1_MAP = {
   strong: "very powerful",
@@ -36,20 +48,17 @@ function isA1Word(w) {
 }
 
 export default function ReviewWordsPage() {
+  const isSubscribed = useSubscription();
   const timeoutRef = useRef(null);
 
-  // 🔊 AUDIO REFS (STRONG FIX)
   const correctRef = useRef(null);
   const wrongRef = useRef(null);
 
   const playSound = (type) => {
-    try {
-      const ref = type === "correct" ? correctRef.current : wrongRef.current;
-      if (!ref) return;
-
-      ref.currentTime = 0;
-      ref.play().catch(() => {});
-    } catch {}
+    const ref = type === "correct" ? correctRef.current : wrongRef.current;
+    if (!ref) return;
+    ref.currentTime = 0;
+    ref.play().catch(() => {});
   };
 
   const [words, setWords] = useState([]);
@@ -61,6 +70,23 @@ export default function ReviewWordsPage() {
   const [feedback, setFeedback] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // 🔥 BLOCK ACCESS
+  if (!isSubscribed) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>🔒 Locked</h2>
+        <p>You need an active subscription to access Review.</p>
+        <button
+          onClick={() => {
+            window.location.href = "/subscribe";
+          }}
+        >
+          Subscribe Now
+        </button>
+      </div>
+    );
+  }
 
   // 🔥 FETCH
   const fetchWords = useCallback(async () => {
@@ -88,7 +114,6 @@ export default function ReviewWordsPage() {
 
       setWords(mapped);
     } catch (err) {
-      console.error("❌ FETCH ERROR:", err.message);
       setError(err.message);
       setWords([]);
     } finally {
@@ -102,7 +127,6 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 MCQ
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -124,7 +148,6 @@ export default function ReviewWordsPage() {
     if (mode === "mcq") setOptions(generateOptions());
   }, [currentWord, mode, generateOptions]);
 
-  // 🔥 NEXT
   const goNext = () => {
     setSelected(null);
     setInput("");
@@ -138,7 +161,6 @@ export default function ReviewWordsPage() {
     setMode((prev) => (prev === "mcq" ? "type" : "mcq"));
   };
 
-  // 🔥 HANDLE
   const handleAnswer = (answer) => {
     if (!currentWord || checking) return;
 
@@ -153,15 +175,12 @@ export default function ReviewWordsPage() {
     setChecking(true);
     setFeedback(isCorrect ? "correct" : "wrong");
 
-    // 🔊 PLAY SOUND (WORKS WITH USER INTERACTION)
     playSound(isCorrect ? "correct" : "wrong");
 
     if (mode === "mcq") setSelected(answer);
 
     timeoutRef.current = setTimeout(goNext, 1200);
   };
-
-  // 🔥 UI
 
   if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
 
@@ -178,11 +197,10 @@ export default function ReviewWordsPage() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Review</h2>
+      <audio ref={correctRef} src="/sounds/correct.mp3" />
+      <audio ref={wrongRef} src="/sounds/wrong.mp3" />
 
-      {/* 🔊 AUDIO ELEMENTS (MUST EXIST) */}
-      <audio ref={correctRef} src="/sounds/correct.mp3" preload="auto" />
-      <audio ref={wrongRef} src="/sounds/wrong.mp3" preload="auto" />
+      <h2>Review</h2>
 
       <p>
         {currentIndex + 1} / {words.length}
@@ -191,16 +209,12 @@ export default function ReviewWordsPage() {
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
-
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={checking}
           />
-
-          <button onClick={() => handleAnswer(input)}>
-            Submit
-          </button>
+          <button onClick={() => handleAnswer(input)}>Submit</button>
         </div>
       )}
 
@@ -212,10 +226,8 @@ export default function ReviewWordsPage() {
             let bg = "#fff";
 
             if (checking) {
-              if (opt === currentWord.definition)
-                bg = "#4CAF50";
-              else if (opt === selected)
-                bg = "#f44336";
+              if (opt === currentWord.definition) bg = "#4CAF50";
+              else if (opt === selected) bg = "#f44336";
             }
 
             return (
@@ -223,11 +235,7 @@ export default function ReviewWordsPage() {
                 key={i}
                 onClick={() => handleAnswer(opt)}
                 disabled={checking}
-                style={{
-                  display: "block",
-                  margin: "8px 0",
-                  background: bg,
-                }}
+                style={{ display: "block", margin: "8px 0", background: bg }}
               >
                 {opt}
               </button>
@@ -236,10 +244,7 @@ export default function ReviewWordsPage() {
         </div>
       )}
 
-      {feedback === "correct" && (
-        <p style={{ color: "green" }}>✅ Correct</p>
-      )}
-
+      {feedback === "correct" && <p style={{ color: "green" }}>✅ Correct</p>}
       {feedback === "wrong" && (
         <p style={{ color: "red" }}>
           ❌ Wrong — correct: {currentWord.word}
