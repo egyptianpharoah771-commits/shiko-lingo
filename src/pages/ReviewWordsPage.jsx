@@ -31,24 +31,11 @@ const A1_MAP = {
 };
 
 function isA1Word(w) {
-  if (!w.word) return false;
-  return !!A1_MAP[w.word.toLowerCase()];
+  return w.word && A1_MAP[w.word.toLowerCase()];
 }
 
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
-
-  const correctRef = useRef(null);
-  const wrongRef = useRef(null);
-
-  const playSound = (type) => {
-    try {
-      const ref = type === "correct" ? correctRef.current : wrongRef.current;
-      if (!ref) return;
-      ref.currentTime = 0;
-      ref.play().catch(() => {});
-    } catch {}
-  };
 
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -58,41 +45,62 @@ export default function ReviewWordsPage() {
   const [input, setInput] = useState("");
   const [checking, setChecking] = useState(false);
   const [feedback, setFeedback] = useState(null);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState([]);
 
-  // 🔥 FIX: progress counter مستقل
   const [progress, setProgress] = useState(0);
   const TOTAL = 20;
+  const [finished, setFinished] = useState(false);
 
-  // 🔥 FIX: queue with delay
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // 🔥 FETCH
+  // 🔥 FETCH (WITH DEDUPE)
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("words")
         .select("id, word")
         .limit(200);
 
-      if (error) throw error;
+      const dbWords = (data || [])
+        .filter(isA1Word)
+        .map((w) => ({
+          id: w.id,
+          word: w.word,
+          definition: A1_MAP[w.word.toLowerCase()],
+        }));
 
-      const filtered = data.filter(isA1Word);
+      const saved = JSON.parse(localStorage.getItem("learned_words") || "[]");
 
-      const mapped = filtered.map((w) => ({
-        id: w.id,
-        word: w.word,
-        definition: A1_MAP[w.word.toLowerCase()],
-      }));
+      // 🔥 MERGE + DEDUPE
+      const map = new Map();
 
-      setWords(mapped);
-    } catch (err) {
-      setError(err.message);
+      // priority → reading
+      saved.forEach((w) => {
+        if (!w.word) return;
+
+        map.set(w.word.toLowerCase(), {
+          id: w.id || w.word,
+          word: w.word,
+          definition:
+            w.definition ||
+            A1_MAP[w.word.toLowerCase()] ||
+            "",
+        });
+      });
+
+      // then DB
+      dbWords.forEach((w) => {
+        const key = w.word.toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, w);
+        }
+      });
+
+      setWords(Array.from(map.values()));
+    } catch {
       setWords([]);
     } finally {
       setLoading(false);
@@ -105,14 +113,21 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
+  // 🔊 LISTEN
+  const speak = (text) => {
+    try {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      speechSynthesis.speak(utter);
+    } catch {}
+  };
+
   // 🔥 MCQ
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
-    const correct = currentWord.definition;
-
     const wrong = words
-      .filter((w) => w.definition !== correct)
+      .filter((w) => w.definition !== currentWord.definition)
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
@@ -122,48 +137,42 @@ export default function ReviewWordsPage() {
   }, [currentWord, words]);
 
   useEffect(() => {
-    if (mode === "mcq") setOptions(generateOptions());
+    if (mode === "mcq" || mode === "listen") {
+      setOptions(generateOptions());
+    }
   }, [currentWord, mode, generateOptions]);
 
-  // 🔥 NEXT (FIXED QUEUE + PROGRESS)
+  // 🔥 NEXT
   const goNext = () => {
+    if (progress + 1 >= TOTAL) {
+      setFinished(true);
+      return;
+    }
+
+    setProgress((p) => p + 1);
+
     setSelected(null);
     setInput("");
     setChecking(false);
     setFeedback(null);
 
-    // 🔥 progress ثابت
-    setProgress((prev) => (prev + 1 >= TOTAL ? 0 : prev + 1));
-
-    // 🔥 تحديث queue + اختيار next في نفس اللحظة (fix stale)
-    setReviewQueue((prevQueue) => {
-      const updated = prevQueue.map((item) => ({
-        ...item,
-        delay: item.delay - 1,
-      }));
-
-      const ready = updated.find((item) => item.delay <= 0);
+    setReviewQueue((prev) => {
+      const updated = prev.map((i) => ({ ...i, delay: i.delay - 1 }));
+      const ready = updated.find((i) => i.delay <= 0);
 
       if (ready) {
-        const index = words.findIndex((w) => w.id === ready.word.id);
-
-        if (index !== -1) {
+        const idx = words.findIndex((w) => w.id === ready.word.id);
+        if (idx !== -1) {
           setLastIndex(currentIndex);
-          setCurrentIndex(index);
+          setCurrentIndex(idx);
         }
-
         return updated.filter((i) => i.word.id !== ready.word.id);
       }
 
-      // 🔁 random بدون تكرار
       let next;
-      if (words.length <= 1) {
-        next = currentIndex;
-      } else {
-        do {
-          next = Math.floor(Math.random() * words.length);
-        } while (next === currentIndex || next === lastIndex);
-      }
+      do {
+        next = Math.floor(Math.random() * words.length);
+      } while (next === currentIndex || next === lastIndex);
 
       setLastIndex(currentIndex);
       setCurrentIndex(next);
@@ -171,7 +180,9 @@ export default function ReviewWordsPage() {
       return updated;
     });
 
-    setMode((prev) => (prev === "mcq" ? "type" : "mcq"));
+    setMode((prev) =>
+      prev === "mcq" ? "type" : prev === "type" ? "listen" : "mcq"
+    );
   };
 
   // 🔥 HANDLE
@@ -181,7 +192,7 @@ export default function ReviewWordsPage() {
     if (mode === "type" && !normalize(answer)) return;
 
     const correctAnswer =
-      mode === "mcq"
+      mode === "mcq" || mode === "listen"
         ? currentWord.definition
         : currentWord.word;
 
@@ -191,8 +202,6 @@ export default function ReviewWordsPage() {
     setChecking(true);
     setFeedback(isCorrect ? "correct" : "wrong");
 
-    playSound(isCorrect ? "correct" : "wrong");
-
     if (!isCorrect) {
       setReviewQueue((prev) => [
         ...prev,
@@ -200,7 +209,7 @@ export default function ReviewWordsPage() {
       ]);
     }
 
-    if (mode === "mcq") setSelected(answer);
+    if (mode !== "type") setSelected(answer);
 
     timeoutRef.current = setTimeout(goNext, 1200);
   };
@@ -209,27 +218,31 @@ export default function ReviewWordsPage() {
     return () => clearTimeout(timeoutRef.current);
   }, []);
 
-  // 🔥 UI
+  // 🔥 FINISHED
+  if (finished) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>✅ Session Complete</h2>
+        <button
+          onClick={() => {
+            setProgress(0);
+            setFinished(false);
+          }}
+        >
+          Restart
+        </button>
+      </div>
+    );
+  }
 
   if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
-
-  if (error)
-    return <div style={{ padding: 20 }}>❌ {error}</div>;
-
-  if (!words.length)
-    return <div style={{ padding: 20 }}>No words</div>;
+  if (!words.length) return <div style={{ padding: 20 }}>No words</div>;
 
   return (
     <div style={{ padding: 20 }}>
       <h2>Review</h2>
 
-      <audio ref={correctRef} src="/sounds/correct.mp3" />
-      <audio ref={wrongRef} src="/sounds/wrong.mp3" />
-
-      {/* 🔥 FIXED COUNTER */}
-      <p>
-        {progress} / {TOTAL}
-      </p>
+      <p>{progress} / {TOTAL}</p>
 
       {mode === "type" && (
         <div>
@@ -246,35 +259,27 @@ export default function ReviewWordsPage() {
       {mode === "mcq" && (
         <div>
           <h3>{currentWord.word}</h3>
-
-          {options.map((opt, i) => {
-            let bg = "#fff";
-
-            if (checking) {
-              if (opt === currentWord.definition) bg = "#4CAF50";
-              else if (opt === selected) bg = "#f44336";
-            }
-
-            return (
-              <button
-                key={i}
-                onClick={() => handleAnswer(opt)}
-                disabled={checking}
-                style={{ display: "block", margin: "8px 0", background: bg }}
-              >
-                {opt}
-              </button>
-            );
-          })}
+          {options.map((opt, i) => (
+            <button key={i} onClick={() => handleAnswer(opt)}>
+              {opt}
+            </button>
+          ))}
         </div>
       )}
 
-      {feedback === "correct" && <p style={{ color: "green" }}>✅ Correct</p>}
-      {feedback === "wrong" && (
-        <p style={{ color: "red" }}>
-          ❌ Wrong — correct: {currentWord.word}
-        </p>
+      {mode === "listen" && (
+        <div>
+          <button onClick={() => speak(currentWord.word)}>🔊 Play</button>
+          {options.map((opt, i) => (
+            <button key={i} onClick={() => handleAnswer(opt)}>
+              {opt}
+            </button>
+          ))}
+        </div>
       )}
+
+      {feedback === "correct" && <p>✅ Correct</p>}
+      {feedback === "wrong" && <p>❌ Wrong</p>}
     </div>
   );
 }
