@@ -37,7 +37,11 @@ export default function ReviewWordsPage() {
         localStorage.getItem("level_assessment_result") || "{}"
       );
 
-      const currentLevel = (assessment.level || "A1").toString().trim().toUpperCase();
+      const currentLevel = (assessment.level || "A1")
+        .toString()
+        .trim()
+        .toUpperCase();
+
       setUserLevel(currentLevel);
 
       console.log("LEVEL:", currentLevel);
@@ -45,27 +49,20 @@ export default function ReviewWordsPage() {
       const { data, error } = await supabase
         .from("words")
         .select("id, word, definition, simple_definition, level, audio_url")
-        .ilike("level", currentLevel)
+        .eq("level", currentLevel) // 🔥 FIX
         .limit(30);
 
       if (error) throw error;
 
       console.log("RAW:", data?.length);
 
-      // 🔥 FIX الحقيقي هنا
       const cleaned = (data || [])
         .map((w, i) => {
-          const simple = w.simple_definition?.trim();
-          const fallback = w.definition?.trim();
-
           const definition =
-            simple && simple.length > 2
-              ? simple
-              : fallback && fallback.length > 2
-              ? fallback
-              : null;
+            w.simple_definition?.trim() ||
+            w.definition?.trim();
 
-          if (!definition) return null;
+          if (!definition || definition.length < 2) return null;
 
           return {
             ...w,
@@ -97,11 +94,6 @@ export default function ReviewWordsPage() {
     if (!currentWord) return;
 
     const definition = currentWord.definition;
-
-    if (!definition) {
-      setWords((prev) => prev.slice(1));
-      return;
-    }
 
     let type = "MCQ";
     if (currentWord.stage >= 2 && currentWord.stage <= 3) type = "TYPE";
@@ -229,5 +221,3 @@ export default function ReviewWordsPage() {
     </div>
   );
 }
-
-
