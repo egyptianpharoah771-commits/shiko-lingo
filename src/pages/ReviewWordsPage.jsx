@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 
-function normalize(word) {
-  return word?.toLowerCase().trim();
+function normalize(text) {
+  return text?.toLowerCase().trim();
 }
 
 export default function ReviewWordsPage() {
@@ -10,14 +10,15 @@ export default function ReviewWordsPage() {
 
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [mode, setMode] = useState("mcq"); // mcq | type
+  const [mode, setMode] = useState("mcq");
   const [selected, setSelected] = useState(null);
   const [input, setInput] = useState("");
   const [checking, setChecking] = useState(false);
+  const [feedback, setFeedback] = useState(null); // correct | wrong
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 SAFE FETCH (NO audio_url)
+  // 🔥 FETCH
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
@@ -29,20 +30,17 @@ export default function ReviewWordsPage() {
         .limit(50);
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("EMPTY_DATA");
 
-      if (!data || data.length === 0) {
-        throw new Error("EMPTY_DATA");
-      }
-
-      const mapped = data.map((w) => ({
-        id: w.id,
-        word: w.word,
-        definition: w.simple_definition,
-      }));
-
-      setWords(mapped);
+      setWords(
+        data.map((w) => ({
+          id: w.id,
+          word: w.word,
+          definition: w.simple_definition,
+        }))
+      );
     } catch (err) {
-      console.error("❌ FETCH WORDS ERROR:", err.message);
+      console.error(err);
       setError(err.message);
       setWords([]);
     } finally {
@@ -62,12 +60,12 @@ export default function ReviewWordsPage() {
 
     const correct = currentWord.definition;
 
-    const shuffled = [...words]
+    const wrong = words
       .filter((w) => w.definition && w.definition !== correct)
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
-    return [...shuffled, currentWord]
+    return [...wrong, currentWord]
       .sort(() => 0.5 - Math.random())
       .map((w) => w.definition);
   }, [currentWord, words]);
@@ -75,77 +73,63 @@ export default function ReviewWordsPage() {
   const [options, setOptions] = useState([]);
 
   useEffect(() => {
-    if (mode === "mcq") {
-      setOptions(generateOptions());
-    }
+    if (mode === "mcq") setOptions(generateOptions());
   }, [currentWord, mode, generateOptions]);
 
-  // 🔥 NEXT WORD
+  // 🔥 NEXT
   const goNext = () => {
     setSelected(null);
     setInput("");
     setChecking(false);
+    setFeedback(null);
 
-    setCurrentIndex((prev) => {
-      if (prev + 1 >= words.length) return 0;
-      return prev + 1;
-    });
+    setCurrentIndex((prev) =>
+      prev + 1 >= words.length ? 0 : prev + 1
+    );
 
     setMode((prev) => (prev === "mcq" ? "type" : "mcq"));
   };
 
-  // 🔥 HANDLE ANSWER
+  // 🔥 HANDLE
   const handleAnswer = (answer) => {
     if (!currentWord || checking) return;
 
-    setChecking(true);
-
-    let isCorrect = false;
-
-    if (mode === "mcq") {
-      isCorrect =
-        normalize(answer) === normalize(currentWord.definition);
-      setSelected(answer);
-    }
-
-    if (mode === "type") {
-      isCorrect =
-        normalize(answer) === normalize(currentWord.word);
-    }
-
-    console.log(
-      isCorrect ? "✅ Correct" : "❌ Wrong",
-      "| Input:",
-      answer,
-      "| Expected:",
+    const correctAnswer =
       mode === "mcq"
         ? currentWord.definition
-        : currentWord.word
-    );
+        : currentWord.word;
 
-    timeoutRef.current = setTimeout(() => {
-      goNext();
-    }, 800);
+    const isCorrect =
+      normalize(answer) === normalize(correctAnswer);
+
+    setChecking(true);
+    setFeedback(isCorrect ? "correct" : "wrong");
+
+    if (mode === "mcq") setSelected(answer);
+
+    console.log({
+      input: answer,
+      expected: correctAnswer,
+      isCorrect,
+    });
+
+    timeoutRef.current = setTimeout(goNext, 1200);
   };
 
   // 🔥 UI
 
-  if (loading) {
-    return <div style={{ padding: 20 }}>Loading...</div>;
-  }
+  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
 
-  if (error) {
+  if (error)
     return (
       <div style={{ padding: 20 }}>
-        ❌ Error: {error}
+        ❌ {error}
         <button onClick={fetchWords}>Retry</button>
       </div>
     );
-  }
 
-  if (!words.length) {
-    return <div style={{ padding: 20 }}>⚠️ No words available</div>;
-  }
+  if (!words.length)
+    return <div style={{ padding: 20 }}>No words</div>;
 
   return (
     <div style={{ padding: 20 }}>
@@ -155,40 +139,65 @@ export default function ReviewWordsPage() {
         {currentIndex + 1} / {words.length}
       </p>
 
-      <h3>{currentWord.word}</h3>
-
-      {/* MCQ */}
-      {mode === "mcq" && (
-        <div>
-          {options.map((opt, i) => (
-            <button
-              key={i}
-              onClick={() => handleAnswer(opt)}
-              style={{
-                display: "block",
-                margin: "8px 0",
-                background:
-                  selected === opt ? "#ddd" : "#fff",
-              }}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* TYPE */}
+      {/* 🔥 TYPE MODE */}
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
+
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            disabled={checking}
           />
+
           <button onClick={() => handleAnswer(input)}>
             Submit
           </button>
         </div>
+      )}
+
+      {/* 🔥 MCQ */}
+      {mode === "mcq" && (
+        <div>
+          <h3>{currentWord.word}</h3>
+
+          {options.map((opt, i) => {
+            let bg = "#fff";
+
+            if (checking) {
+              if (opt === currentWord.definition)
+                bg = "#4CAF50"; // correct
+              else if (opt === selected)
+                bg = "#f44336"; // wrong
+            }
+
+            return (
+              <button
+                key={i}
+                onClick={() => handleAnswer(opt)}
+                disabled={checking}
+                style={{
+                  display: "block",
+                  margin: "8px 0",
+                  background: bg,
+                }}
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 🔥 FEEDBACK */}
+      {feedback === "correct" && (
+        <p style={{ color: "green" }}>✅ Correct</p>
+      )}
+
+      {feedback === "wrong" && (
+        <p style={{ color: "red" }}>
+          ❌ Wrong — correct: {currentWord.word}
+        </p>
       )}
     </div>
   );
