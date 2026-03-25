@@ -5,50 +5,54 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
-// 🔥 HARD SIMPLIFIER (CORE FIX)
-function simplify(def) {
-  if (!def) return "";
+// 🔥 A1 DICTIONARY (CONTROLLED)
+const A1_MAP = {
+  strong: "very powerful",
+  big: "large",
+  small: "not big",
+  eat: "to have food",
+  drink: "to have water",
+  go: "to move",
+  come: "to move here",
+  make: "to create",
+  take: "to get",
+  give: "to give something",
+  see: "to look at",
+  run: "to move fast",
+  walk: "to move slowly",
+  happy: "feeling good",
+  sad: "feeling bad",
+  fast: "quick",
+  slow: "not fast",
+  hot: "high temperature",
+  cold: "low temperature",
+  good: "nice",
+  bad: "not good",
+};
 
-  let d = def.toLowerCase();
+// 🔥 PICK A1 DEFINITION
+function getDefinition(word, fallback) {
+  const w = word?.toLowerCase();
+  if (A1_MAP[w]) return A1_MAP[w];
 
-  const replacements = [
-    ["a result that one is attempting to achieve", "something you want"],
-    ["the act of", ""],
-    ["the process of", ""],
-    ["in order to", "to"],
-    ["one is", "you are"],
-    ["someone is", "you are"],
-    ["something that", ""],
-    ["used to", "to"],
-  ];
+  // fallback (shortened)
+  if (!fallback) return "";
 
-  replacements.forEach(([from, to]) => {
-    d = d.replace(from, to);
-  });
+  let d = fallback.toLowerCase().split(";")[0].split(",")[0];
 
-  // remove complex separators
-  d = d.split(";")[0];
-  d = d.split(",")[0];
+  if (d.length > 40) d = d.slice(0, 40);
 
-  // trim length aggressively
-  if (d.length > 50) {
-    d = d.slice(0, 50);
-  }
-
-  return d.trim();
+  return d;
 }
 
-// 🔥 STRICT A1 FILTER
-function isValid(w) {
-  if (!w.word || !w.simple_definition) return false;
+// 🔥 FILTER WORDS WE CAN CONTROL
+function isUsable(w) {
+  if (!w.word) return false;
 
-  const word = w.word.trim();
-  const def = w.simple_definition.trim();
+  const word = w.word.toLowerCase();
 
-  if (word.length > 6) return false;
-  if (def.length > 120) return false;
-
-  return true;
+  // فقط الكلمات اللي عندنا ليها تعريف مضمون
+  return A1_MAP[word] || word.length <= 5;
 }
 
 export default function ReviewWordsPage() {
@@ -64,7 +68,7 @@ export default function ReviewWordsPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 FETCH + SIMPLIFY
+  // 🔥 FETCH CONTROLLED DATA
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
@@ -78,19 +82,15 @@ export default function ReviewWordsPage() {
       if (error) throw error;
       if (!data || data.length === 0) throw new Error("EMPTY_DATA");
 
-      const filtered = data.filter(isValid);
+      const filtered = data.filter(isUsable);
 
-      const mapped = filtered
-        .map((w) => ({
-          id: w.id,
-          word: w.word,
-          definition: simplify(w.simple_definition),
-        }))
-        .filter((w) => w.definition.length > 2); // remove garbage
+      const mapped = filtered.map((w) => ({
+        id: w.id,
+        word: w.word,
+        definition: getDefinition(w.word, w.simple_definition),
+      }));
 
-      if (mapped.length < 10) {
-        throw new Error("DATA_NOT_USABLE");
-      }
+      if (mapped.length < 5) throw new Error("NO_A1_DATA");
 
       setWords(mapped);
     } catch (err) {
@@ -108,19 +108,14 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 SMART MCQ
+  // 🔥 MCQ
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
     const correct = currentWord.definition;
 
     const wrong = words
-      .filter(
-        (w) =>
-          w.definition &&
-          w.definition !== correct &&
-          Math.abs(w.definition.length - correct.length) < 15
-      )
+      .filter((w) => w.definition !== correct)
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
@@ -182,7 +177,7 @@ export default function ReviewWordsPage() {
     );
 
   if (!words.length)
-    return <div style={{ padding: 20 }}>No usable words</div>;
+    return <div style={{ padding: 20 }}>No A1 words</div>;
 
   return (
     <div style={{ padding: 20 }}>
@@ -242,7 +237,6 @@ export default function ReviewWordsPage() {
         </div>
       )}
 
-      {/* FEEDBACK */}
       {feedback === "correct" && (
         <p style={{ color: "green" }}>✅ Correct</p>
       )}
