@@ -38,7 +38,6 @@ function isA1Word(w) {
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
 
-  // 🔊 AUDIO
   const correctRef = useRef(null);
   const wrongRef = useRef(null);
 
@@ -53,6 +52,7 @@ export default function ReviewWordsPage() {
 
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lastIndex, setLastIndex] = useState(null);
   const [mode, setMode] = useState("mcq");
   const [selected, setSelected] = useState(null);
   const [input, setInput] = useState("");
@@ -62,7 +62,7 @@ export default function ReviewWordsPage() {
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState([]);
 
-  // 🔥 NEW: review queue
+  // 🔥 DELAY QUEUE
   const [reviewQueue, setReviewQueue] = useState([]);
 
   // 🔥 FETCH
@@ -77,7 +77,6 @@ export default function ReviewWordsPage() {
         .limit(200);
 
       if (error) throw error;
-      if (!data || data.length === 0) throw new Error("EMPTY_DATA");
 
       const filtered = data.filter(isA1Word);
 
@@ -87,11 +86,8 @@ export default function ReviewWordsPage() {
         definition: A1_MAP[w.word.toLowerCase()],
       }));
 
-      if (mapped.length < 5) throw new Error("NO_A1_MATCHES");
-
       setWords(mapped);
     } catch (err) {
-      console.error("❌ FETCH ERROR:", err.message);
       setError(err.message);
       setWords([]);
     } finally {
@@ -122,41 +118,47 @@ export default function ReviewWordsPage() {
   }, [currentWord, words]);
 
   useEffect(() => {
-    if (mode === "mcq") {
-      setOptions(generateOptions());
-    }
+    if (mode === "mcq") setOptions(generateOptions());
   }, [currentWord, mode, generateOptions]);
 
-  // 🔥 NEXT (WITH QUEUE)
+  // 🔥 NEXT (SMART)
   const goNext = () => {
     setSelected(null);
     setInput("");
     setChecking(false);
     setFeedback(null);
 
-    // لو فيه كلمات غلط → ترجّع بعد شوية
-    if (reviewQueue.length > 0) {
-      const nextItem = reviewQueue[0];
+    // ⏳ تقليل delay
+    setReviewQueue((prev) =>
+      prev.map((item) => ({
+        ...item,
+        delay: item.delay - 1,
+      }))
+    );
 
-      setReviewQueue((prev) => prev.slice(1));
+    // 🎯 لو فيه كلمة delay انتهى
+    const ready = reviewQueue.find((item) => item.delay <= 0);
 
-      const index = words.findIndex((w) => w.id === nextItem.id);
+    if (ready) {
+      const index = words.findIndex((w) => w.id === ready.word.id);
+
+      setReviewQueue((prev) => prev.filter((i) => i.word.id !== ready.word.id));
 
       if (index !== -1) {
+        setLastIndex(currentIndex);
         setCurrentIndex(index);
+        return;
       }
-    } else {
-      setCurrentIndex((prev) => {
-        if (words.length <= 1) return prev;
-
-        let next;
-        do {
-          next = Math.floor(Math.random() * words.length);
-        } while (next === prev);
-
-        return next;
-      });
     }
+
+    // 🔁 random بدون تكرار مباشر
+    let next;
+    do {
+      next = Math.floor(Math.random() * words.length);
+    } while (next === currentIndex || next === lastIndex);
+
+    setLastIndex(currentIndex);
+    setCurrentIndex(next);
 
     setMode((prev) => (prev === "mcq" ? "type" : "mcq"));
   };
@@ -181,8 +183,11 @@ export default function ReviewWordsPage() {
     playSound(isCorrect ? "correct" : "wrong");
 
     if (!isCorrect) {
-      // 🔥 add to queue (delay effect)
-      setReviewQueue((prev) => [...prev, currentWord]);
+      // ⏳ delay = 2 أسئلة
+      setReviewQueue((prev) => [
+        ...prev,
+        { word: currentWord, delay: 2 },
+      ]);
     }
 
     if (mode === "mcq") setSelected(answer);
@@ -190,13 +195,8 @@ export default function ReviewWordsPage() {
     timeoutRef.current = setTimeout(goNext, 1200);
   };
 
-  // 🔥 CLEANUP
   useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
+    return () => clearTimeout(timeoutRef.current);
   }, []);
 
   // 🔥 UI
@@ -204,23 +204,17 @@ export default function ReviewWordsPage() {
   if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
 
   if (error)
-    return (
-      <div style={{ padding: 20 }}>
-        ❌ {error}
-        <button onClick={fetchWords}>Retry</button>
-      </div>
-    );
+    return <div style={{ padding: 20 }}>❌ {error}</div>;
 
   if (!words.length)
-    return <div style={{ padding: 20 }}>No A1 words available</div>;
+    return <div style={{ padding: 20 }}>No words</div>;
 
   return (
     <div style={{ padding: 20 }}>
       <h2>Review</h2>
 
-      {/* 🔊 AUDIO */}
-      <audio ref={correctRef} src="/sounds/correct.mp3" preload="auto" />
-      <audio ref={wrongRef} src="/sounds/wrong.mp3" preload="auto" />
+      <audio ref={correctRef} src="/sounds/correct.mp3" />
+      <audio ref={wrongRef} src="/sounds/wrong.mp3" />
 
       <p>
         {currentIndex + 1} / {words.length}
@@ -229,16 +223,12 @@ export default function ReviewWordsPage() {
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
-
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={checking}
           />
-
-          <button onClick={() => handleAnswer(input)}>
-            Submit
-          </button>
+          <button onClick={() => handleAnswer(input)}>Submit</button>
         </div>
       )}
 
@@ -259,11 +249,7 @@ export default function ReviewWordsPage() {
                 key={i}
                 onClick={() => handleAnswer(opt)}
                 disabled={checking}
-                style={{
-                  display: "block",
-                  margin: "8px 0",
-                  background: bg,
-                }}
+                style={{ display: "block", margin: "8px 0", background: bg }}
               >
                 {opt}
               </button>
@@ -272,10 +258,7 @@ export default function ReviewWordsPage() {
         </div>
       )}
 
-      {feedback === "correct" && (
-        <p style={{ color: "green" }}>✅ Correct</p>
-      )}
-
+      {feedback === "correct" && <p style={{ color: "green" }}>✅ Correct</p>}
       {feedback === "wrong" && (
         <p style={{ color: "red" }}>
           ❌ Wrong — correct: {currentWord.word}
