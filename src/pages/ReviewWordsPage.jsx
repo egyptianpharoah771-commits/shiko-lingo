@@ -49,7 +49,7 @@ export default function ReviewWordsPage() {
       const { data, error } = await supabase
         .from("words")
         .select("id, word, definition, simple_definition, level, audio_url")
-        .eq("level", currentLevel) // 🔥 FIX
+        // ❌ شيلنا الفلتر مؤقتًا للتشخيص
         .limit(30);
 
       if (error) throw error;
