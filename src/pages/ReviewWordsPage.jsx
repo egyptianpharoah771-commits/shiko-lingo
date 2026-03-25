@@ -5,18 +5,6 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
-// 🔥 MOCK SUBSCRIPTION CHECK (هنربطه بعدين بالـ DB)
-function useSubscription() {
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    const sub = localStorage.getItem("is_subscribed");
-    setActive(sub === "true");
-  }, []);
-
-  return active;
-}
-
 // 🔥 A1 MAP
 const A1_MAP = {
   strong: "very powerful",
@@ -48,17 +36,19 @@ function isA1Word(w) {
 }
 
 export default function ReviewWordsPage() {
-  const isSubscribed = useSubscription();
   const timeoutRef = useRef(null);
 
+  // 🔊 AUDIO
   const correctRef = useRef(null);
   const wrongRef = useRef(null);
 
   const playSound = (type) => {
-    const ref = type === "correct" ? correctRef.current : wrongRef.current;
-    if (!ref) return;
-    ref.currentTime = 0;
-    ref.play().catch(() => {});
+    try {
+      const ref = type === "correct" ? correctRef.current : wrongRef.current;
+      if (!ref) return;
+      ref.currentTime = 0;
+      ref.play().catch(() => {});
+    } catch {}
   };
 
   const [words, setWords] = useState([]);
@@ -70,23 +60,7 @@ export default function ReviewWordsPage() {
   const [feedback, setFeedback] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // 🔥 BLOCK ACCESS
-  if (!isSubscribed) {
-    return (
-      <div style={{ padding: 20 }}>
-        <h2>🔒 Locked</h2>
-        <p>You need an active subscription to access Review.</p>
-        <button
-          onClick={() => {
-            window.location.href = "/subscribe";
-          }}
-        >
-          Subscribe Now
-        </button>
-      </div>
-    );
-  }
+  const [options, setOptions] = useState([]);
 
   // 🔥 FETCH
   const fetchWords = useCallback(async () => {
@@ -114,6 +88,7 @@ export default function ReviewWordsPage() {
 
       setWords(mapped);
     } catch (err) {
+      console.error("❌ FETCH ERROR:", err.message);
       setError(err.message);
       setWords([]);
     } finally {
@@ -127,6 +102,7 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
+  // 🔥 MCQ (IMPROVED)
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -137,32 +113,46 @@ export default function ReviewWordsPage() {
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
-    return [...wrong, currentWord]
+    // ضمان 4 اختيارات
+    const all = [...wrong, currentWord];
+
+    return all
       .sort(() => 0.5 - Math.random())
       .map((w) => w.definition);
   }, [currentWord, words]);
 
-  const [options, setOptions] = useState([]);
-
   useEffect(() => {
-    if (mode === "mcq") setOptions(generateOptions());
+    if (mode === "mcq") {
+      setOptions(generateOptions());
+    }
   }, [currentWord, mode, generateOptions]);
 
+  // 🔥 NEXT (NO REPEAT)
   const goNext = () => {
     setSelected(null);
     setInput("");
     setChecking(false);
     setFeedback(null);
 
-    setCurrentIndex((prev) =>
-      prev + 1 >= words.length ? 0 : prev + 1
-    );
+    setCurrentIndex((prev) => {
+      if (words.length <= 1) return prev;
+
+      let next = prev;
+      while (next === prev) {
+        next = Math.floor(Math.random() * words.length);
+      }
+      return next;
+    });
 
     setMode((prev) => (prev === "mcq" ? "type" : "mcq"));
   };
 
+  // 🔥 HANDLE
   const handleAnswer = (answer) => {
     if (!currentWord || checking) return;
+
+    // ❌ منع submit فاضي
+    if (mode === "type" && !normalize(answer)) return;
 
     const correctAnswer =
       mode === "mcq"
@@ -182,6 +172,17 @@ export default function ReviewWordsPage() {
     timeoutRef.current = setTimeout(goNext, 1200);
   };
 
+  // 🔥 CLEANUP
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  // 🔥 UI
+
   if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
 
   if (error)
@@ -197,10 +198,11 @@ export default function ReviewWordsPage() {
 
   return (
     <div style={{ padding: 20 }}>
-      <audio ref={correctRef} src="/sounds/correct.mp3" />
-      <audio ref={wrongRef} src="/sounds/wrong.mp3" />
-
       <h2>Review</h2>
+
+      {/* 🔊 AUDIO */}
+      <audio ref={correctRef} src="/sounds/correct.mp3" preload="auto" />
+      <audio ref={wrongRef} src="/sounds/wrong.mp3" preload="auto" />
 
       <p>
         {currentIndex + 1} / {words.length}
@@ -209,12 +211,16 @@ export default function ReviewWordsPage() {
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
+
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={checking}
           />
-          <button onClick={() => handleAnswer(input)}>Submit</button>
+
+          <button onClick={() => handleAnswer(input)}>
+            Submit
+          </button>
         </div>
       )}
 
@@ -235,7 +241,11 @@ export default function ReviewWordsPage() {
                 key={i}
                 onClick={() => handleAnswer(opt)}
                 disabled={checking}
-                style={{ display: "block", margin: "8px 0", background: bg }}
+                style={{
+                  display: "block",
+                  margin: "8px 0",
+                  background: bg,
+                }}
               >
                 {opt}
               </button>
@@ -244,7 +254,10 @@ export default function ReviewWordsPage() {
         </div>
       )}
 
-      {feedback === "correct" && <p style={{ color: "green" }}>✅ Correct</p>}
+      {feedback === "correct" && (
+        <p style={{ color: "green" }}>✅ Correct</p>
+      )}
+
       {feedback === "wrong" && (
         <p style={{ color: "red" }}>
           ❌ Wrong — correct: {currentWord.word}
