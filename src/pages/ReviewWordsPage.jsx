@@ -5,23 +5,48 @@ function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
-// 🔥 A1 FILTER (REALISTIC)
-function isA1Word(wordObj) {
-  if (!wordObj.word || !wordObj.simple_definition) return false;
+// 🔥 HARD SIMPLIFIER (CORE FIX)
+function simplify(def) {
+  if (!def) return "";
 
-  const word = wordObj.word.trim();
-  const def = wordObj.simple_definition.trim();
+  let d = def.toLowerCase();
 
-  // ❌ reject long/complex words
-  if (word.length > 5) return false;
+  const replacements = [
+    ["a result that one is attempting to achieve", "something you want"],
+    ["the act of", ""],
+    ["the process of", ""],
+    ["in order to", "to"],
+    ["one is", "you are"],
+    ["someone is", "you are"],
+    ["something that", ""],
+    ["used to", "to"],
+  ];
 
-  // ❌ reject dictionary style
-  if (def.includes(";")) return false;
-  if (def.includes("especially")) return false;
-  if (def.includes("the act of")) return false;
+  replacements.forEach(([from, to]) => {
+    d = d.replace(from, to);
+  });
 
-  // ❌ reject long definitions
-  if (def.length > 60) return false;
+  // remove complex separators
+  d = d.split(";")[0];
+  d = d.split(",")[0];
+
+  // trim length aggressively
+  if (d.length > 50) {
+    d = d.slice(0, 50);
+  }
+
+  return d.trim();
+}
+
+// 🔥 STRICT A1 FILTER
+function isValid(w) {
+  if (!w.word || !w.simple_definition) return false;
+
+  const word = w.word.trim();
+  const def = w.simple_definition.trim();
+
+  if (word.length > 6) return false;
+  if (def.length > 120) return false;
 
   return true;
 }
@@ -39,7 +64,7 @@ export default function ReviewWordsPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 FETCH + CLEAN DATA
+  // 🔥 FETCH + SIMPLIFY
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
@@ -53,20 +78,21 @@ export default function ReviewWordsPage() {
       if (error) throw error;
       if (!data || data.length === 0) throw new Error("EMPTY_DATA");
 
-      // 🔥 APPLY A1 FILTER
-      const filtered = data.filter(isA1Word);
+      const filtered = data.filter(isValid);
 
-      if (filtered.length < 10) {
-        throw new Error("DATA_TOO_COMPLEX");
-      }
-
-      setWords(
-        filtered.map((w) => ({
+      const mapped = filtered
+        .map((w) => ({
           id: w.id,
           word: w.word,
-          definition: w.simple_definition,
+          definition: simplify(w.simple_definition),
         }))
-      );
+        .filter((w) => w.definition.length > 2); // remove garbage
+
+      if (mapped.length < 10) {
+        throw new Error("DATA_NOT_USABLE");
+      }
+
+      setWords(mapped);
     } catch (err) {
       console.error("❌ FETCH ERROR:", err.message);
       setError(err.message);
@@ -82,19 +108,18 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 BETTER MCQ OPTIONS (LESS RANDOM)
+  // 🔥 SMART MCQ
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
     const correct = currentWord.definition;
 
-    // 🧠 pick similar length definitions (better distractors)
     const wrong = words
       .filter(
         (w) =>
           w.definition &&
           w.definition !== correct &&
-          Math.abs(w.definition.length - correct.length) < 20
+          Math.abs(w.definition.length - correct.length) < 15
       )
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
@@ -157,7 +182,7 @@ export default function ReviewWordsPage() {
     );
 
   if (!words.length)
-    return <div style={{ padding: 20 }}>No suitable A1 words</div>;
+    return <div style={{ padding: 20 }}>No usable words</div>;
 
   return (
     <div style={{ padding: 20 }}>
