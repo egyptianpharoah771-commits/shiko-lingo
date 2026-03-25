@@ -62,7 +62,11 @@ export default function ReviewWordsPage() {
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState([]);
 
-  // 🔥 DELAY QUEUE
+  // 🔥 FIX: progress counter مستقل
+  const [progress, setProgress] = useState(0);
+  const TOTAL = 20;
+
+  // 🔥 FIX: queue with delay
   const [reviewQueue, setReviewQueue] = useState([]);
 
   // 🔥 FETCH
@@ -121,44 +125,51 @@ export default function ReviewWordsPage() {
     if (mode === "mcq") setOptions(generateOptions());
   }, [currentWord, mode, generateOptions]);
 
-  // 🔥 NEXT (SMART)
+  // 🔥 NEXT (FIXED QUEUE + PROGRESS)
   const goNext = () => {
     setSelected(null);
     setInput("");
     setChecking(false);
     setFeedback(null);
 
-    // ⏳ تقليل delay
-    setReviewQueue((prev) =>
-      prev.map((item) => ({
+    // 🔥 progress ثابت
+    setProgress((prev) => (prev + 1 >= TOTAL ? 0 : prev + 1));
+
+    // 🔥 تحديث queue + اختيار next في نفس اللحظة (fix stale)
+    setReviewQueue((prevQueue) => {
+      const updated = prevQueue.map((item) => ({
         ...item,
         delay: item.delay - 1,
-      }))
-    );
+      }));
 
-    // 🎯 لو فيه كلمة delay انتهى
-    const ready = reviewQueue.find((item) => item.delay <= 0);
+      const ready = updated.find((item) => item.delay <= 0);
 
-    if (ready) {
-      const index = words.findIndex((w) => w.id === ready.word.id);
+      if (ready) {
+        const index = words.findIndex((w) => w.id === ready.word.id);
 
-      setReviewQueue((prev) => prev.filter((i) => i.word.id !== ready.word.id));
+        if (index !== -1) {
+          setLastIndex(currentIndex);
+          setCurrentIndex(index);
+        }
 
-      if (index !== -1) {
-        setLastIndex(currentIndex);
-        setCurrentIndex(index);
-        return;
+        return updated.filter((i) => i.word.id !== ready.word.id);
       }
-    }
 
-    // 🔁 random بدون تكرار مباشر
-    let next;
-    do {
-      next = Math.floor(Math.random() * words.length);
-    } while (next === currentIndex || next === lastIndex);
+      // 🔁 random بدون تكرار
+      let next;
+      if (words.length <= 1) {
+        next = currentIndex;
+      } else {
+        do {
+          next = Math.floor(Math.random() * words.length);
+        } while (next === currentIndex || next === lastIndex);
+      }
 
-    setLastIndex(currentIndex);
-    setCurrentIndex(next);
+      setLastIndex(currentIndex);
+      setCurrentIndex(next);
+
+      return updated;
+    });
 
     setMode((prev) => (prev === "mcq" ? "type" : "mcq"));
   };
@@ -183,7 +194,6 @@ export default function ReviewWordsPage() {
     playSound(isCorrect ? "correct" : "wrong");
 
     if (!isCorrect) {
-      // ⏳ delay = 2 أسئلة
       setReviewQueue((prev) => [
         ...prev,
         { word: currentWord, delay: 2 },
@@ -216,8 +226,9 @@ export default function ReviewWordsPage() {
       <audio ref={correctRef} src="/sounds/correct.mp3" />
       <audio ref={wrongRef} src="/sounds/wrong.mp3" />
 
+      {/* 🔥 FIXED COUNTER */}
       <p>
-        {currentIndex + 1} / {words.length}
+        {progress} / {TOTAL}
       </p>
 
       {mode === "type" && (
