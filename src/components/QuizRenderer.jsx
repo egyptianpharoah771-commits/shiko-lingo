@@ -2,7 +2,7 @@ import MCQQuestion from "./MCQQuestion";
 import TypeQuestion from "./TypeQuestion";
 import ListenQuestion from "./ListenQuestion";
 import { useWords } from "../hooks/useWords";
-import { useQuizEngine } from "../core/useQuizEngine";
+import { useQuizEngine } from "../core/engine/useQuizEngine";
 
 export default function QuizRenderer({ level }) {
   const { words, loading } = useWords(level);
@@ -37,5 +37,3 @@ export default function QuizRenderer({ level }) {
     />
   );
 }
-
-

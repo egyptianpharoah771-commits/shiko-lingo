@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import useQuizEngine from "../core/engine/useQuizEngine";
+import { useQuizEngine } from "../core/engine/useQuizEngine";
 import useFeedbackSounds from "../core/feedback/useFeedbackSounds";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
@@ -89,11 +89,9 @@ function GrammarUnitPage() {
 
   const feedback = useFeedbackSounds();
 
-  /* ===== RESET ON UNIT CHANGE ===== */
   useEffect(() => {
     resetQuiz();
     feedback.reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, unit]);
 
   if (!content) {
@@ -170,5 +168,3 @@ function GrammarUnitPage() {
 }
 
 export default GrammarUnitPage;
-
-

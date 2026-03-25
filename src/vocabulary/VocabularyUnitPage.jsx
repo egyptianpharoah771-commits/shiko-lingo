@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { getCurrentUser } from "../lib/auth";
-import useQuizEngine from "../core/engine/useQuizEngine";
+import { useQuizEngine } from "../core/engine/useQuizEngine";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import "./vocabulary.css";
@@ -142,9 +142,6 @@ function VocabularyUnitPage() {
     } catch {}
   };
 
-  /* ======================
-     Add Unit Words To Review
-  ====================== */
   async function addUnitWordsToReview() {
     try {
       if (!content || !content.items) return;
@@ -202,14 +199,8 @@ function VocabularyUnitPage() {
   };
 
   const handleFinish = async () => {
-    console.log("FINISH CLICKED");
-
     await addUnitWordsToReview();
-
-    console.log("WORDS INSERTED");
-
     saveProgress();
-
     navigate(`/vocabulary/${level}`);
   };
 
@@ -225,44 +216,6 @@ function VocabularyUnitPage() {
         <h1>{content.level} – Unit {content.unit}</h1>
         <h2>{content.title}</h2>
         <p className="vocab-unit-desc">{content.description}</p>
-      </div>
-
-      <div className="vocab-items-section">
-        <div className="vocab-items">
-          {content.items.map((item, i) => (
-            <div key={i} className="vocab-item-card">
-              <div className="vocab-item-header">
-                <div>
-                  <div className="vocab-item-word">{item.word}</div>
-                  <div className="vocab-item-phonetic">{item.phonetic}</div>
-                </div>
-
-                <button
-                  className={`vocab-audio-btn ${
-                    playingWord === item.word.toLowerCase() ? "playing" : ""
-                  }`}
-                  onClick={() => playWordAudio(item.word, item.example)}
-                >
-                  🔊
-                </button>
-              </div>
-
-              <div className="vocab-item-meaning">
-                <strong>Meaning:</strong> {item.meaning}
-              </div>
-
-              {item.arabic && (
-                <div className="vocab-item-meaning-ar">
-                  <strong>Arabic:</strong> {item.arabic}
-                </div>
-              )}
-
-              <div className="vocab-item-example">
-                <strong>Example:</strong> {item.example}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="vocab-question-box">
@@ -332,5 +285,3 @@ function VocabularyUnitPage() {
 }
 
 export default VocabularyUnitPage;
-
-
