@@ -57,14 +57,14 @@ function VocabularyUnitPage() {
     wrongAudioRef.current?.play().catch(() => {});
   };
 
-  // 🔥 ✅ الرجوع للنظام القديم الحقيقي
+  // 🔥 النظام القديم (TTS)
   const speakWord = (text) => {
     if (!text) return;
 
     try {
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "en-US";
-      speechSynthesis.cancel(); // مهم علشان يمنع stacking
+      speechSynthesis.cancel();
       speechSynthesis.speak(utter);
     } catch {}
   };
@@ -192,7 +192,7 @@ function VocabularyUnitPage() {
 
       <p>{question.question}</p>
 
-      {/* 🔊 الصوت رجع هنا */}
+      {/* 🔊 الصوت القديم */}
       <button onClick={() => speakWord(question.word)}>
         🔊 Play
       </button>
