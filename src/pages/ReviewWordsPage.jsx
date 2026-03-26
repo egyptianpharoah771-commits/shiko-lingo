@@ -36,6 +36,7 @@ function isA1Word(w) {
 
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
+  const audioRef = useRef(null);
 
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -54,13 +55,14 @@ export default function ReviewWordsPage() {
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // 🔥 FETCH (WITH DEDUPE)
+  // 🔥 FETCH (FIXED)
   const fetchWords = useCallback(async () => {
     try {
       setLoading(true);
 
       const { data } = await supabase
-.select("id, word, simple_definition, audio_url")        .select("id, word")
+        .from("words")
+        .select("id, word, simple_definition, audio_url")
         .limit(200);
 
       const dbWords = (data || [])
@@ -68,15 +70,17 @@ export default function ReviewWordsPage() {
         .map((w) => ({
           id: w.id,
           word: w.word,
-          definition: A1_MAP[w.word.toLowerCase()],
+          definition:
+            w.simple_definition ||
+            A1_MAP[w.word.toLowerCase()] ||
+            "",
+          audio: w.audio_url || "",
         }));
 
       const saved = JSON.parse(localStorage.getItem("learned_words") || "[]");
 
-      // 🔥 MERGE + DEDUPE
       const map = new Map();
 
-      // priority → reading
       saved.forEach((w) => {
         if (!w.word) return;
 
@@ -87,10 +91,10 @@ export default function ReviewWordsPage() {
             w.definition ||
             A1_MAP[w.word.toLowerCase()] ||
             "",
+          audio: w.audio || "",
         });
       });
 
-      // then DB
       dbWords.forEach((w) => {
         const key = w.word.toLowerCase();
         if (!map.has(key)) {
@@ -112,10 +116,25 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔊 LISTEN
-  const speak = (text) => {
+  // 🔊 AUDIO SYSTEM (DB + FALLBACK)
+  const playAudio = () => {
+    if (!currentWord) return;
+
+    // ✅ DB audio
+    if (currentWord.audio) {
+      try {
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+        audioRef.current = new Audio(currentWord.audio);
+        audioRef.current.play();
+        return;
+      } catch {}
+    }
+
+    // 🔁 fallback → TTS
     try {
-      const utter = new SpeechSynthesisUtterance(text);
+      const utter = new SpeechSynthesisUtterance(currentWord.word);
       utter.lang = "en-US";
       speechSynthesis.speak(utter);
     } catch {}
@@ -246,6 +265,8 @@ export default function ReviewWordsPage() {
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
+          <button onClick={playAudio}>🔊</button>
+
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -258,6 +279,8 @@ export default function ReviewWordsPage() {
       {mode === "mcq" && (
         <div>
           <h3>{currentWord.word}</h3>
+          <button onClick={playAudio}>🔊</button>
+
           {options.map((opt, i) => (
             <button key={i} onClick={() => handleAnswer(opt)}>
               {opt}
@@ -268,7 +291,8 @@ export default function ReviewWordsPage() {
 
       {mode === "listen" && (
         <div>
-          <button onClick={() => speak(currentWord.word)}>🔊 Play</button>
+          <button onClick={playAudio}>🔊 Play</button>
+
           {options.map((opt, i) => (
             <button key={i} onClick={() => handleAnswer(opt)}>
               {opt}
