@@ -45,6 +45,8 @@ function VocabularyUnitPage() {
 
   const [playingWord, setPlayingWord] = useState(null);
 
+  const [audioMap, setAudioMap] = useState({}); // 🔥 NEW
+
   useEffect(() => {
     selectAudioRef.current = new Audio("/sounds/select.mp3");
     correctAudioRef.current = new Audio("/sounds/correct.mp3");
@@ -69,30 +71,52 @@ function VocabularyUnitPage() {
     wrongAudioRef.current.play().catch(() => {});
   };
 
+  // 🔥 LOAD CONTENT + AUDIO FROM DB
   useEffect(() => {
-    setLoading(true);
+    async function load() {
+      setLoading(true);
 
-    const unitData =
-      VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
+      const unitData =
+        VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
 
-    if (unitData && unitData.content && Array.isArray(unitData.questions)) {
-      setContent(unitData.content);
+      if (unitData && unitData.content && Array.isArray(unitData.questions)) {
+        setContent(unitData.content);
 
-      const safeQuestions = unitData.questions.map((q) => ({
-        ...q,
-        shuffledOptions: shuffle(q.options),
-      }));
+        const safeQuestions = unitData.questions.map((q) => ({
+          ...q,
+          shuffledOptions: shuffle(q.options),
+        }));
 
-      setQuestions(safeQuestions);
-      setCurrentQuestion(0);
-      setSelected(null);
-      setShowResult(false);
-    } else {
-      setContent(null);
-      setQuestions([]);
+        setQuestions(safeQuestions);
+        setCurrentQuestion(0);
+        setSelected(null);
+        setShowResult(false);
+
+        // 🔥 FETCH AUDIO FROM DB
+        const words = unitData.content.items.map((w) =>
+          w.word.toLowerCase()
+        );
+
+        const { data } = await supabase
+          .from("words")
+          .select("word, audio_url")
+          .in("word", words);
+
+        const map = {};
+        (data || []).forEach((w) => {
+          map[w.word.toLowerCase()] = w.audio_url;
+        });
+
+        setAudioMap(map);
+      } else {
+        setContent(null);
+        setQuestions([]);
+      }
+
+      setLoading(false);
     }
 
-    setLoading(false);
+    load();
   }, [normalizedLevel, unitKey]);
 
   const quizData = useMemo(() => {
@@ -107,21 +131,38 @@ function VocabularyUnitPage() {
     questions: quizData,
   });
 
+  // 🔊 AUDIO SYSTEM (FIXED)
   const playWordAudio = (word, example = "") => {
-    const text = example ? `${word}. ${example}` : word;
+    const lower = word.toLowerCase();
 
     if (wordAudioRef.current) {
       wordAudioRef.current.pause();
       wordAudioRef.current = null;
     }
 
-    const audio = new Audio(`/api/tts?text=${encodeURIComponent(text)}`);
+    // ✅ DB AUDIO
+    const dbAudio = audioMap[lower];
+    if (dbAudio) {
+      const audio = new Audio(dbAudio);
+      wordAudioRef.current = audio;
+      setPlayingWord(lower);
 
+      audio.play().catch(() => {});
+      audio.onended = () => {
+        setPlayingWord(null);
+        wordAudioRef.current = null;
+      };
+      return;
+    }
+
+    // 🔁 FALLBACK → TTS
+    const text = example ? `${word}. ${example}` : word;
+
+    const audio = new Audio(`/api/tts?text=${encodeURIComponent(text)}`);
     wordAudioRef.current = audio;
-    setPlayingWord(word.toLowerCase());
+    setPlayingWord(lower);
 
     audio.play().catch(() => {});
-
     audio.onended = () => {
       setPlayingWord(null);
       wordAudioRef.current = null;
@@ -153,7 +194,8 @@ function VocabularyUnitPage() {
       );
 
       const { data: dbWords } = await supabase
-.select("id, word, simple_definition, audio_url")        .select("id, word")
+        .from("words")
+        .select("id, word, simple_definition, audio_url") // ✅ FIXED
         .in("word", words);
 
       if (!dbWords || dbWords.length === 0) return;
@@ -223,6 +265,19 @@ function VocabularyUnitPage() {
         </div>
 
         <p className="vocab-question-text">{question.question}</p>
+
+        {/* 🔊 PLAY WORD */}
+        <button
+          className="vocab-btn secondary"
+          onClick={() =>
+            playWordAudio(
+              question.word || "",
+              question.example || ""
+            )
+          }
+        >
+          🔊 Play
+        </button>
 
         <div className="vocab-options">
           {question.shuffledOptions.map((opt) => (
