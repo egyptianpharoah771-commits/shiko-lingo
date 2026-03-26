@@ -60,8 +60,7 @@ export default function ReviewWordsPage() {
       setLoading(true);
 
       const { data } = await supabase
-        .from("words")
-        .select("id, word")
+.select("id, word, simple_definition, audio_url")        .select("id, word")
         .limit(200);
 
       const dbWords = (data || [])

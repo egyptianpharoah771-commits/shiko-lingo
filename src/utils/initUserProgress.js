@@ -28,8 +28,7 @@ export async function initUserProgress(userId) {
     // 2️⃣ Load words
     // =========================
     const { data: words, error: wordsError } = await supabase
-      .from("words")
-      .select("id")
+.select("id, word, simple_definition, audio_url")      .select("id")
       .limit(50);
 
     if (wordsError || !words || words.length === 0) {

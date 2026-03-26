@@ -153,8 +153,7 @@ function VocabularyUnitPage() {
       );
 
       const { data: dbWords } = await supabase
-        .from("words")
-        .select("id, word")
+.select("id, word, simple_definition, audio_url")        .select("id, word")
         .in("word", words);
 
       if (!dbWords || dbWords.length === 0) return;

@@ -11,7 +11,16 @@ function normalizeWord(word) {
   return {
     id: word.id,
     word: word.word?.trim(),
-    definition: word.simple_definition?.trim(),
+
+    // 🔥 FIX: definition fallback
+    definition:
+      word.simple_definition?.trim() ||
+      word.definition?.trim() ||
+      "",
+
+    // 🔥 FIX: audio support
+    audio_url: word.audio_url || null,
+
     level: word.level,
     next_review: word.next_review || null,
     interval: word.interval || 1,
@@ -68,8 +77,27 @@ export function getDueWords(words) {
     return new Date(w.next_review) <= now;
   });
 }
+
 /**
- * Save word progress to DB (safe fallback)
+ * 🔊 Play audio with fallback (IMPORTANT)
+ */
+export function playWordAudio(word) {
+  try {
+    if (word.audio_url) {
+      const audio = new Audio(word.audio_url);
+      audio.play();
+    } else if (word.word) {
+      const utter = new SpeechSynthesisUtterance(word.word);
+      utter.lang = "en-US";
+      speechSynthesis.speak(utter);
+    }
+  } catch (err) {
+    console.error("Audio error:", err);
+  }
+}
+
+/**
+ * Save word progress to DB
  */
 export async function saveWordToDB(supabase, word) {
   if (!supabase || !word) return;
@@ -92,4 +120,3 @@ export async function saveWordToDB(supabase, word) {
     console.error("saveWordToDB exception:", err);
   }
 }
-

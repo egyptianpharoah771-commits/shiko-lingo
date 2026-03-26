@@ -30,8 +30,7 @@ export function useWords(level) {
       setLoading(true);
 
       const { data, error } = await supabase
-        .from("words")
-        .select("*")
+.select("id, word, simple_definition, audio_url")        .select("*")
         .ilike("level", level)
         .limit(50);
 
