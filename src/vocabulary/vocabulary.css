@@ -3,14 +3,14 @@
 ========================= */
 
 .vocab-page {
-  max-width: 1200px;
+  max-width: 680px; /* 🔥 كان 1200 → سبب تكسير الموبايل */
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: 16px 12px 40px;
 }
 
 .vocab-page h1 {
-  font-size: 28px;
-  margin-bottom: 24px;
+  font-size: 22px;
+  margin-bottom: 16px;
   color: var(--text-main);
 }
 
@@ -19,30 +19,30 @@
 ========================= */
 
 .vocab-level {
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 
 .vocab-level-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .vocab-level-title {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
 }
 
 .vocab-level-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 .vocab-progress {
-  height: 6px;
+  height: 5px;
   background: var(--bg-soft);
   border-radius: 4px;
   overflow: hidden;
@@ -55,14 +55,28 @@
 }
 
 /* =========================
-   Units Grid
+   Units Grid (Mobile First)
 ========================= */
 
 .vocab-units {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
+  grid-template-columns: 1fr; /* 🔥 موبايل */
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Tablet */
+@media (min-width: 600px) {
+  .vocab-units {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+  .vocab-units {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 /* =========================
@@ -72,7 +86,7 @@
 .vocab-card {
   background: var(--bg-card);
   border-radius: var(--radius-md);
-  padding: 16px;
+  padding: 14px;
   box-shadow: var(--shadow-soft);
   transition: transform 0.15s var(--ease),
     box-shadow 0.15s var(--ease);
@@ -80,7 +94,7 @@
 }
 
 .vocab-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
 }
 
@@ -88,25 +102,23 @@
   opacity: 0.55;
   cursor: not-allowed;
   pointer-events: none;
-  transform: none;
-  box-shadow: var(--shadow-soft);
 }
 
 .vocab-card-icon {
-  font-size: 22px;
-  margin-bottom: 8px;
+  font-size: 20px;
+  margin-bottom: 6px;
   color: var(--primary);
 }
 
 .vocab-card-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 4px;
   color: var(--text-main);
 }
 
 .vocab-card-desc {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -115,22 +127,25 @@
 ========================= */
 
 .vocab-unit-page {
-  max-width: 720px;
+  max-width: 100%;
 }
 
 .vocab-unit-header h1 {
+  font-size: 20px;
   margin-bottom: 4px;
 }
 
 .vocab-unit-header h2 {
+  font-size: 16px;
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: var(--primary);
 }
 
 .vocab-unit-desc {
+  font-size: 13px;
   color: var(--text-muted);
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 /* =========================
@@ -139,20 +154,20 @@
 
 .vocab-question-box {
   background: var(--bg-card);
-  padding: 20px;
+  padding: 16px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-soft);
 }
 
 .vocab-question-header {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .vocab-question-text {
-  font-size: 16px;
-  margin-bottom: 16px;
+  font-size: 15px;
+  margin-bottom: 14px;
   color: var(--text-main);
 }
 
@@ -163,44 +178,33 @@
 .vocab-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
-
-/* (الألوان الفعلية في AnswerOption) */
 
 /* =========================
    Actions
 ========================= */
 
 .vocab-actions {
-  margin-top: 20px;
+  margin-top: 16px;
   display: flex;
-  gap: 12px;
+  flex-direction: column; /* 🔥 مهم للموبايل */
+  gap: 10px;
 }
 
 .vocab-btn {
-  padding: 12px 20px;
+  width: 100%; /* 🔥 full width */
+  padding: 12px;
   border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: background 0.15s var(--ease),
-    transform 0.15s var(--ease);
 }
 
 .vocab-btn.primary {
   background: var(--primary);
   color: #fff;
-}
-
-.vocab-btn.primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
-.vocab-btn.primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .vocab-btn.success {
@@ -209,42 +213,30 @@
 }
 
 /* =========================
-   Vocabulary Items
+   Vocabulary Items (🔥 أهم جزء)
 ========================= */
 
-.vocab-items-section {
-  margin-bottom: 40px;
-}
-
 .vocab-items {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .vocab-item-card {
   background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  padding: 16px;
+  border-radius: 14px;
+  padding: 14px;
   box-shadow: var(--shadow-soft);
-  transition: transform 0.15s var(--ease),
-    box-shadow 0.15s var(--ease);
-}
-
-.vocab-item-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
 }
 
 .vocab-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
 }
 
 .vocab-item-word {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--primary);
 }
@@ -252,39 +244,38 @@
 .vocab-item-phonetic {
   font-size: 13px;
   color: var(--text-muted);
+  margin-top: 4px;
 }
 
-/* 🔊 Audio Button */
+/* 🔊 زر الصوت (مهم جداً للموبايل) */
 
 .vocab-audio-btn {
   border: none;
   background: var(--bg-soft);
   border-radius: 50%;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
   cursor: pointer;
-  transition: background 0.15s var(--ease),
-    transform 0.15s var(--ease);
 }
 
-.vocab-audio-btn:hover {
-  background: var(--primary);
-  color: #fff;
-  transform: scale(1.05);
+.vocab-audio-btn:active {
+  transform: scale(0.95);
 }
 
-.vocab-audio-btn:focus-visible {
-  outline: 2px solid var(--primary);
-}
+/* =========================
+   Text
+========================= */
 
-.vocab-audio-btn.playing {
-  background: var(--primary);
-  color: #fff;
-}
-
-.vocab-item-meaning,
-.vocab-item-example {
+.vocab-item-meaning {
   font-size: 14px;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--text-main);
+}
+
+.vocab-item-example {
+  font-size: 13px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-style: italic;
 }
