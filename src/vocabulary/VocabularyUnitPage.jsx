@@ -8,9 +8,6 @@ import "../core/ui/answer-option.css";
 import "./vocabulary.css";
 import { VOCABULARY_DATA } from "./vocabularyIndex";
 
-/* ======================
-   Utils
-====================== */
 function shuffle(array) {
   if (!Array.isArray(array)) return [];
   const copy = [...array];
@@ -38,12 +35,9 @@ function VocabularyUnitPage() {
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const wordAudioRef = useRef(null);
   const selectAudioRef = useRef(null);
   const correctAudioRef = useRef(null);
   const wrongAudioRef = useRef(null);
-
-  const [playingWord, setPlayingWord] = useState(null);
 
   useEffect(() => {
     selectAudioRef.current = new Audio("/sounds/select.mp3");
@@ -52,42 +46,27 @@ function VocabularyUnitPage() {
   }, []);
 
   const playSelectSound = () => {
-    if (!selectAudioRef.current) return;
-    selectAudioRef.current.currentTime = 0;
-    selectAudioRef.current.play().catch(() => {});
+    selectAudioRef.current?.play().catch(() => {});
   };
 
   const playCorrectSound = () => {
-    if (!correctAudioRef.current) return;
-    correctAudioRef.current.currentTime = 0;
-    correctAudioRef.current.play().catch(() => {});
+    correctAudioRef.current?.play().catch(() => {});
   };
 
   const playWrongSound = () => {
-    if (!wrongAudioRef.current) return;
-    wrongAudioRef.current.currentTime = 0;
-    wrongAudioRef.current.play().catch(() => {});
+    wrongAudioRef.current?.play().catch(() => {});
   };
 
-  // 🔊 TTS ONLY (رجوع للوضع القديم)
-  const playWordAudio = (word, example = "") => {
-    const text = example ? `${word}. ${example}` : word;
+  // 🔥 ✅ الرجوع للنظام القديم الحقيقي
+  const speakWord = (text) => {
+    if (!text) return;
 
-    if (wordAudioRef.current) {
-      wordAudioRef.current.pause();
-      wordAudioRef.current = null;
-    }
-
-    const audio = new Audio(`/api/tts?text=${encodeURIComponent(text)}`);
-    wordAudioRef.current = audio;
-    setPlayingWord(word.toLowerCase());
-
-    audio.play().catch(() => {});
-
-    audio.onended = () => {
-      setPlayingWord(null);
-      wordAudioRef.current = null;
-    };
+    try {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      speechSynthesis.cancel(); // مهم علشان يمنع stacking
+      speechSynthesis.speak(utter);
+    } catch {}
   };
 
   useEffect(() => {
@@ -117,7 +96,7 @@ function VocabularyUnitPage() {
   }, [normalizedLevel, unitKey]);
 
   const quizData = useMemo(() => {
-    if (!Array.isArray(questions) || questions.length === 0) return [];
+    if (!questions.length) return [];
     return questions.map((q) => ({
       id: q.id,
       answer: q.correctAnswer,
@@ -154,10 +133,10 @@ function VocabularyUnitPage() {
 
       const { data: dbWords } = await supabase
         .from("words")
-        .select("id, word") // رجوع للوضع القديم
+        .select("id, word")
         .in("word", words);
 
-      if (!dbWords || dbWords.length === 0) return;
+      if (!dbWords?.length) return;
 
       const progressRows = dbWords.map((w) => ({
         user_id: user.id,
@@ -179,7 +158,7 @@ function VocabularyUnitPage() {
         });
 
     } catch (err) {
-      console.error("Error adding unit words:", err);
+      console.error(err);
     }
   }
 
@@ -204,95 +183,63 @@ function VocabularyUnitPage() {
     navigate(`/vocabulary/${level}`);
   };
 
-  if (loading) return <div className="vocab-loading">Loading...</div>;
-
-  if (!content || !Array.isArray(content.items) || questions.length === 0) {
-    return <div className="vocab-loading">Unit not found.</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (!content || !questions.length) return <div>Unit not found</div>;
 
   return (
     <div className="vocab-page vocab-unit-page">
-      <div className="vocab-unit-header">
-        <h1>{content.level} – Unit {content.unit}</h1>
-        <h2>{content.title}</h2>
-        <p className="vocab-unit-desc">{content.description}</p>
-      </div>
+      <h2>{content.title}</h2>
 
-      <div className="vocab-question-box">
-        <div className="vocab-question-header">
-          Question {currentQuestion + 1} / {questions.length}
-        </div>
+      <p>{question.question}</p>
 
-        <p className="vocab-question-text">{question.question}</p>
+      {/* 🔊 الصوت رجع هنا */}
+      <button onClick={() => speakWord(question.word)}>
+        🔊 Play
+      </button>
 
-        {/* 🔊 PLAY WORD */}
+      {question.shuffledOptions.map((opt) => (
+        <AnswerOption
+          key={opt}
+          label={opt}
+          disabled={showResult}
+          state={
+            showResult
+              ? opt === question.correctAnswer
+                ? "correct"
+                : opt === selected
+                ? "wrong"
+                : "default"
+              : selected === opt
+              ? "selected"
+              : "default"
+          }
+          onClick={() => {
+            setSelected(opt);
+            playSelectSound();
+          }}
+        />
+      ))}
+
+      {!showResult ? (
+        <button onClick={handleCheck} disabled={!selected}>
+          Check
+        </button>
+      ) : (
         <button
-          className="vocab-btn secondary"
-          onClick={() =>
-            playWordAudio(
-              question.word || "",
-              question.example || ""
-            )
+          onClick={
+            isLastQuestion
+              ? handleFinish
+              : () => {
+                  setSelected(null);
+                  setShowResult(false);
+                  setCurrentQuestion((p) => p + 1);
+                  resetQuiz();
+                }
           }
         >
-          🔊 Play
+          {isLastQuestion ? "Finish" : "Next"}
         </button>
-
-        <div className="vocab-options">
-          {question.shuffledOptions.map((opt) => (
-            <AnswerOption
-              key={opt}
-              label={opt}
-              disabled={showResult}
-              state={
-                showResult
-                  ? opt === question.correctAnswer
-                    ? "correct"
-                    : opt === selected
-                    ? "wrong"
-                    : "default"
-                  : selected === opt
-                  ? "selected"
-                  : "default"
-              }
-              onClick={() => {
-                setSelected(opt);
-                playSelectSound();
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="vocab-actions">
-          {!showResult ? (
-            <button
-              className="vocab-btn primary"
-              disabled={!selected}
-              onClick={handleCheck}
-            >
-              Check Answer
-            </button>
-          ) : (
-            <button
-              className={`vocab-btn ${
-                isLastQuestion ? "success" : "primary"
-              }`}
-              onClick={
-                isLastQuestion
-                  ? handleFinish
-                  : () => {
-                      setSelected(null);
-                      setShowResult(false);
-                      setCurrentQuestion((prev) => prev + 1);
-                      resetQuiz();
-                    }
-              }
-            >
-              {isLastQuestion ? "Finish 🎉" : "Next Question →"}
-            </button>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
