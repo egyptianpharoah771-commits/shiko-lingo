@@ -57,7 +57,7 @@ function VocabularyUnitPage() {
     wrongAudioRef.current?.play().catch(() => {});
   };
 
-  // 🔥 النظام القديم (TTS)
+  // 🔊 TTS
   const speakWord = (text) => {
     if (!text) return;
 
@@ -190,9 +190,21 @@ function VocabularyUnitPage() {
     <div className="vocab-page vocab-unit-page">
       <h2>{content.title}</h2>
 
+      {/* 🔥 WORD LIST رجعت */}
+      <div style={{ marginBottom: 30 }}>
+        {content.items?.map((item, i) => (
+          <div key={i} style={{ marginBottom: 10 }}>
+            <strong>{item.word}</strong>
+            <button onClick={() => speakWord(item.word)}>🔊</button>
+            <p>{item.definition}</p>
+            {item.example && <p>{item.example}</p>}
+          </div>
+        ))}
+      </div>
+
+      {/* 🔥 QUIZ */}
       <p>{question.question}</p>
 
-      {/* 🔊 الصوت القديم */}
       <button onClick={() => speakWord(question.word)}>
         🔊 Play
       </button>
