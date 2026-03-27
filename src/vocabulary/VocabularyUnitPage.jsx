@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import "./vocabulary.css";
@@ -23,23 +23,66 @@ export default function VocabularyUnitPage() {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
-  // 🔊 صوت ثابت (نفس القديم)
+  const audioRef = useRef(null);
+
+  // 🔊 FIX نهائي (TTS + fallback)
   const speakWord = useCallback((text) => {
-    if (!text || !window.speechSynthesis) return;
+    if (!text) return;
 
     try {
-      window.speechSynthesis.cancel();
+      const synth = window.speechSynthesis;
+
+      synth.cancel();
 
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "en-US";
       utter.rate = 0.85;
 
+      let started = false;
+
+      utter.onstart = () => {
+        started = true;
+      };
+
+      utter.onerror = () => {
+        if (started) return;
+
+        try {
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+
+          audioRef.current = new Audio(
+            `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
+              text
+            )}&tl=en&client=tw-ob`
+          );
+
+          audioRef.current.play().catch(() => {});
+        } catch (e) {
+          console.error("Fallback audio failed", e);
+        }
+      };
+
       setTimeout(() => {
-        window.speechSynthesis.speak(utter);
-      }, 50);
+        synth.speak(utter);
+      }, 100);
 
     } catch (e) {
       console.error("TTS error", e);
+    }
+  }, []);
+
+  // 🔥 preload voices (من التحليل)
+  useEffect(() => {
+    const loadVoices = () => {
+      window.speechSynthesis.getVoices();
+    };
+
+    loadVoices();
+
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
     }
   }, []);
 
@@ -64,7 +107,6 @@ export default function VocabularyUnitPage() {
   const question = questions[currentQuestion];
   const isLast = currentQuestion === questions.length - 1;
 
-  // 🔥 SAFE RENDER (مهم جدًا)
   if (!content || !question) {
     return (
       <div style={{ padding: 40, textAlign: "center" }}>
