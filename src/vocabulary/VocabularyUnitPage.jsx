@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import "./vocabulary.css";
@@ -7,21 +7,14 @@ import { VOCABULARY_DATA } from "./vocabularyIndex";
 
 function shuffle(array) {
   if (!Array.isArray(array)) return [];
-  const copy = [...array];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
+  return [...array].sort(() => Math.random() - 0.5);
 }
 
 export default function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
 
-  const normalizedLevel =
-    typeof level === "string" ? level.trim().toUpperCase() : null;
-
+  const normalizedLevel = level?.toUpperCase() || "";
   const unitKey = `unit${unitId}`;
 
   const [content, setContent] = useState(null);
@@ -30,89 +23,62 @@ export default function VocabularyUnitPage() {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
-  const audioRef = useRef(null);
-
-  // 🔊 الحل النهائي
+  // 🔊 صوت ثابت (نفس القديم)
   const speakWord = useCallback((text) => {
-    if (!text) return;
+    if (!text || !window.speechSynthesis) return;
 
     try {
-      const synth = window.speechSynthesis;
-
-      // cancel أي صوت
-      synth.cancel();
+      window.speechSynthesis.cancel();
 
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "en-US";
       utter.rate = 0.85;
 
-      let played = false;
-
-      // لو اشتغل → خلاص
-      utter.onstart = () => {
-        played = true;
-      };
-
-      // لو فشل → fallback حقيقي
-      utter.onerror = () => {
-        if (played) return;
-
-        try {
-          if (audioRef.current) {
-            audioRef.current.pause();
-          }
-
-          audioRef.current = new Audio(
-            `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
-              text
-            )}&tl=en&client=tw-ob`
-          );
-
-          audioRef.current.play().catch(() => {});
-        } catch {}
-      };
-
-      // تشغيل
       setTimeout(() => {
-        synth.speak(utter);
-      }, 80);
+        window.speechSynthesis.speak(utter);
+      }, 50);
 
     } catch (e) {
-      console.error("Audio failed", e);
+      console.error("TTS error", e);
     }
-  }, []);
-
-  useEffect(() => {
-    window.speechSynthesis.getVoices(); // preload voices
   }, []);
 
   useEffect(() => {
     const unitData =
       VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
 
-    if (unitData) {
+    if (unitData && unitData.content && unitData.questions) {
       setContent(unitData.content);
 
-      const safeQuestions = unitData.questions.map((q) => ({
+      const prepared = unitData.questions.map((q) => ({
         ...q,
         shuffledOptions: shuffle(q.options),
       }));
 
-      setQuestions(safeQuestions);
+      setQuestions(prepared);
+    } else {
+      console.error("❌ Unit data not found", normalizedLevel, unitKey);
     }
   }, [normalizedLevel, unitKey]);
 
   const question = questions[currentQuestion];
   const isLast = currentQuestion === questions.length - 1;
 
-  if (!content || !question) return <div>Loading...</div>;
+  // 🔥 SAFE RENDER (مهم جدًا)
+  if (!content || !question) {
+    return (
+      <div style={{ padding: 40, textAlign: "center" }}>
+        <h3>Loading lesson...</h3>
+      </div>
+    );
+  }
 
   return (
     <div className="vocab-page">
 
       {/* WORD LIST */}
       <div className="vocab-items">
-        {content.items.map((item, i) => (
+        {content.items?.map((item, i) => (
           <div key={i} className="vocab-item-card">
             <div className="vocab-item-header">
               <div>
@@ -143,6 +109,8 @@ export default function VocabularyUnitPage() {
         ))}
       </div>
 
+      <hr style={{ margin: "30px 0" }} />
+
       {/* QUIZ */}
       <div className="vocab-question-box">
 
@@ -156,11 +124,11 @@ export default function VocabularyUnitPage() {
             speakWord(question.word || question.question)
           }
         >
-          🔊
+          🔊 Listen
         </button>
 
         <div className="vocab-options">
-          {question.shuffledOptions.map((opt) => (
+          {question.shuffledOptions?.map((opt) => (
             <AnswerOption
               key={opt}
               label={opt}
@@ -200,7 +168,7 @@ export default function VocabularyUnitPage() {
 
               setSelected(null);
               setShowResult(false);
-              setCurrentQuestion((p) => p + 1);
+              setCurrentQuestion((prev) => prev + 1);
             }}
           >
             {isLast ? "Finish" : "Next"}
