@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import "./vocabulary.css";
@@ -29,18 +29,49 @@ export default function VocabularyUnitPage() {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
-  // 🔊 FIX صوت ثابت
+  const audioRef = useRef(null);
+
+  // 🔊 FIX نهائي للصوت (TTS + fallback mp3)
   const speakWord = (text) => {
     if (!text) return;
 
     try {
+      const synth = window.speechSynthesis;
+
+      // وقف أي صوت شغال
+      if (synth.speaking) {
+        synth.cancel();
+      }
+
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "en-US";
       utter.rate = 0.9;
 
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utter);
-    } catch {}
+      let fallbackUsed = false;
+
+      // لو TTS فشل → fallback mp3
+      utter.onerror = () => {
+        if (fallbackUsed) return;
+        fallbackUsed = true;
+
+        try {
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+          audioRef.current = new Audio(
+            `/api/tts?text=${encodeURIComponent(text)}`
+          );
+          audioRef.current.play().catch(() => {});
+        } catch {}
+      };
+
+      // delay مهم لـ Pi Browser
+      setTimeout(() => {
+        synth.speak(utter);
+      }, 80);
+    } catch (e) {
+      console.error("TTS failed", e);
+    }
   };
 
   useEffect(() => {
@@ -138,7 +169,7 @@ export default function VocabularyUnitPage() {
           ))}
         </div>
 
-        {/* 🔥 CHECK BUTTON */}
+        {/* 🔥 CHECK / NEXT */}
         {!showResult ? (
           <button
             className="vocab-btn primary"
@@ -151,6 +182,12 @@ export default function VocabularyUnitPage() {
           <button
             className="vocab-btn primary"
             onClick={() => {
+              if (isLast) {
+                // 🔥 FIX: مايدخلش Loading
+                window.location.href = `/vocabulary/${level}`;
+                return;
+              }
+
               setSelected(null);
               setShowResult(false);
               setCurrentQuestion((p) => p + 1);
