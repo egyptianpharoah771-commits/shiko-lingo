@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import "./vocabulary.css";
@@ -29,48 +29,27 @@ export default function VocabularyUnitPage() {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
-  const audioRef = useRef(null);
-
-  // 🔊 FIX نهائي للصوت (TTS + fallback mp3)
+  // 🔊 FIX حقيقي للصوت (بدون أي APIs)
   const speakWord = (text) => {
     if (!text) return;
 
     try {
       const synth = window.speechSynthesis;
 
-      // وقف أي صوت شغال
-      if (synth.speaking) {
-        synth.cancel();
-      }
+      // reset كامل
+      synth.cancel();
 
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "en-US";
       utter.rate = 0.9;
 
-      let fallbackUsed = false;
-
-      // لو TTS فشل → fallback mp3
-      utter.onerror = () => {
-        if (fallbackUsed) return;
-        fallbackUsed = true;
-
-        try {
-          if (audioRef.current) {
-            audioRef.current.pause();
-          }
-          audioRef.current = new Audio(
-            `/api/tts?text=${encodeURIComponent(text)}`
-          );
-          audioRef.current.play().catch(() => {});
-        } catch {}
-      };
-
-      // delay مهم لـ Pi Browser
+      // 👇 دي أهم نقطة (حل Pi)
       setTimeout(() => {
         synth.speak(utter);
-      }, 80);
+      }, 120);
+
     } catch (e) {
-      console.error("TTS failed", e);
+      console.error("TTS error", e);
     }
   };
 
@@ -169,7 +148,6 @@ export default function VocabularyUnitPage() {
           ))}
         </div>
 
-        {/* 🔥 CHECK / NEXT */}
         {!showResult ? (
           <button
             className="vocab-btn primary"
@@ -183,7 +161,6 @@ export default function VocabularyUnitPage() {
             className="vocab-btn primary"
             onClick={() => {
               if (isLast) {
-                // 🔥 FIX: مايدخلش Loading
                 window.location.href = `/vocabulary/${level}`;
                 return;
               }
