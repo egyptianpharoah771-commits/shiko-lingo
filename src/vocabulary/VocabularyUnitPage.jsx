@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef } from "react";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import "./vocabulary.css";
@@ -17,6 +17,7 @@ function shuffle(array) {
 
 export default function VocabularyUnitPage() {
   const { level, unitId } = useParams();
+  const navigate = useNavigate();
 
   const normalizedLevel =
     typeof level === "string" ? level.trim().toUpperCase() : null;
@@ -29,29 +30,61 @@ export default function VocabularyUnitPage() {
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
 
-  // 🔊 FIX حقيقي للصوت (بدون أي APIs)
-  const speakWord = (text) => {
+  const audioRef = useRef(null);
+
+  // 🔊 الحل النهائي
+  const speakWord = useCallback((text) => {
     if (!text) return;
 
     try {
       const synth = window.speechSynthesis;
 
-      // reset كامل
+      // cancel أي صوت
       synth.cancel();
 
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "en-US";
-      utter.rate = 0.9;
+      utter.rate = 0.85;
 
-      // 👇 دي أهم نقطة (حل Pi)
+      let played = false;
+
+      // لو اشتغل → خلاص
+      utter.onstart = () => {
+        played = true;
+      };
+
+      // لو فشل → fallback حقيقي
+      utter.onerror = () => {
+        if (played) return;
+
+        try {
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+
+          audioRef.current = new Audio(
+            `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
+              text
+            )}&tl=en&client=tw-ob`
+          );
+
+          audioRef.current.play().catch(() => {});
+        } catch {}
+      };
+
+      // تشغيل
       setTimeout(() => {
         synth.speak(utter);
-      }, 120);
+      }, 80);
 
     } catch (e) {
-      console.error("TTS error", e);
+      console.error("Audio failed", e);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    window.speechSynthesis.getVoices(); // preload voices
+  }, []);
 
   useEffect(() => {
     const unitData =
@@ -77,7 +110,7 @@ export default function VocabularyUnitPage() {
   return (
     <div className="vocab-page">
 
-      {/* 🔥 WORD LIST */}
+      {/* WORD LIST */}
       <div className="vocab-items">
         {content.items.map((item, i) => (
           <div key={i} className="vocab-item-card">
@@ -110,7 +143,7 @@ export default function VocabularyUnitPage() {
         ))}
       </div>
 
-      {/* 🔥 QUIZ */}
+      {/* QUIZ */}
       <div className="vocab-question-box">
 
         <div className="vocab-question-text">
@@ -161,7 +194,7 @@ export default function VocabularyUnitPage() {
             className="vocab-btn primary"
             onClick={() => {
               if (isLast) {
-                window.location.href = `/vocabulary/${level}`;
+                navigate(`/vocabulary/${level}`);
                 return;
               }
 
