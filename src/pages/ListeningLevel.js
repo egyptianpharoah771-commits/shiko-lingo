@@ -53,7 +53,7 @@ function ListeningLevel() {
 
     fetch(`/listening/${level}/index.json`)
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         if (!mounted) return;
 
         let parsed = [];
@@ -64,7 +64,26 @@ function ListeningLevel() {
           parsed = data.lessons;
         }
 
-        setLessons(parsed);
+        // ✅ FIX: نجيب العنوان الحقيقي من data.json
+        const fixedLessons = await Promise.all(
+          parsed.map(async (lesson) => {
+            try {
+              const res = await fetch(
+                `/listening/${level}/${lesson.id}/data.json`
+              );
+              const realData = await res.json();
+
+              return {
+                ...lesson,
+                title: realData.title || lesson.title,
+              };
+            } catch {
+              return lesson;
+            }
+          })
+        );
+
+        setLessons(fixedLessons);
         setLoading(false);
       })
       .catch(() => {
@@ -175,5 +194,3 @@ function ListeningLevel() {
 }
 
 export default ListeningLevel;
-
-
