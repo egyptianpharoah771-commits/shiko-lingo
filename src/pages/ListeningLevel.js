@@ -64,7 +64,7 @@ function ListeningLevel() {
           parsed = data.lessons;
         }
 
-        // ✅ FIX: نجيب العنوان الحقيقي من data.json
+        // ✅ الحل الحقيقي: قراءة title من data.json
         const fixedLessons = await Promise.all(
           parsed.map(async (lesson) => {
             try {
@@ -75,7 +75,7 @@ function ListeningLevel() {
 
               return {
                 ...lesson,
-                title: realData.title || lesson.title,
+                title: realData.title, // 👈 ده الصح 100%
               };
             } catch {
               return lesson;
