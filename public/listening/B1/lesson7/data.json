@@ -1,0 +1,92 @@
+{
+  "lesson": 7,
+  "level": "B1",
+  "title": "A Lesson from Traveling",
+  "description": "Lina shares a travel experience and what she learned from it.",
+  "speaker": "Lina",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Lina.",
+    "Last summer, I traveled alone to a country I had never visited before.",
+    "I was excited about the trip, but also a little nervous because everything was new to me.",
+    "On my first day, I got lost while trying to find my hotel.",
+    "My phone battery died, and I could not use maps or translation apps.",
+    "At first, I felt stressed and unsure of what to do.",
+    "After a few minutes, I decided to ask local people for help.",
+    "Even though my language skills were limited, they were kind and patient.",
+    "In the end, I reached my hotel safely and felt proud of myself.",
+    "This experience taught me that staying calm and open-minded can help solve unexpected problems."
+  ],
+  "questions": [
+    {
+      "question": "Why was Lina nervous about the trip?",
+      "options": [
+        "She did not like traveling",
+        "Everything was new to her",
+        "She traveled with friends",
+        "She was late"
+      ],
+      "correctAnswer": "Everything was new to her"
+    },
+    {
+      "question": "What problem did Lina face on her first day?",
+      "options": [
+        "She lost her passport",
+        "She got lost and her phone battery died",
+        "She missed her hotel",
+        "She felt sick"
+      ],
+      "correctAnswer": "She got lost and her phone battery died"
+    },
+    {
+      "question": "How did Lina feel at first?",
+      "options": [
+        "Calm",
+        "Excited",
+        "Stressed",
+        "Angry"
+      ],
+      "correctAnswer": "Stressed"
+    },
+    {
+      "question": "What decision did Lina make?",
+      "options": [
+        "She waited for help",
+        "She returned home",
+        "She asked local people for help",
+        "She used her phone again"
+      ],
+      "correctAnswer": "She asked local people for help"
+    },
+    {
+      "question": "How did the local people behave?",
+      "options": [
+        "They ignored her",
+        "They were rude",
+        "They were kind and patient",
+        "They were busy"
+      ],
+      "correctAnswer": "They were kind and patient"
+    },
+    {
+      "question": "How did Lina feel at the end?",
+      "options": [
+        "Embarrassed",
+        "Proud",
+        "Disappointed",
+        "Tired"
+      ],
+      "correctAnswer": "Proud"
+    },
+    {
+      "question": "What lesson did Lina learn?",
+      "options": [
+        "Traveling alone is dangerous",
+        "Phones are always necessary",
+        "Staying calm helps solve problems",
+        "Avoid new places"
+      ],
+      "correctAnswer": "Staying calm helps solve problems"
+    }
+  ]
+}

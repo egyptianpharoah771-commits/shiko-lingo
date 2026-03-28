@@ -1,0 +1,40 @@
+{
+  "lesson": 12,
+  "level": "A1",
+  "title": "Making Friends",
+  "description": "Emma talks about meeting new people and making friends.",
+  "speaker": "Emma",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Emma.",
+    "Today, I want to talk about making friends.",
+    "I like to meet new people.",
+    "I smile and say hello.",
+    "I ask simple questions.",
+    "I ask, \"What is your name?\"",
+    "I ask, \"Where are you from?\"",
+    "We talk and laugh together.",
+    "We share stories and ideas.",
+    "I like my friends.",
+    "Friends make me happy.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "What does Emma like to do?",
+      "options": ["Meet new people", "Stay alone", "Travel every day"],
+      "answer": "Meet new people"
+    },
+    {
+      "q": "What questions does Emma ask?",
+      "options": ["About money", "About names and places", "About work"],
+      "answer": "About names and places"
+    },
+    {
+      "q": "How do friends make Emma feel?",
+      "options": ["Sad", "Happy", "Tired"],
+      "answer": "Happy"
+    }
+  ]
+}

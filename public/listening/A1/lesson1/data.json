@@ -1,0 +1,54 @@
+{
+  "lesson": 1,
+  "level": "A1",
+  "title": "My Daily Routine",
+  "description": "Sarah talks about her daily routine.",
+  "speaker": "Sarah",
+  "audio": "speaker.mp3",
+
+  "text": [
+    "Hello.",
+    "My name is Sarah.",
+    "Every day, I wake up at seven in the morning.",
+    "I wash my face and brush my teeth.",
+    "Then, I have breakfast at home.",
+    "I drink tea and eat some bread.",
+    "After that, I go to work.",
+    "I work in an office.",
+    "In the afternoon, I have lunch with my friends.",
+    "We talk and laugh together.",
+    "In the evening, I go back home.",
+    "I watch TV or listen to music.",
+    "At night, I feel tired.",
+    "I go to bed at ten o’clock.",
+    "This is my daily routine.",
+    "Thank you for listening."
+  ],
+
+  "questions": [
+    {
+      "q": "What time does Sarah wake up?",
+      "options": ["At six", "At seven", "At eight"],
+      "answer": "At seven"
+    },
+    {
+      "q": "What does Sarah drink for breakfast?",
+      "options": ["Coffee", "Tea", "Milk"],
+      "answer": "Tea"
+    },
+    {
+      "q": "Who does Sarah have lunch with?",
+      "options": ["Her family", "Her friends", "Her boss"],
+      "answer": "Her friends"
+    },
+    {
+      "q": "What does Sarah do in the evening?",
+      "options": [
+        "She works",
+        "She sleeps",
+        "She watches TV or listens to music"
+      ],
+      "answer": "She watches TV or listens to music"
+    }
+  ]
+}

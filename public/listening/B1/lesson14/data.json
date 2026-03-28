@@ -1,0 +1,92 @@
+{
+  "lesson": 14,
+  "level": "B1",
+  "title": "A New Way of Thinking",
+  "description": "Sophie reflects on personal growth and how her mindset has changed over time.",
+  "speaker": "Sophie",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Sophie.",
+    "Over the past few years, my way of thinking has changed in many ways.",
+    "I used to believe that success depended only on hard work and perfect results.",
+    "However, different experiences taught me that mistakes, challenges, and even failures play an important role in growth.",
+    "I learned to be more patient with myself and accept that learning takes time.",
+    "I also realized the importance of balance, communication, and setting realistic goals.",
+    "Instead of comparing myself to others, I now focus on my own progress.",
+    "Today, I feel more confident when facing uncertainty.",
+    "I know that improvement comes from reflection, effort, and an open mind.",
+    "This new way of thinking helps me move forward with clarity and motivation."
+  ],
+  "questions": [
+    {
+      "question": "How did Sophie view success in the past?",
+      "options": [
+        "As something easy",
+        "As dependent only on hard work and perfect results",
+        "As teamwork",
+        "As luck"
+      ],
+      "correctAnswer": "As dependent only on hard work and perfect results"
+    },
+    {
+      "question": "What did Sophie learn from her experiences?",
+      "options": [
+        "Mistakes should be avoided",
+        "Failures are useless",
+        "Challenges help growth",
+        "Only success matters"
+      ],
+      "correctAnswer": "Challenges help growth"
+    },
+    {
+      "question": "What personal skill did Sophie develop?",
+      "options": [
+        "Speed",
+        "Patience",
+        "Competition",
+        "Perfection"
+      ],
+      "correctAnswer": "Patience"
+    },
+    {
+      "question": "What does Sophie focus on now?",
+      "options": [
+        "Comparing herself to others",
+        "Her own progress",
+        "Avoiding mistakes",
+        "Winning competitions"
+      ],
+      "correctAnswer": "Her own progress"
+    },
+    {
+      "question": "How does Sophie feel when facing uncertainty?",
+      "options": [
+        "Afraid",
+        "Confident",
+        "Angry",
+        "Confused"
+      ],
+      "correctAnswer": "Confident"
+    },
+    {
+      "question": "What does Sophie believe improvement comes from?",
+      "options": [
+        "Luck and talent",
+        "Reflection and effort",
+        "Competition",
+        "Speed"
+      ],
+      "correctAnswer": "Reflection and effort"
+    },
+    {
+      "question": "What is the main idea of the lesson?",
+      "options": [
+        "Success must be perfect",
+        "Mindset growth leads to progress",
+        "Failure should stop us",
+        "Comparison is important"
+      ],
+      "correctAnswer": "Mindset growth leads to progress"
+    }
+  ]
+}

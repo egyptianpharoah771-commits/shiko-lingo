@@ -1,0 +1,91 @@
+{
+  "lesson": 9,
+  "level": "A2",
+  "title": "Planning a Short Vacation",
+  "description": "Ryan talks about planning a short vacation to relax.",
+  "speaker": "Ryan",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Ryan.",
+    "For the past few weeks, I have felt very busy at work and needed a short break.",
+    "Last weekend, I started thinking about taking a short vacation to relax.",
+    "I talked with my friend about different places we could visit together.",
+    "We discussed the cost, the travel time, and the activities we wanted to do.",
+    "After the conversation, we agreed on a small beach town near the city.",
+    "Next month, we are going to travel there for three days.",
+    "We will stay in a small hotel and spend most of our time near the sea.",
+    "I believe this vacation will help me return to work with more energy."
+  ],
+  "questions": [
+    {
+      "question": "Why did Ryan need a short vacation?",
+      "options": [
+        "He was bored at home",
+        "He felt very busy at work",
+        "He wanted to change his job",
+        "He was sick"
+      ],
+      "correctAnswer": "He felt very busy at work"
+    },
+    {
+      "question": "When did Ryan start thinking about the vacation?",
+      "options": [
+        "Last year",
+        "Yesterday",
+        "Last weekend",
+        "Next month"
+      ],
+      "correctAnswer": "Last weekend"
+    },
+    {
+      "question": "Who did Ryan talk with about the trip?",
+      "options": [
+        "His manager",
+        "His family",
+        "His friend",
+        "His colleague"
+      ],
+      "correctAnswer": "His friend"
+    },
+    {
+      "question": "What did they discuss?",
+      "options": [
+        "Only the hotel",
+        "The cost and activities",
+        "Work problems",
+        "Their jobs"
+      ],
+      "correctAnswer": "The cost and activities"
+    },
+    {
+      "question": "Where did they decide to go?",
+      "options": [
+        "A big city",
+        "Another country",
+        "A beach town near the city",
+        "A mountain village"
+      ],
+      "correctAnswer": "A beach town near the city"
+    },
+    {
+      "question": "How long will the vacation be?",
+      "options": [
+        "One day",
+        "Two weeks",
+        "Three days",
+        "One month"
+      ],
+      "correctAnswer": "Three days"
+    },
+    {
+      "question": "How does Ryan feel about the vacation?",
+      "options": [
+        "He is worried",
+        "He believes it will help him",
+        "He does not care",
+        "He is afraid to travel"
+      ],
+      "correctAnswer": "He believes it will help him"
+    }
+  ]
+}

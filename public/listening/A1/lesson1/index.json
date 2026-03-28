@@ -1,0 +1,29 @@
+[
+  {
+    "id": "A1-L1",
+    "level": "A1",
+    "lessonNumber": 1,
+    "title": "Greetings – Meeting for the First Time",
+    "description": "A simple conversation between Sarah and Julian meeting for the first time.",
+    "isLocked": false,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L2",
+    "level": "A1",
+    "lessonNumber": 2,
+    "title": "My Daily Routine",
+    "description": "Sarah talks about her daily routine.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  },
+  {
+    "id": "A1-L3",
+    "level": "A1",
+    "lessonNumber": 3,
+    "title": "Free Time Activities",
+    "description": "Talking about hobbies and free time.",
+    "isLocked": true,
+    "estimatedMinutes": 10
+  }
+]

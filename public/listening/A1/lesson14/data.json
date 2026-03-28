@@ -1,0 +1,39 @@
+{
+  "lesson": 14,
+  "level": "A1",
+  "title": "My Favorite Day",
+  "description": "Laura talks about her favorite day of the week.",
+  "speaker": "Laura",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Laura.",
+    "Today, I want to talk about my favorite day.",
+    "My favorite day is Friday.",
+    "On Friday, I finish work early.",
+    "I meet my friends in the evening.",
+    "We drink coffee and talk together.",
+    "Sometimes, we watch a movie.",
+    "Sometimes, we walk and laugh.",
+    "Friday makes me happy.",
+    "I love my favorite day.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "What is Laura’s favorite day?",
+      "options": ["Monday", "Friday", "Sunday"],
+      "answer": "Friday"
+    },
+    {
+      "q": "What does Laura do in the evening?",
+      "options": ["She works late", "She meets her friends", "She sleeps early"],
+      "answer": "She meets her friends"
+    },
+    {
+      "q": "How does Friday make Laura feel?",
+      "options": ["Happy", "Tired", "Bored"],
+      "answer": "Happy"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "lesson": 1,
+  "level": "B1",
+  "title": "An Unexpected Opportunity",
+  "description": "Michael talks about an unexpected project and how it changed his career.",
+  "speaker": "Michael",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Michael.",
+    "A few years ago, I was working in a small company and felt comfortable with my routine.",
+    "One day, my manager asked me to help with a project that was completely new to me.",
+    "At first, I was nervous because I did not have much experience, and I was afraid of making mistakes.",
+    "However, I decided to accept the challenge and learn as much as I could.",
+    "I spent extra hours reading, asking questions, and practicing new skills.",
+    "Over time, I became more confident and started to enjoy the work.",
+    "The project was successful, and it opened new opportunities for me in my career.",
+    "Looking back, I realize that stepping out of my comfort zone helped me grow both professionally and personally."
+  ],
+  "questions": [
+    {
+      "question": "How did Michael feel about his job at the beginning?",
+      "options": [
+        "Bored and unhappy",
+        "Comfortable with his routine",
+        "Excited about new challenges",
+        "Ready to quit"
+      ],
+      "correctAnswer": "Comfortable with his routine"
+    },
+    {
+      "question": "What made Michael feel nervous?",
+      "options": [
+        "Working with new people",
+        "Having little experience with the project",
+        "Working long hours",
+        "Changing companies"
+      ],
+      "correctAnswer": "Having little experience with the project"
+    },
+    {
+      "question": "What decision did Michael make?",
+      "options": [
+        "He refused the project",
+        "He asked for a transfer",
+        "He accepted the challenge",
+        "He took a break"
+      ],
+      "correctAnswer": "He accepted the challenge"
+    },
+    {
+      "question": "How did Michael improve his skills?",
+      "options": [
+        "By taking a vacation",
+        "By reading, asking questions, and practicing",
+        "By watching movies",
+        "By changing his routine"
+      ],
+      "correctAnswer": "By reading, asking questions, and practicing"
+    },
+    {
+      "question": "What happened after some time?",
+      "options": [
+        "Michael became more confident",
+        "The project failed",
+        "Michael left the company",
+        "Nothing changed"
+      ],
+      "correctAnswer": "Michael became more confident"
+    },
+    {
+      "question": "What was the result of the project?",
+      "options": [
+        "It caused problems at work",
+        "It was ignored",
+        "It opened new career opportunities",
+        "It ended quickly"
+      ],
+      "correctAnswer": "It opened new career opportunities"
+    },
+    {
+      "question": "What lesson did Michael learn?",
+      "options": [
+        "Avoid new challenges",
+        "Comfort is more important than growth",
+        "Stepping out of the comfort zone helps growth",
+        "Work should always be easy"
+      ],
+      "correctAnswer": "Stepping out of the comfort zone helps growth"
+    }
+  ]
+}
