@@ -1,196 +1,122 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import FeedbackBox from "../components/FeedbackBox";
-
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
 import LockedFeature from "../components/LockedFeature";
-
 import STORAGE_KEYS from "../utils/storageKeys";
-
-function ProgressBar({ completed, total }) {
-  const percent =
-    total === 0 ? 0 : Math.round((completed / total) * 100);
-
-  return (
-    <div style={{ margin: "12px 0 20px" }}>
-      <div
-        style={{
-          height: "6px",
-          backgroundColor: "#eee",
-          borderRadius: "4px",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            width: `${percent}%`,
-            height: "100%",
-            backgroundColor: "#4A90E2",
-            transition: "width 0.3s ease",
-          }}
-        />
-      </div>
-      <small style={{ color: "#555" }}>
-        {percent}% completed
-      </small>
-    </div>
-  );
-}
 
 function ListeningLevel() {
   const { level } = useParams();
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const { canAccess } = useFeatureAccess({
-    skill: "Listening",
-    level,
-  });
+  const { canAccess } = useFeatureAccess({ skill: "Listening", level });
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
 
+    // 1. قراءة الفهرس (المصدر الاحتياطي)
     fetch(`/listening/${level}/index.json`)
       .then((res) => res.json())
       .then(async (data) => {
         if (!mounted) return;
+        
+        // استخراج المصفوفة سواء كانت مباشرة أو داخل object
+        const baseLessons = Array.isArray(data) ? data : (data?.lessons || []);
 
-        let parsed = [];
-
-        if (Array.isArray(data)) {
-          parsed = data;
-        } else if (Array.isArray(data?.lessons)) {
-          parsed = data.lessons;
-        }
-
-        // ✅ الحل الحقيقي: قراءة title من data.json
-        const fixedLessons = await Promise.all(
-          parsed.map(async (lesson) => {
+        // 2. محاولة دمج البيانات من الملفات التفصيلية
+        const mergedLessons = await Promise.all(
+          baseLessons.map(async (lesson) => {
             try {
-              const res = await fetch(
-                `/listening/${level}/${lesson.id}/data.json`
-              );
-              const realData = await res.json();
+              const res = await fetch(`/listening/${level}/${lesson.id}/data.json`);
+              
+              // لو الملف مش موجود أو فاضي تماماً
+              if (!res.ok) return lesson;
+              
+              const text = await res.text();
+              if (!text || text.trim() === "" || text === "{}") return lesson;
+
+              const realData = JSON.parse(text);
 
               return {
                 ...lesson,
-                title: realData.title, // 👈 ده الصح 100%
+                // لو الـ title في data.json موجود نستخدمه، غير كدة نلتزم باللي في الفهرس
+                title: realData.title || lesson.title,
+                description: realData.description || lesson.description
               };
-            } catch {
-              return lesson;
+            } catch (err) {
+              console.warn(`Could not load data for ${lesson.id}, using index fallback.`);
+              return lesson; // العودة للفهرس في حالة الخطأ
             }
           })
         );
 
-        setLessons(fixedLessons);
+        setLessons(mergedLessons);
         setLoading(false);
       })
       .catch(() => {
-        if (mounted) {
-          setLessons([]);
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       });
 
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [level]);
 
-  if (!canAccess) {
-    return <LockedFeature title={`Listening Level ${level}`} />;
-  }
+  if (!canAccess) return <LockedFeature title={`Listening Level ${level}`} />;
+  if (loading) return <p style={{textAlign: "center", padding: "40px"}}>Loading Lessons...</p>;
 
-  if (loading) return <p>Loading lessons…</p>;
-
-  const completedLessons =
-    JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.LISTENING_COMPLETED)
-    ) || [];
-
-  const completedCount = lessons.filter((lesson) =>
-    completedLessons.includes(`${level}-${lesson.id}`)
-  ).length;
+  const completedLessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LISTENING_COMPLETED)) || [];
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-      <h2>🎧 Listening – Level {level}</h2>
-
-      <ProgressBar
-        completed={completedCount}
-        total={lessons.length}
-      />
-
-      {lessons.length === 0 && (
-        <p style={{ color: "red" }}>
-          No lessons found for this level.
-        </p>
-      )}
+    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "20px" }}>
+      <h2 style={{marginBottom: "20px"}}>🎧 Level {level} Lessons</h2>
+      
+      {lessons.length === 0 && <p>No lessons found.</p>}
 
       {lessons.map((lesson, index) => {
         const lessonKey = `${level}-${lesson.id}`;
-        const isCompleted =
-          completedLessons.includes(lessonKey);
-
-        const previousLesson =
-          index > 0 ? lessons[index - 1] : null;
-
-        const isUnlocked =
-          index === 0 ||
-          completedLessons.includes(
-            `${level}-${previousLesson?.id}`
-          );
-
+        const isCompleted = completedLessons.includes(lessonKey);
+        
         return (
-          <div
-            key={lesson.id}
-            style={{
-              backgroundColor: "#fff",
-              padding: "16px",
-              borderRadius: "12px",
-              marginBottom: "14px",
-              boxShadow:
-                "0 4px 10px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h4>
-              Lesson {lesson.lessonNumber ?? index + 1} –{" "}
-              {lesson.title}
-            </h4>
-
-            {isUnlocked ? (
-              <Link
-                to={`/listening/${level}/${lesson.id}`}
-              >
-                <button
-                  style={{
-                    padding: "8px 14px",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    backgroundColor: "#4A90E2",
-                    color: "white",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {isCompleted
-                    ? "Review Lesson"
-                    : "Start Lesson"}
-                </button>
-              </Link>
-            ) : (
-              <p style={{ color: "#999" }}>
-                🔒 Complete previous lesson to unlock
-              </p>
-            )}
+          <div key={lesson.id} style={cardStyle}>
+            <div style={{flex: 1}}>
+              <h4 style={{margin: "0 0 5px"}}>Lesson {index + 1}: {lesson.title}</h4>
+              <p style={{margin: 0, color: "#666", fontSize: "0.9rem"}}>{lesson.description}</p>
+            </div>
+            
+            <Link to={`/listening/${level}/${lesson.id}`}>
+              <button style={btnStyle(isCompleted)}>
+                {isCompleted ? "Review" : "Start"}
+              </button>
+            </Link>
           </div>
         );
       })}
-
+      
       <FeedbackBox skill="Listening" level={level} />
     </div>
   );
 }
+
+const cardStyle = {
+  backgroundColor: "#fff",
+  padding: "20px",
+  borderRadius: "15px",
+  marginBottom: "15px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+};
+
+const btnStyle = (done) => ({
+  backgroundColor: done ? "#6ab04c" : "#4A90E2",
+  color: "white",
+  border: "none",
+  padding: "10px 20px",
+  borderRadius: "8px",
+  fontWeight: "bold",
+  cursor: "pointer",
+  marginLeft: "10px"
+});
 
 export default ListeningLevel;
