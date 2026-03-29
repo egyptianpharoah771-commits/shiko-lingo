@@ -25,29 +25,40 @@ function ListeningLevel() {
         const mergedLessons = await Promise.all(
           baseLessons.map(async (lesson) => {
             try {
-              const res = await fetch(`/listening/${level}/${lesson.id}/data.json`);
-              if (!res.ok) return null;
+              // ✅ FIX: تحويل ID لو كان A1-L1 → lesson1
+              let fixedId = lesson.id;
+              if (lesson.id && lesson.id.includes("-L")) {
+                const num = lesson.id.split("-L")[1];
+                fixedId = `lesson${num}`;
+              }
+
+              const res = await fetch(`/listening/${level}/${fixedId}/data.json`);
+
+              if (!res.ok) {
+                return { ...lesson, id: fixedId };
+              }
 
               const text = await res.text();
-              if (!text || text.trim() === "" || text === "{}") return null;
+
+              if (!text || text.trim() === "" || text === "{}") {
+                return { ...lesson, id: fixedId };
+              }
 
               const realData = JSON.parse(text);
 
               return {
                 ...lesson,
-                title: realData.title,
-                description: realData.description
+                id: fixedId, // 🔥 مهم جدًا لتصحيح المسار
+                title: realData.title || lesson.title,
+                description: realData.description || lesson.description
               };
             } catch {
-              return null;
+              return lesson;
             }
           })
         );
 
-        // ❗ فلترة أي lesson مش جاي من data.json
-        const validLessons = mergedLessons.filter(Boolean);
-
-        setLessons(validLessons);
+        setLessons(mergedLessons);
         setLoading(false);
       })
       .catch(() => {
