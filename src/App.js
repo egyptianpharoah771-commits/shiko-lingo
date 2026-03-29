@@ -1,12 +1,4 @@
 import { useEffect } from "react";
-import { initSFX } from "./utils/sfx";
-
-useEffect(() => {
-  initSFX();
-}, []);
-import ReviewWordsPage from "./pages/ReviewWordsPage";
-import SavedWordsReview from "./vocabulary/SavedWordsReview";
-import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -17,17 +9,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import {
-  SubscriptionProvider,
-  useSubscriptionContext,
-} from "./context/SubscriptionContext";
-
-import { initPiSDK, isPiAvailable } from "./lib/initPi";
-
-import FeedbackButton from "./components/FeedbackButton";
-import AdminGuard from "./components/AdminGuard";
-import ReviewErrorBoundary from "./components/ReviewErrorBoundary";
+import { initSFX } from "./utils/sfx";
 
 /* Pages */
 import Dashboard from "./pages/Dashboard";
@@ -37,6 +19,9 @@ import AdminFeedback from "./pages/AdminFeedback";
 import Upgrade from "./pages/Upgrade";
 import AssessmentPage from "./assessment/AssessmentPage";
 import LearnPage from "./pages/LearnPage";
+import Login from "./pages/Login";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 /* Listening */
 import ListeningHome from "./pages/ListeningHome";
@@ -55,16 +40,30 @@ import SpeakingHome from "./speaking/SpeakingHome";
 import VocabularyPage from "./vocabulary/VocabularyPage";
 import VocabularyLevelPage from "./vocabulary/VocabularyLevelPage";
 import VocabularyUnitPage from "./vocabulary/VocabularyUnitPage";
+import SavedWordsReview from "./vocabulary/SavedWordsReview";
+
+/* Review */
+import ReviewWordsPage from "./pages/ReviewWordsPage";
 
 /* Grammar */
 import GrammarLevels from "./grammar/GrammarLevels";
 import GrammarUnits from "./grammar/GrammarUnits";
 import GrammarUnitPage from "./grammar/GrammarUnitPage";
 
-/* Legal */
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import Login from "./pages/Login";
+/* Context */
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import {
+  SubscriptionProvider,
+  useSubscriptionContext,
+} from "./context/SubscriptionContext";
+
+/* Utils */
+import { initPiSDK, isPiAvailable } from "./lib/initPi";
+
+/* Components */
+import FeedbackButton from "./components/FeedbackButton";
+import AdminGuard from "./components/AdminGuard";
+import ReviewErrorBoundary from "./components/ReviewErrorBoundary";
 
 /* ====================== Entry ====================== */
 
@@ -269,8 +268,12 @@ function NavButton({ to, label }) {
   );
 }
 
+/* ====================== App ====================== */
+
 function App() {
   useEffect(() => {
+    initSFX();
+
     if (isPiAvailable()) {
       initPiSDK();
     }
@@ -347,5 +350,3 @@ const secondaryBtn = {
 };
 
 export default App;
-
-

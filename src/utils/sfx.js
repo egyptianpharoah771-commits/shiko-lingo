@@ -1,3 +1,5 @@
+// src/utils/sfx.js
+
 let correctAudio = null;
 let wrongAudio = null;
 
@@ -15,7 +17,9 @@ export function playCorrect() {
     if (!correctAudio) return;
     correctAudio.currentTime = 0;
     correctAudio.play().catch(() => {});
-  } catch {}
+  } catch (e) {
+    console.error("playCorrect error:", e);
+  }
 }
 
 export function playWrong() {
@@ -23,5 +27,7 @@ export function playWrong() {
     if (!wrongAudio) return;
     wrongAudio.currentTime = 0;
     wrongAudio.play().catch(() => {});
-  } catch {}
+  } catch (e) {
+    console.error("playWrong error:", e);
+  }
 }
