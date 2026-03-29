@@ -1,25 +1,23 @@
-// src/utils/vocabEngine.js
-
 import { calculateNextReview } from "../vocabulary/spacedRepetition";
 
 /**
- * Normalize word object coming from DB
+ * Normalize word object
  */
 function normalizeWord(word) {
   if (!word) return null;
 
   return {
-    id: word.id,
+    id: word.id || word.word,
     word: word.word?.trim(),
 
-    // 🔥 FIX: definition fallback
     definition:
       word.simple_definition?.trim() ||
       word.definition?.trim() ||
+      word.meaning?.trim() ||
       "",
 
-    // 🔥 FIX: audio support
-    audio_url: word.audio_url || null,
+    // ✅ FIX: دعم audio الجديد
+    audio: word.audio || null,
 
     level: word.level,
     next_review: word.next_review || null,
@@ -41,7 +39,7 @@ export function prepareReviewWords(words) {
 }
 
 /**
- * Process answer result (SM-2 or custom spaced repetition)
+ * Process answer result
  */
 export function processAnswer(word, isCorrect) {
   if (!word) return null;
@@ -79,17 +77,17 @@ export function getDueWords(words) {
 }
 
 /**
- * 🔊 Play audio with fallback (IMPORTANT)
+ * 🔊 FIXED AUDIO SYSTEM (NO TTS → Pi SAFE)
  */
 export function playWordAudio(word) {
   try {
-    if (word.audio_url) {
-      const audio = new Audio(word.audio_url);
-      audio.play();
-    } else if (word.word) {
-      const utter = new SpeechSynthesisUtterance(word.word);
-      utter.lang = "en-US";
-      speechSynthesis.speak(utter);
+    if (word.audio) {
+      const audio = new Audio(word.audio);
+      audio.currentTime = 0;
+
+      audio.play().catch(() => {
+        console.warn("Audio failed");
+      });
     }
   } catch (err) {
     console.error("Audio error:", err);
