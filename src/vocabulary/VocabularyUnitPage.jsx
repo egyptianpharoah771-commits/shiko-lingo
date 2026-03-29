@@ -73,6 +73,12 @@ export default function VocabularyUnitPage() {
   const question = questions[currentQuestion];
   const isLast = currentQuestion === questions.length - 1;
 
+  // ✅ الربط بين السؤال والكلمة
+  const currentWordText = question?.word;
+  const currentItem = content?.items?.find(
+    (item) => item.word === currentWordText
+  );
+
   if (!content || !question) {
     return (
       <div style={{ padding: 40, textAlign: "center" }}>
@@ -95,14 +101,12 @@ export default function VocabularyUnitPage() {
                 </div>
               </div>
 
-              {question?.audio && (
-  <button
-    className="vocab-audio-btn"
-    onClick={() => playAudio(question.audio)}
-  >
-    🔊 Listen
-  </button>
-)}
+              <button
+                className="vocab-audio-btn"
+                onClick={() => playAudio(item.audio)}
+              >
+                🔊
+              </button>
             </div>
 
             <div className="vocab-item-meaning">
@@ -126,12 +130,15 @@ export default function VocabularyUnitPage() {
           {question?.question || ""}
         </div>
 
-        <button
-          className="vocab-audio-btn"
-          onClick={() => playAudio(question?.audio)}
-        >
-          🔊 Listen
-        </button>
+        {/* ✅ زر الصوت مربوط بالكلمة */}
+        {currentItem?.audio && (
+          <button
+            className="vocab-audio-btn"
+            onClick={() => playAudio(currentItem.audio)}
+          >
+            🔊 Listen
+          </button>
+        )}
 
         <div className="vocab-options">
           {question?.shuffledOptions?.map((opt) => (
