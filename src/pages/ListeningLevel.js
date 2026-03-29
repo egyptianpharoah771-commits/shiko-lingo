@@ -15,43 +15,39 @@ function ListeningLevel() {
     let mounted = true;
     setLoading(true);
 
-    // 1. قراءة الفهرس (المصدر الاحتياطي)
     fetch(`/listening/${level}/index.json`)
       .then((res) => res.json())
       .then(async (data) => {
         if (!mounted) return;
-        
-        // استخراج المصفوفة سواء كانت مباشرة أو داخل object
+
         const baseLessons = Array.isArray(data) ? data : (data?.lessons || []);
 
-        // 2. محاولة دمج البيانات من الملفات التفصيلية
         const mergedLessons = await Promise.all(
           baseLessons.map(async (lesson) => {
             try {
               const res = await fetch(`/listening/${level}/${lesson.id}/data.json`);
-              
-              // لو الملف مش موجود أو فاضي تماماً
-              if (!res.ok) return lesson;
-              
+              if (!res.ok) return null;
+
               const text = await res.text();
-              if (!text || text.trim() === "" || text === "{}") return lesson;
+              if (!text || text.trim() === "" || text === "{}") return null;
 
               const realData = JSON.parse(text);
 
               return {
                 ...lesson,
-                // لو الـ title في data.json موجود نستخدمه، غير كدة نلتزم باللي في الفهرس
-                title: realData.title || lesson.title,
-                description: realData.description || lesson.description
+                title: realData.title,
+                description: realData.description
               };
-            } catch (err) {
-              console.warn(`Could not load data for ${lesson.id}, using index fallback.`);
-              return lesson; // العودة للفهرس في حالة الخطأ
+            } catch {
+              return null;
             }
           })
         );
 
-        setLessons(mergedLessons);
+        // ❗ فلترة أي lesson مش جاي من data.json
+        const validLessons = mergedLessons.filter(Boolean);
+
+        setLessons(validLessons);
         setLoading(false);
       })
       .catch(() => {
@@ -69,20 +65,24 @@ function ListeningLevel() {
   return (
     <div style={{ maxWidth: "700px", margin: "0 auto", padding: "20px" }}>
       <h2 style={{marginBottom: "20px"}}>🎧 Level {level} Lessons</h2>
-      
+
       {lessons.length === 0 && <p>No lessons found.</p>}
 
       {lessons.map((lesson, index) => {
         const lessonKey = `${level}-${lesson.id}`;
         const isCompleted = completedLessons.includes(lessonKey);
-        
+
         return (
           <div key={lesson.id} style={cardStyle}>
             <div style={{flex: 1}}>
-              <h4 style={{margin: "0 0 5px"}}>Lesson {index + 1}: {lesson.title}</h4>
-              <p style={{margin: 0, color: "#666", fontSize: "0.9rem"}}>{lesson.description}</p>
+              <h4 style={{margin: "0 0 5px"}}>
+                Lesson {index + 1}: {lesson.title}
+              </h4>
+              <p style={{margin: 0, color: "#666", fontSize: "0.9rem"}}>
+                {lesson.description}
+              </p>
             </div>
-            
+
             <Link to={`/listening/${level}/${lesson.id}`}>
               <button style={btnStyle(isCompleted)}>
                 {isCompleted ? "Review" : "Start"}
@@ -91,7 +91,7 @@ function ListeningLevel() {
           </div>
         );
       })}
-      
+
       <FeedbackBox skill="Listening" level={level} />
     </div>
   );
