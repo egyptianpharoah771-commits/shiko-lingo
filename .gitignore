@@ -36,16 +36,14 @@ structure.txt
 project_structure.txt
 
 # ===============================
-# Audio / Heavy Assets (Adjusted)
+# Audio / Heavy Assets
 # ===============================
 public/sounds/
 *.mp4
 
-# ❗ IMPORTANT: allow listening data + audio
+# ❗ IMPORTANT: allow ONLY listening data + audio
 !public/listening/
 !public/listening/**
-!*.mp3
-!*.wav
 
 # ===============================
 # OS files
