@@ -95,12 +95,14 @@ export default function VocabularyUnitPage() {
                 </div>
               </div>
 
-              <button
-                className="vocab-audio-btn"
-                onClick={() => playAudio(item.audio)}
-              >
-                🔊
-              </button>
+              {question?.audio && (
+  <button
+    className="vocab-audio-btn"
+    onClick={() => playAudio(question.audio)}
+  >
+    🔊 Listen
+  </button>
+)}
             </div>
 
             <div className="vocab-item-meaning">
