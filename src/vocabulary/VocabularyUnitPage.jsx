@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import "./vocabulary.css";
 import { VOCABULARY_DATA } from "./vocabularyIndex";
+import { playCorrect, playWrong } from "../utils/sfx";
 
 function shuffle(array) {
   if (!Array.isArray(array)) return [];
@@ -25,82 +26,47 @@ export default function VocabularyUnitPage() {
 
   const audioRef = useRef(null);
 
-  // 🔊 FIX نهائي (TTS + fallback)
-  const speakWord = useCallback((text) => {
-    if (!text) return;
-
+  const playAudio = (src) => {
     try {
-      const synth = window.speechSynthesis;
+      if (!src) return;
 
-      synth.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
 
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "en-US";
-      utter.rate = 0.85;
+      const audio = new Audio(src);
+      audioRef.current = audio;
 
-      let started = false;
-
-      utter.onstart = () => {
-        started = true;
-      };
-
-      utter.onerror = () => {
-        if (started) return;
-
-        try {
-          if (audioRef.current) {
-            audioRef.current.pause();
-          }
-
-          audioRef.current = new Audio(
-            `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(
-              text
-            )}&tl=en&client=tw-ob`
-          );
-
-          audioRef.current.play().catch(() => {});
-        } catch (e) {
-          console.error("Fallback audio failed", e);
-        }
-      };
-
-      setTimeout(() => {
-        synth.speak(utter);
-      }, 100);
-
+      audio.play().catch(() => {});
     } catch (e) {
-      console.error("TTS error", e);
+      console.error("Audio error:", e);
     }
-  }, []);
-
-  // 🔥 preload voices (من التحليل)
-  useEffect(() => {
-    const loadVoices = () => {
-      window.speechSynthesis.getVoices();
-    };
-
-    loadVoices();
-
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
-  }, []);
+  };
 
   useEffect(() => {
-    const unitData =
-      VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
+    try {
+      const unitData =
+        VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
 
-    if (unitData && unitData.content && unitData.questions) {
-      setContent(unitData.content);
+      if (unitData && unitData.content && unitData.questions) {
+        setContent(unitData.content);
 
-      const prepared = unitData.questions.map((q) => ({
-        ...q,
-        shuffledOptions: shuffle(q.options),
-      }));
+        const prepared = unitData.questions.map((q) => ({
+          ...q,
+          shuffledOptions: shuffle(q.options),
+        }));
 
-      setQuestions(prepared);
-    } else {
-      console.error("❌ Unit data not found", normalizedLevel, unitKey);
+        setQuestions(prepared);
+      } else {
+        console.error("❌ Unit data not found", normalizedLevel, unitKey);
+        setContent({ items: [] });
+        setQuestions([]);
+      }
+    } catch (err) {
+      console.error("Vocabulary load error:", err);
+      setContent({ items: [] });
+      setQuestions([]);
     }
   }, [normalizedLevel, unitKey]);
 
@@ -118,13 +84,12 @@ export default function VocabularyUnitPage() {
   return (
     <div className="vocab-page">
 
-      {/* WORD LIST */}
       <div className="vocab-items">
         {content.items?.map((item, i) => (
           <div key={i} className="vocab-item-card">
             <div className="vocab-item-header">
               <div>
-                <div className="vocab-item-word">{item.word}</div>
+                <div className="vocab-item-word">{item.word || ""}</div>
                 <div className="vocab-item-phonetic">
                   {item.pronunciation || item.phonetic || ""}
                 </div>
@@ -132,14 +97,14 @@ export default function VocabularyUnitPage() {
 
               <button
                 className="vocab-audio-btn"
-                onClick={() => speakWord(item.word)}
+                onClick={() => playAudio(item.audio)}
               >
                 🔊
               </button>
             </div>
 
             <div className="vocab-item-meaning">
-              {item.definition}
+              {item.definition || item.meaning || ""}
             </div>
 
             {item.example && (
@@ -153,24 +118,21 @@ export default function VocabularyUnitPage() {
 
       <hr style={{ margin: "30px 0" }} />
 
-      {/* QUIZ */}
       <div className="vocab-question-box">
 
         <div className="vocab-question-text">
-          {question.question}
+          {question?.question || ""}
         </div>
 
         <button
           className="vocab-audio-btn"
-          onClick={() =>
-            speakWord(question.word || question.question)
-          }
+          onClick={() => playAudio(question?.audio)}
         >
           🔊 Listen
         </button>
 
         <div className="vocab-options">
-          {question.shuffledOptions?.map((opt) => (
+          {question?.shuffledOptions?.map((opt) => (
             <AnswerOption
               key={opt}
               label={opt}
@@ -195,7 +157,14 @@ export default function VocabularyUnitPage() {
           <button
             className="vocab-btn primary"
             disabled={!selected}
-            onClick={() => setShowResult(true)}
+            onClick={() => {
+              if (selected === question.correctAnswer) {
+                playCorrect();
+              } else {
+                playWrong();
+              }
+              setShowResult(true);
+            }}
           >
             Check
           </button>

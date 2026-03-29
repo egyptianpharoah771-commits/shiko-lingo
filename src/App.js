@@ -1,3 +1,9 @@
+import { useEffect } from "react";
+import { initSFX } from "./utils/sfx";
+
+useEffect(() => {
+  initSFX();
+}, []);
 import ReviewWordsPage from "./pages/ReviewWordsPage";
 import SavedWordsReview from "./vocabulary/SavedWordsReview";
 import { useEffect } from "react";
