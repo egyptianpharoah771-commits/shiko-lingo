@@ -38,21 +38,17 @@ function VocabularyPage() {
   const [searchLoading, setSearchLoading] = useState(false);
 
   const speakWord = (word, example = "") => {
+  try {
     if (!word) return;
 
-    const text = example ? `${word}. ${example}` : word;
+    // ❌ منع TTS بالكامل
+    // ✅ اعتمد على الصوت المحلي فقط (لو موجود)
 
-    if (window.location.hostname === "localhost") {
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "en-US";
-      speechSynthesis.speak(utter);
-      return;
-    }
-
-    const audio = new Audio(`/api/tts?text=${encodeURIComponent(text)}`);
-    audio.play().catch(() => {});
-  };
-
+    console.warn("TTS disabled. Use local audio files instead.");
+  } catch (err) {
+    console.error("speakWord error:", err);
+  }
+};
   const removeWord = (word) => {
     const updated = savedWords.filter((w) => w !== word);
 
