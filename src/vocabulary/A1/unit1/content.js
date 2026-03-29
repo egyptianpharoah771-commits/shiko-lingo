@@ -1,5 +1,3 @@
-// src/vocabulary/A1/unit1/content.js
-
 const content = {
   level: "A1",
   unit: 1,
@@ -19,35 +17,38 @@ const content = {
       word: "book",
       phonetic: "/bʊk/",
       meaning: "كتاب",
-      example: "I read a book every day."
+      example: "I read a book every day.",
+      audio: "/sounds/vocabulary/A1/unit1/book.mp3"
     },
     {
       word: "chair",
       phonetic: "/tʃeər/",
       meaning: "كرسي",
-      example: "The chair is next to the table."
+      example: "The chair is next to the table.",
+      audio: "/sounds/vocabulary/A1/unit1/chair.mp3"
     },
     {
       word: "table",
       phonetic: "/ˈteɪbəl/",
       meaning: "طاولة",
-      example: "Put the book on the table."
+      example: "Put the book on the table.",
+      audio: "/sounds/vocabulary/A1/unit1/table.mp3"
     },
     {
       word: "phone",
       phonetic: "/fəʊn/",
       meaning: "هاتف",
-      example: "My phone is new."
+      example: "My phone is new.",
+      audio: "/sounds/vocabulary/A1/unit1/phone.mp3"
     },
     {
       word: "bag",
       phonetic: "/bæg/",
       meaning: "حقيبة",
-      example: "The bag is heavy."
+      example: "The bag is heavy.",
+      audio: "/sounds/vocabulary/A1/unit1/bag.mp3"
     }
   ]
 };
 
 export default content;
-
-
