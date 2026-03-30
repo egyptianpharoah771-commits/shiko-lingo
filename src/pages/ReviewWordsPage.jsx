@@ -1,37 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 
 function normalize(text) {
   return text?.toLowerCase().trim();
-}
-
-// 🔥 A1 MAP
-const A1_MAP = {
-  strong: "very powerful",
-  big: "large",
-  small: "not big",
-  eat: "to have food",
-  drink: "to have water",
-  go: "to move",
-  come: "to move here",
-  make: "to create",
-  take: "to get",
-  give: "to give something",
-  see: "to look at",
-  run: "to move fast",
-  walk: "to move slowly",
-  happy: "feeling good",
-  sad: "feeling bad",
-  fast: "quick",
-  slow: "not fast",
-  hot: "high temperature",
-  cold: "low temperature",
-  good: "nice",
-  bad: "not good",
-};
-
-function isA1Word(w) {
-  return w.word && A1_MAP[w.word.toLowerCase()];
 }
 
 export default function ReviewWordsPage() {
@@ -55,54 +26,26 @@ export default function ReviewWordsPage() {
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // 🔥 FETCH (FIXED)
-  const fetchWords = useCallback(async () => {
+  // ✅ LOAD WORDS FROM LOCAL DATA
+  const fetchWords = useCallback(() => {
     try {
       setLoading(true);
 
-      const { data } = await supabase
-        .from("words")
-        .select("id, word, simple_definition, audio_url")
-        .limit(200);
+      const unit =
+        VOCABULARY_DATA?.A1?.unit1?.content?.items || [];
 
-      const dbWords = (data || [])
-        .filter(isA1Word)
-        .map((w) => ({
-          id: w.id,
-          word: w.word,
-          definition:
-            w.simple_definition ||
-            A1_MAP[w.word.toLowerCase()] ||
-            "",
-          audio: w.audio_url || "",
-        }));
+      const prepared = unit.map((w) => ({
+        id: w.word,
+        word: w.word,
+        definition:
+          w.definition_easy ||
+          w.definition ||
+          w.meaning ||
+          "",
+        audio: w.audio || "",
+      }));
 
-      const saved = JSON.parse(localStorage.getItem("learned_words") || "[]");
-
-      const map = new Map();
-
-      saved.forEach((w) => {
-        if (!w.word) return;
-
-        map.set(w.word.toLowerCase(), {
-          id: w.id || w.word,
-          word: w.word,
-          definition:
-            w.definition ||
-            A1_MAP[w.word.toLowerCase()] ||
-            "",
-          audio: w.audio || "",
-        });
-      });
-
-      dbWords.forEach((w) => {
-        const key = w.word.toLowerCase();
-        if (!map.has(key)) {
-          map.set(key, w);
-        }
-      });
-
-      setWords(Array.from(map.values()));
+      setWords(prepared);
     } catch {
       setWords([]);
     } finally {
@@ -116,28 +59,23 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔊 AUDIO SYSTEM (DB + FALLBACK)
+  // 🔊 LOCAL AUDIO ONLY
   const playAudio = () => {
-    if (!currentWord) return;
+    if (!currentWord?.audio) return;
 
-    // ✅ DB audio
-    if (currentWord.audio) {
-      try {
-        if (audioRef.current) {
-          audioRef.current.pause();
-        }
-        audioRef.current = new Audio(currentWord.audio);
-        audioRef.current.play();
-        return;
-      } catch {}
-    }
-
-    // 🔁 fallback → TTS
     try {
-      const utter = new SpeechSynthesisUtterance(currentWord.word);
-      utter.lang = "en-US";
-      speechSynthesis.speak(utter);
-    } catch {}
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+
+      const audio = new Audio(currentWord.audio);
+      audioRef.current = audio;
+
+      audio.play().catch(() => {});
+    } catch (e) {
+      console.error("Audio error:", e);
+    }
   };
 
   // 🔥 MCQ
@@ -260,26 +198,37 @@ export default function ReviewWordsPage() {
     <div style={{ padding: 20 }}>
       <h2>Review</h2>
 
-      <p>{progress} / {TOTAL}</p>
+      <p>
+        {progress} / {TOTAL}
+      </p>
 
       {mode === "type" && (
         <div>
           <p>{currentWord.definition}</p>
-          <button onClick={playAudio}>🔊</button>
+
+          {currentWord.audio && (
+            <button onClick={playAudio}>🔊</button>
+          )}
 
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={checking}
           />
-          <button onClick={() => handleAnswer(input)}>Submit</button>
+
+          <button onClick={() => handleAnswer(input)}>
+            Submit
+          </button>
         </div>
       )}
 
       {mode === "mcq" && (
         <div>
           <h3>{currentWord.word}</h3>
-          <button onClick={playAudio}>🔊</button>
+
+          {currentWord.audio && (
+            <button onClick={playAudio}>🔊</button>
+          )}
 
           {options.map((opt, i) => (
             <button key={i} onClick={() => handleAnswer(opt)}>
