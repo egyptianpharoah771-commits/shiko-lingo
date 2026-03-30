@@ -1,8 +1,20 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
+import { playCorrect, playWrong } from "../utils/sfx";
 
 function normalize(text) {
   return text?.toLowerCase().trim();
+}
+
+function removeDuplicates(words = []) {
+  const seen = new Set();
+
+  return words.filter((w) => {
+    const key = normalize(w.word);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export default function ReviewWordsPage() {
@@ -26,7 +38,7 @@ export default function ReviewWordsPage() {
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // ✅ LOAD WORDS FROM LOCAL DATA
+  // ✅ LOAD + REMOVE DUPLICATES
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
@@ -34,16 +46,18 @@ export default function ReviewWordsPage() {
       const unit =
         VOCABULARY_DATA?.A1?.unit1?.content?.items || [];
 
-      const prepared = unit.map((w) => ({
-        id: w.word,
-        word: w.word,
-        definition:
-          w.definition_easy ||
-          w.definition ||
-          w.meaning ||
-          "",
-        audio: w.audio || "",
-      }));
+      const prepared = removeDuplicates(
+        unit.map((w) => ({
+          id: w.word,
+          word: w.word,
+          definition:
+            w.definition_easy ||
+            w.definition ||
+            w.meaning ||
+            "",
+          audio: w.audio || "",
+        }))
+      );
 
       setWords(prepared);
     } catch {
@@ -59,7 +73,7 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔊 LOCAL AUDIO ONLY
+  // 🔊 AUDIO
   const playAudio = () => {
     if (!currentWord?.audio) return;
 
@@ -73,17 +87,15 @@ export default function ReviewWordsPage() {
       audioRef.current = audio;
 
       audio.play().catch(() => {});
-    } catch (e) {
-      console.error("Audio error:", e);
-    }
+    } catch {}
   };
 
-  // 🔥 MCQ
+  // 🔥 OPTIONS
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
     const wrong = words
-      .filter((w) => w.definition !== currentWord.definition)
+      .filter((w) => w.word !== currentWord.word)
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
@@ -141,7 +153,7 @@ export default function ReviewWordsPage() {
     );
   };
 
-  // 🔥 HANDLE
+  // 🔥 ANSWER
   const handleAnswer = (answer) => {
     if (!currentWord || checking) return;
 
@@ -157,6 +169,13 @@ export default function ReviewWordsPage() {
 
     setChecking(true);
     setFeedback(isCorrect ? "correct" : "wrong");
+
+    // ✅ SOUND FIX
+    if (isCorrect) {
+      playCorrect();
+    } else {
+      playWrong();
+    }
 
     if (!isCorrect) {
       setReviewQueue((prev) => [
@@ -174,7 +193,7 @@ export default function ReviewWordsPage() {
     return () => clearTimeout(timeoutRef.current);
   }, []);
 
-  // 🔥 FINISHED
+  // 🔥 UI
   if (finished) {
     return (
       <div style={{ padding: 20 }}>
@@ -195,7 +214,7 @@ export default function ReviewWordsPage() {
   if (!words.length) return <div style={{ padding: 20 }}>No words</div>;
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
       <h2>Review</h2>
 
       <p>
@@ -204,19 +223,25 @@ export default function ReviewWordsPage() {
 
       {mode === "type" && (
         <div>
-          <p>{currentWord.definition}</p>
+          <p style={{ fontSize: 18, marginBottom: 10 }}>
+            {currentWord.definition}
+          </p>
 
           {currentWord.audio && (
             <button onClick={playAudio}>🔊</button>
           )}
 
           <input
+            style={{ padding: 10, width: "100%", marginTop: 10 }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={checking}
           />
 
-          <button onClick={() => handleAnswer(input)}>
+          <button
+            style={{ marginTop: 10 }}
+            onClick={() => handleAnswer(input)}
+          >
             Submit
           </button>
         </div>
@@ -230,11 +255,23 @@ export default function ReviewWordsPage() {
             <button onClick={playAudio}>🔊</button>
           )}
 
-          {options.map((opt, i) => (
-            <button key={i} onClick={() => handleAnswer(opt)}>
-              {opt}
-            </button>
-          ))}
+          <div style={{ marginTop: 15 }}>
+            {options.map((opt, i) => (
+              <button
+                key={i}
+                onClick={() => handleAnswer(opt)}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "12px",
+                  marginBottom: "10px",
+                  borderRadius: "8px",
+                }}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -242,11 +279,23 @@ export default function ReviewWordsPage() {
         <div>
           <button onClick={playAudio}>🔊 Play</button>
 
-          {options.map((opt, i) => (
-            <button key={i} onClick={() => handleAnswer(opt)}>
-              {opt}
-            </button>
-          ))}
+          <div style={{ marginTop: 15 }}>
+            {options.map((opt, i) => (
+              <button
+                key={i}
+                onClick={() => handleAnswer(opt)}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "12px",
+                  marginBottom: "10px",
+                  borderRadius: "8px",
+                }}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
