@@ -38,16 +38,23 @@ export default function ReviewWordsPage() {
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // ✅ LOAD + REMOVE DUPLICATES
+  // ✅ LOAD ALL A1 UNITS (FIX)
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
 
-      const unit =
-        VOCABULARY_DATA?.A1?.unit1?.content?.items || [];
+      const levelData = VOCABULARY_DATA?.A1;
+
+      if (!levelData) {
+        setWords([]);
+        return;
+      }
+
+      const allWords = Object.values(levelData)
+        .flatMap((unit) => unit?.content?.items || []);
 
       const prepared = removeDuplicates(
-        unit.map((w) => ({
+        allWords.map((w) => ({
           id: w.word,
           word: w.word,
           definition:
@@ -170,7 +177,6 @@ export default function ReviewWordsPage() {
     setChecking(true);
     setFeedback(isCorrect ? "correct" : "wrong");
 
-    // ✅ SOUND FIX
     if (isCorrect) {
       playCorrect();
     } else {
