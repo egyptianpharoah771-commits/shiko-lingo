@@ -11,12 +11,12 @@ function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
 }
 
-// ✅ FIXED — بدون تكسير الكلمات
+// ✅ normalize ثابت
 function normalizeWord(word) {
   return word
     ?.toLowerCase()
     .trim()
-    .replace(/\s+/g, "_"); // ❌ شيلنا regex اللي كان بيبوظ الكلام
+    .replace(/\s+/g, "_");
 }
 
 export default function VocabularyUnitPage() {
@@ -36,39 +36,44 @@ export default function VocabularyUnitPage() {
 
   const playAudio = (item) => {
     try {
-      if (!item) return;
+      if (!item?.word) return;
 
-      let src = item.audio;
+      const fileName = normalizeWord(item.word);
 
-      // 🔥 fallback
-      if (!src && item.word) {
-        const fileName = normalizeWord(item.word);
+      // 🎯 صوت الكلمة
+      const wordSrc =
+        item.audio ||
+        `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
-        src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
+      // 🎯 صوت المثال (لو موجود)
+      const exampleSrc =
+        item.exampleAudio ||
+        `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}_ex.mp3`;
 
-        console.log("🔊 AUDIO PATH:", src); // 👈 debug
-      }
-
-      if (!src) return;
-
+      // وقف أي صوت
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
 
-      const audio = new Audio(src);
+      const audio = new Audio(wordSrc);
       audioRef.current = audio;
 
-      audio.play().catch((err) => {
-        console.error("❌ AUDIO FAILED:", src);
+      audio.play().catch(() => {
+        console.warn("Word audio failed:", wordSrc);
       });
 
-      if (item.exampleAudio) {
-        audio.onended = () => {
-          const exampleAudio = new Audio(item.exampleAudio);
-          exampleAudio.play().catch(() => {});
-        };
-      }
+      // 🎯 بعد الكلمة → شغل المثال
+      audio.onended = () => {
+        if (!item.example && !item.exampleAudio) return;
+
+        const exAudio = new Audio(exampleSrc);
+        audioRef.current = exAudio;
+
+        exAudio.play().catch(() => {
+          console.log("No example audio:", exampleSrc);
+        });
+      };
 
     } catch (e) {
       console.error("Audio error:", e);
@@ -90,12 +95,10 @@ export default function VocabularyUnitPage() {
 
         setQuestions(prepared);
       } else {
-        console.error("❌ Unit data not found", normalizedLevel, unitKey);
         setContent({ items: [] });
         setQuestions([]);
       }
     } catch (err) {
-      console.error("Vocabulary load error:", err);
       setContent({ items: [] });
       setQuestions([]);
     }
