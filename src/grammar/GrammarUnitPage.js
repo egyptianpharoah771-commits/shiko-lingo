@@ -101,6 +101,22 @@ function GrammarUnitPage() {
     }));
   };
 
+  const saveProgress = () => {
+    try {
+      const key = "grammar_completed";
+      const stored = JSON.parse(localStorage.getItem(key)) || [];
+
+      const unitKey = `${level}-${unit}`;
+
+      if (!stored.includes(unitKey)) {
+        const updated = [...stored, unitKey];
+        localStorage.setItem(key, JSON.stringify(updated));
+      }
+    } catch (err) {
+      console.error("Progress save failed:", err);
+    }
+  };
+
   const submitAnswers = () => {
     let correct = 0;
 
@@ -114,6 +130,11 @@ function GrammarUnitPage() {
 
     setSubmitted(true);
     setPassed(isPassed);
+
+    // ✅ حفظ التقدم لكل الوحدات
+    if (isPassed) {
+      saveProgress();
+    }
 
     return isPassed;
   };
@@ -130,7 +151,6 @@ function GrammarUnitPage() {
     const nextUnit = `unit${currentNum + 1}`;
 
     if (GRAMMAR_MAP[level]?.[nextUnit]) {
-      // ✅ الحل الحقيقي
       navigate(`/grammar/${level}/${nextUnit}`);
     } else {
       navigate(`/grammar/${level}`);
