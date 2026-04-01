@@ -130,6 +130,7 @@ function GrammarUnitPage() {
     const nextUnit = `unit${currentNum + 1}`;
 
     if (GRAMMAR_MAP[level]?.[nextUnit]) {
+      // ✅ الحل الحقيقي
       navigate(`/grammar/${level}/${nextUnit}`);
     } else {
       navigate(`/grammar/${level}`);
