@@ -11,12 +11,12 @@ function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
 }
 
+// ✅ FIXED — بدون تكسير الكلمات
 function normalizeWord(word) {
   return word
     ?.toLowerCase()
     .trim()
-    .replace(/\s+/g, "_")
-    .replace(/[^a-z_]/g, "");
+    .replace(/\s+/g, "_"); // ❌ شيلنا regex اللي كان بيبوظ الكلام
 }
 
 export default function VocabularyUnitPage() {
@@ -40,10 +40,13 @@ export default function VocabularyUnitPage() {
 
       let src = item.audio;
 
-      // 🔥 fallback لو مفيش audio
+      // 🔥 fallback
       if (!src && item.word) {
         const fileName = normalizeWord(item.word);
+
         src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
+
+        console.log("🔊 AUDIO PATH:", src); // 👈 debug
       }
 
       if (!src) return;
@@ -56,9 +59,10 @@ export default function VocabularyUnitPage() {
       const audio = new Audio(src);
       audioRef.current = audio;
 
-      audio.play().catch(() => {});
+      audio.play().catch((err) => {
+        console.error("❌ AUDIO FAILED:", src);
+      });
 
-      // 🔥 تشغيل example بعد الكلمة لو موجود
       if (item.exampleAudio) {
         audio.onended = () => {
           const exampleAudio = new Audio(item.exampleAudio);
