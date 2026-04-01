@@ -66,12 +66,18 @@ import FeedbackButton from "./components/FeedbackButton";
 import AdminGuard from "./components/AdminGuard";
 import ReviewErrorBoundary from "./components/ReviewErrorBoundary";
 
-/* ====================== 🔥 NEW WRAPPER ====================== */
+/* ====================== 🔥 HARD FIX ====================== */
 
 function GrammarUnitWrapper() {
   const { level, unit } = useParams();
+  const location = useLocation();
 
-  return <GrammarUnitPage key={`${level}-${unit}`} />;
+  // 👇 أهم سطر في المشروع كله
+  return (
+    <GrammarUnitPage
+      key={`${level}-${unit}-${location.key}`}
+    />
+  );
 }
 
 /* ====================== Entry ====================== */
@@ -154,7 +160,7 @@ function SubscriptionGuard() {
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
 
-        {/* 🔥 FIXED ROUTE */}
+        {/* 🔥 FINAL FIX */}
         <Route
           path="/grammar/:level/:unit"
           element={<GrammarUnitWrapper />}
