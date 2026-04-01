@@ -26,12 +26,12 @@ function GrammarAIFeedback({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           skill: "Grammar",
-          level,
-          unit,
-          score,
-          total,
-          lessonTitle,
-          lessonText,
+          level: level || "",
+          unit: unit || "",
+          score: score || 0,
+          total: total || 0,
+          lessonTitle: lessonTitle || "",
+          lessonText: lessonText || "",
         }),
       });
 
@@ -40,20 +40,21 @@ function GrammarAIFeedback({
       const data = await res.json();
 
       const finalMessage = `
-Grade: ${data.grade}
+Grade: ${data?.grade || "-"}
 
 Feedback:
-${data.feedback}
+${data?.feedback || "No feedback available"}
 
 Recommendation:
-${data.recommendation}
+${data?.recommendation || "No recommendation"}
       `.trim();
 
       setMessage(finalMessage);
       setStatus("SUCCESS");
     } catch (err) {
-      console.error(err);
+      console.error("AI Feedback error:", err);
       setStatus("ERROR");
+      setMessage("Something went wrong. Please try again.");
     }
   };
 
@@ -81,16 +82,16 @@ ${data.recommendation}
         🤖 Get AI Feedback
       </button>
 
-      <AIResponseModal
-        open={open}
-        onClose={handleClose}
-        status={status}
-        message={message}
-      />
+      {open && (
+        <AIResponseModal
+          open={open}
+          onClose={handleClose}
+          status={status}
+          message={message || ""}
+        />
+      )}
     </>
   );
 }
 
 export default GrammarAIFeedback;
-
-
