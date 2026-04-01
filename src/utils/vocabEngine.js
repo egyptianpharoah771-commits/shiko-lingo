@@ -16,10 +16,12 @@ function normalizeWord(word) {
       word.meaning?.trim() ||
       "",
 
-    // ✅ FIX: دعم audio الجديد
+    // ✅ audio لو موجود
     audio: word.audio || null,
 
     level: word.level,
+    unit: word.unit,
+
     next_review: word.next_review || null,
     interval: word.interval || 1,
     ease_factor: word.ease_factor || 2.5,
@@ -77,18 +79,47 @@ export function getDueWords(words) {
 }
 
 /**
- * 🔊 FIXED AUDIO SYSTEM (NO TTS → Pi SAFE)
+ * 🔥 NORMALIZE WORD → FILE NAME
+ */
+function normalizeWordToFile(word) {
+  return word
+    ?.toLowerCase()
+    .trim()
+    .replace(/\s+/g, "_"); // ✅ المهم — بدون حذف حروف
+}
+
+/**
+ * 🔊 FIXED AUDIO SYSTEM (FINAL)
  */
 export function playWordAudio(word) {
   try {
-    if (word.audio) {
-      const audio = new Audio(word.audio);
-      audio.currentTime = 0;
+    if (!word?.word) return;
 
-      audio.play().catch(() => {
-        console.warn("Audio failed");
-      });
+    let src = word.audio;
+
+    // ✅ fallback لو مفيش audio في الداتا
+    if (!src) {
+      const fileName = normalizeWordToFile(word.word);
+
+      // ⚠️ لازم level و unit يكونوا موجودين في word
+      const level = word.level?.toUpperCase();
+      const unit = word.unit ? `unit${word.unit}` : null;
+
+      if (!level || !unit) {
+        console.warn("Missing level/unit for audio:", word);
+        return;
+      }
+
+      src = `/sounds/vocabulary/${level}/${unit}/${fileName}.mp3`;
     }
+
+    const audio = new Audio(src);
+    audio.currentTime = 0;
+
+    audio.play().catch(() => {
+      console.warn("Audio failed:", src);
+    });
+
   } catch (err) {
     console.error("Audio error:", err);
   }
