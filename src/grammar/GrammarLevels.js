@@ -1,19 +1,34 @@
 import { Link } from "react-router-dom";
 
-function GrammarLevels() {
-  const placementLevel =
-    localStorage.getItem("placementLevel");
+/* ===== CONSTANT ===== */
+const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
 
-  // ===== UPDATED LEVELS =====
-  const levels = ["A1", "A2", "B1", "B2", "C1"];
+function getSafePlacementLevel() {
+  try {
+    const value = localStorage.getItem("placementLevel");
+
+    if (!value) return null;
+
+    if (!LEVELS.includes(value)) return null;
+
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+function GrammarLevels() {
+  const placementLevel = getSafePlacementLevel();
 
   const isUnlocked = (level) => {
     if (!placementLevel) return true;
 
-    return (
-      levels.indexOf(level) <=
-      levels.indexOf(placementLevel)
-    );
+    const currentIndex = LEVELS.indexOf(level);
+    const placementIndex = LEVELS.indexOf(placementLevel);
+
+    if (currentIndex === -1 || placementIndex === -1) return true;
+
+    return currentIndex <= placementIndex;
   };
 
   return (
@@ -23,7 +38,7 @@ function GrammarLevels() {
         Select your grammar level
       </p>
 
-      {levels.map((level) => {
+      {LEVELS.map((level) => {
         const unlocked = isUnlocked(level);
 
         return (
@@ -60,5 +75,3 @@ function GrammarLevels() {
 }
 
 export default GrammarLevels;
-
-
