@@ -11,6 +11,14 @@ function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
 }
 
+function normalizeWord(word) {
+  return word
+    ?.toLowerCase()
+    .trim()
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z_]/g, "");
+}
+
 export default function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
@@ -26,8 +34,18 @@ export default function VocabularyUnitPage() {
 
   const audioRef = useRef(null);
 
-  const playAudio = (src) => {
+  const playAudio = (item) => {
     try {
+      if (!item) return;
+
+      let src = item.audio;
+
+      // 🔥 fallback لو مفيش audio
+      if (!src && item.word) {
+        const fileName = normalizeWord(item.word);
+        src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
+      }
+
       if (!src) return;
 
       if (audioRef.current) {
@@ -39,6 +57,15 @@ export default function VocabularyUnitPage() {
       audioRef.current = audio;
 
       audio.play().catch(() => {});
+
+      // 🔥 تشغيل example بعد الكلمة لو موجود
+      if (item.exampleAudio) {
+        audio.onended = () => {
+          const exampleAudio = new Audio(item.exampleAudio);
+          exampleAudio.play().catch(() => {});
+        };
+      }
+
     } catch (e) {
       console.error("Audio error:", e);
     }
@@ -73,7 +100,6 @@ export default function VocabularyUnitPage() {
   const question = questions[currentQuestion];
   const isLast = currentQuestion === questions.length - 1;
 
-  // ✅ الربط بين السؤال والكلمة
   const currentWordText = question?.word;
   const currentItem = content?.items?.find(
     (item) => item.word === currentWordText
@@ -103,7 +129,7 @@ export default function VocabularyUnitPage() {
 
               <button
                 className="vocab-audio-btn"
-                onClick={() => playAudio(item.audio)}
+                onClick={() => playAudio(item)}
               >
                 🔊
               </button>
@@ -130,11 +156,10 @@ export default function VocabularyUnitPage() {
           {question?.question || ""}
         </div>
 
-        {/* ✅ زر الصوت مربوط بالكلمة */}
-        {currentItem?.audio && (
+        {currentItem && (
           <button
             className="vocab-audio-btn"
-            onClick={() => playAudio(currentItem.audio)}
+            onClick={() => playAudio(currentItem)}
           >
             🔊 Listen
           </button>
