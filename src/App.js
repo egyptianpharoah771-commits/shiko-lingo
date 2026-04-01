@@ -7,6 +7,7 @@ import {
   useLocation,
   useNavigate,
   Navigate,
+  useParams,
 } from "react-router-dom";
 
 import { initSFX } from "./utils/sfx";
@@ -64,6 +65,14 @@ import { initPiSDK, isPiAvailable } from "./lib/initPi";
 import FeedbackButton from "./components/FeedbackButton";
 import AdminGuard from "./components/AdminGuard";
 import ReviewErrorBoundary from "./components/ReviewErrorBoundary";
+
+/* ====================== 🔥 NEW WRAPPER ====================== */
+
+function GrammarUnitWrapper() {
+  const { level, unit } = useParams();
+
+  return <GrammarUnitPage key={`${level}-${unit}`} />;
+}
 
 /* ====================== Entry ====================== */
 
@@ -144,7 +153,12 @@ function SubscriptionGuard() {
 
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
-        <Route path="/grammar/:level/:unit" element={<GrammarUnitPage />} />
+
+        {/* 🔥 FIXED ROUTE */}
+        <Route
+          path="/grammar/:level/:unit"
+          element={<GrammarUnitWrapper />}
+        />
 
         <Route path="/vocabulary" element={<VocabularyPage />} />
         <Route path="/vocabulary/review" element={<SavedWordsReview />} />
