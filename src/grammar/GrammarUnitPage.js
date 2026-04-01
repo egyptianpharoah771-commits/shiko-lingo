@@ -74,9 +74,11 @@ function GrammarUnitPage() {
   const { level, unit } = useParams();
   const navigate = useNavigate();
 
-  const grammarUnit = GRAMMAR_MAP[level]?.[unit];
-  const content = grammarUnit?.content;
-  const questions = grammarUnit?.questions || [];
+  const grammarUnit = GRAMMAR_MAP[level]?.[unit] || {};
+  const content = grammarUnit.content || {};
+  const questions = Array.isArray(grammarUnit.questions)
+    ? grammarUnit.questions
+    : [];
 
   const {
     answers,
@@ -94,9 +96,8 @@ function GrammarUnitPage() {
     feedback.reset();
   }, [level, unit]);
 
-  if (!content) {
-    return <p>⚠️ Unit not ready.</p>;
-  }
+  const safeTitle = content?.title || "Lesson";
+  const safeExplanation = content?.explanation || "";
 
   const handleSubmit = () => {
     const passedNow = submitAnswers();
@@ -118,41 +119,45 @@ function GrammarUnitPage() {
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      <h2>{content.title}</h2>
-      <p>{content.explanation}</p>
+      <h2>{safeTitle}</h2>
+      <p>{safeExplanation}</p>
 
-      {questions.map((q) => (
-        <div key={q.id} style={{ marginBottom: 24 }}>
-          <strong>{q.question}</strong>
+      {questions.map((q) => {
+        const options = Array.isArray(q?.options) ? q.options : [];
 
-          <div style={{ marginTop: 10 }}>
-            {q.options.map((opt) => (
-              <AnswerOption
-                key={opt}
-                label={opt}
-                disabled={submitted}
-                state={
-                  submitted
-                    ? opt === q.answer
-                      ? "correct"
-                      : answers[q.id] === opt
-                      ? "wrong"
+        return (
+          <div key={q?.id || Math.random()} style={{ marginBottom: 24 }}>
+            <strong>{q?.question || ""}</strong>
+
+            <div style={{ marginTop: 10 }}>
+              {options.map((opt) => (
+                <AnswerOption
+                  key={opt}
+                  label={opt}
+                  disabled={submitted}
+                  state={
+                    submitted
+                      ? opt === q?.answer
+                        ? "correct"
+                        : answers[q?.id] === opt
+                        ? "wrong"
+                        : "default"
+                      : answers[q?.id] === opt
+                      ? "selected"
                       : "default"
-                    : answers[q.id] === opt
-                    ? "selected"
-                    : "default"
-                }
-                onClick={() => {
-                  feedback.select();
-                  selectAnswer(q.id, opt);
-                }}
-              />
-            ))}
+                  }
+                  onClick={() => {
+                    feedback.select();
+                    if (q?.id) selectAnswer(q.id, opt);
+                  }}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
-      {!submitted && (
+      {!submitted && questions.length > 0 && (
         <button onClick={handleSubmit} style={{ marginTop: 16 }}>
           Check Answers
         </button>
