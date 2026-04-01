@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import useFeedbackSounds from "../core/feedback/useFeedbackSounds";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
+import STORAGE_KEYS from "../utils/storageKeys";
 
 /* ===== CONTENT IMPORTS ===== */
 import a1Content1 from "./A1/unit1/content";
@@ -103,14 +104,21 @@ function GrammarUnitPage() {
 
   const saveProgress = () => {
     try {
-      const key = "grammar_completed";
-      const stored = JSON.parse(localStorage.getItem(key)) || [];
+      const raw = localStorage.getItem(
+        STORAGE_KEYS.GRAMMAR_COMPLETED
+      );
+
+      const stored = raw ? JSON.parse(raw) : [];
 
       const unitKey = `${level}-${unit}`;
 
       if (!stored.includes(unitKey)) {
         const updated = [...stored, unitKey];
-        localStorage.setItem(key, JSON.stringify(updated));
+
+        localStorage.setItem(
+          STORAGE_KEYS.GRAMMAR_COMPLETED,
+          JSON.stringify(updated)
+        );
       }
     } catch (err) {
       console.error("Progress save failed:", err);
@@ -131,9 +139,8 @@ function GrammarUnitPage() {
     setSubmitted(true);
     setPassed(isPassed);
 
-    // ✅ حفظ التقدم لكل الوحدات
     if (isPassed) {
-      saveProgress();
+      saveProgress(); // ✅ الآن متوافق
     }
 
     return isPassed;
@@ -157,59 +164,48 @@ function GrammarUnitPage() {
     }
   };
 
-  const safeTitle = content?.title || "Lesson";
-  const safeExplanation = content?.explanation || "";
-
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      <h2>{safeTitle}</h2>
-      <p>{safeExplanation}</p>
+      <h2>{content?.title || "Lesson"}</h2>
+      <p>{content?.explanation || ""}</p>
 
-      {questions.map((q) => {
-        const options = Array.isArray(q?.options) ? q.options : [];
+      {questions.map((q) => (
+        <div key={q.id} style={{ marginBottom: 24 }}>
+          <strong>{q.question}</strong>
 
-        return (
-          <div key={q?.id || Math.random()} style={{ marginBottom: 24 }}>
-            <strong>{q?.question || ""}</strong>
-
-            <div style={{ marginTop: 10 }}>
-              {options.map((opt) => (
-                <AnswerOption
-                  key={opt}
-                  label={opt}
-                  disabled={submitted}
-                  state={
-                    submitted
-                      ? opt === q?.answer
-                        ? "correct"
-                        : answers[q?.id] === opt
-                        ? "wrong"
-                        : "default"
-                      : answers[q?.id] === opt
-                      ? "selected"
+          <div style={{ marginTop: 10 }}>
+            {(q.options || []).map((opt) => (
+              <AnswerOption
+                key={opt}
+                label={opt}
+                disabled={submitted}
+                state={
+                  submitted
+                    ? opt === q.answer
+                      ? "correct"
+                      : answers[q.id] === opt
+                      ? "wrong"
                       : "default"
-                  }
-                  onClick={() => {
-                    feedback.select();
-                    if (q?.id) selectAnswer(q.id, opt);
-                  }}
-                />
-              ))}
-            </div>
+                    : answers[q.id] === opt
+                    ? "selected"
+                    : "default"
+                }
+                onClick={() => {
+                  feedback.select();
+                  selectAnswer(q.id, opt);
+                }}
+              />
+            ))}
           </div>
-        );
-      })}
+        </div>
+      ))}
 
       {!submitted && questions.length > 0 && (
-        <button onClick={handleSubmit} style={{ marginTop: 16 }}>
-          Check Answers
-        </button>
+        <button onClick={handleSubmit}>Check Answers</button>
       )}
 
       {submitted && passed && (
-        <button onClick={handleNextUnit} style={{ marginTop: 20 }}>
-          Next Unit →
-        </button>
+        <button onClick={handleNextUnit}>Next Unit →</button>
       )}
     </div>
   );
