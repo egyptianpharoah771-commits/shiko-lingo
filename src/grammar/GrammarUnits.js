@@ -32,15 +32,24 @@ const UNITS_BY_LEVEL = {
   ],
 };
 
+function safeParse(value) {
+  try {
+    if (!value) return [];
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function GrammarUnits() {
   const { level } = useParams();
 
   const completedUnits = useMemo(() => {
-    return (
-      JSON.parse(
-        localStorage.getItem(STORAGE_KEYS.GRAMMAR_COMPLETED)
-      ) || []
+    const raw = localStorage.getItem(
+      STORAGE_KEYS.GRAMMAR_COMPLETED
     );
+    return safeParse(raw);
   }, []);
 
   const units = useMemo(() => {
@@ -53,7 +62,11 @@ function GrammarUnits() {
 
   const isUnitUnlocked = (index) => {
     if (index === 0) return true;
-    const prevKey = `${level}-${units[index - 1].id}`;
+
+    const prevUnit = units[index - 1];
+    if (!prevUnit) return false;
+
+    const prevKey = `${level}-${prevUnit.id}`;
     return completedUnits.includes(prevKey);
   };
 
@@ -112,5 +125,3 @@ function GrammarUnits() {
 }
 
 export default GrammarUnits;
-
-
