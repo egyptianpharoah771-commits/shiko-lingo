@@ -21,41 +21,45 @@ const content = {
       word: "wake up",
       phonetic: "/weɪk ʌp/",
       meaning: "يستيقظ",
-      example: "I wake up at seven every day."
+      example: "I wake up at seven every day.",
+      audio: "/sounds/vocabulary/A1/unit2/wake_up.mp3"
     },
     {
       word: "eat",
       phonetic: "/iːt/",
       meaning: "يأكل",
-      example: "I eat breakfast in the morning."
+      example: "I eat breakfast in the morning.",
+      audio: "/sounds/vocabulary/A1/unit2/eat.mp3"
     },
     {
       word: "go to work",
       phonetic: "/ɡoʊ tuː wɜːrk/",
       meaning: "يذهب إلى العمل",
-      example: "I go to work by bus."
+      example: "I go to work by bus.",
+      audio: "/sounds/vocabulary/A1/unit2/go_to_work.mp3"
     },
     {
       word: "study",
       phonetic: "/ˈstʌdi/",
       meaning: "يدرس",
-      example: "She studies English every day."
+      example: "She studies English every day.",
+      audio: "/sounds/vocabulary/A1/unit2/study.mp3"
     },
     {
       word: "come home",
       phonetic: "/kʌm hoʊm/",
       meaning: "يعود إلى المنزل",
-      example: "I come home at six in the evening."
+      example: "I come home at six in the evening.",
+      audio: "/sounds/vocabulary/A1/unit2/come_home.mp3"
     },
     {
       word: "sleep",
       phonetic: "/sliːp/",
       meaning: "ينام",
-      example: "I sleep at eleven o’clock."
+      example: "I sleep at eleven o’clock.",
+      audio: "/sounds/vocabulary/A1/unit2/sleep.mp3"
     }
   ]
 };
 
 export default content;
-
-
