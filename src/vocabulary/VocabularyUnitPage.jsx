@@ -11,12 +11,8 @@ function shuffle(array) {
   return [...array].sort(() => Math.random() - 0.5);
 }
 
-// ✅ normalize ثابت
 function normalizeWord(word) {
-  return word
-    ?.toLowerCase()
-    .trim()
-    .replace(/\s+/g, "_");
+  return word?.toLowerCase().trim().replace(/\s+/g, "_");
 }
 
 export default function VocabularyUnitPage() {
@@ -26,6 +22,7 @@ export default function VocabularyUnitPage() {
   const normalizedLevel = level?.toUpperCase() || "";
   const unitKey = `unit${unitId}`;
 
+  const [mode, setMode] = useState("learn"); // learn | quiz | listening
   const [content, setContent] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -40,193 +37,221 @@ export default function VocabularyUnitPage() {
 
       const fileName = normalizeWord(item.word);
 
-      // 🎯 صوت الكلمة
-      const wordSrc =
+      const src =
         item.audio ||
         `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
-      // 🎯 صوت المثال (لو موجود)
-      const exampleSrc =
-        item.exampleAudio ||
-        `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}_ex.mp3`;
-
-      // وقف أي صوت
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
 
-      const audio = new Audio(wordSrc);
+      const audio = new Audio(src);
       audioRef.current = audio;
 
       audio.play().catch(() => {
-        console.warn("Word audio failed:", wordSrc);
+        console.warn("Audio failed:", src);
       });
-
-      // 🎯 بعد الكلمة → شغل المثال
-      audio.onended = () => {
-        if (!item.example && !item.exampleAudio) return;
-
-        const exAudio = new Audio(exampleSrc);
-        audioRef.current = exAudio;
-
-        exAudio.play().catch(() => {
-          console.log("No example audio:", exampleSrc);
-        });
-      };
-
     } catch (e) {
       console.error("Audio error:", e);
     }
   };
 
   useEffect(() => {
-    try {
-      const unitData =
-        VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
+    const unitData =
+      VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
 
-      if (unitData && unitData.content && unitData.questions) {
-        setContent(unitData.content);
+    if (unitData) {
+      setContent(unitData.content);
 
-        const prepared = unitData.questions.map((q) => ({
-          ...q,
-          shuffledOptions: shuffle(q.options),
-        }));
+      const prepared = unitData.questions.map((q) => ({
+        ...q,
+        shuffledOptions: shuffle(q.options),
+      }));
 
-        setQuestions(prepared);
-      } else {
-        setContent({ items: [] });
-        setQuestions([]);
-      }
-    } catch (err) {
-      setContent({ items: [] });
-      setQuestions([]);
+      setQuestions(prepared);
     }
   }, [normalizedLevel, unitKey]);
+
+  // 🔊 auto play في listening
+  useEffect(() => {
+    if (mode !== "listening") return;
+
+    const question = questions[currentQuestion];
+    if (!question) return;
+
+    const item = content?.items?.find(
+      (w) => w.word === question.word
+    );
+
+    if (item) {
+      setTimeout(() => playAudio(item), 300);
+    }
+  }, [currentQuestion, mode]);
 
   const question = questions[currentQuestion];
   const isLast = currentQuestion === questions.length - 1;
 
-  const currentWordText = question?.word;
   const currentItem = content?.items?.find(
-    (item) => item.word === currentWordText
+    (item) => item.word === question?.word
   );
 
   if (!content || !question) {
-    return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        <h3>Loading lesson...</h3>
-      </div>
-    );
+    return <div style={{ padding: 40 }}>Loading...</div>;
   }
 
   return (
     <div className="vocab-page">
 
-      <div className="vocab-items">
-        {content.items?.map((item, i) => (
-          <div key={i} className="vocab-item-card">
-            <div className="vocab-item-header">
-              <div>
-                <div className="vocab-item-word">{item.word || ""}</div>
-                <div className="vocab-item-phonetic">
-                  {item.pronunciation || item.phonetic || ""}
-                </div>
-              </div>
-
-              <button
-                className="vocab-audio-btn"
-                onClick={() => playAudio(item)}
-              >
-                🔊
-              </button>
-            </div>
-
-            <div className="vocab-item-meaning">
-              {item.definition || item.meaning || ""}
-            </div>
-
-            {item.example && (
-              <div className="vocab-item-example">
-                {item.example}
-              </div>
-            )}
-          </div>
-        ))}
+      {/* 🔥 MODE SWITCH */}
+      <div style={{ marginBottom: 20 }}>
+        <button onClick={() => setMode("learn")}>Learn</button>
+        <button onClick={() => setMode("quiz")}>Quiz</button>
+        <button onClick={() => setMode("listening")}>🔊 Listening</button>
       </div>
 
-      <hr style={{ margin: "30px 0" }} />
+      {/* ================= LEARN ================= */}
+      {mode === "learn" && (
+        <div className="vocab-items">
+          {content.items?.map((item, i) => (
+            <div key={i} className="vocab-item-card">
+              <div className="vocab-item-header">
+                <div>
+                  <div className="vocab-item-word">{item.word}</div>
+                  <div className="vocab-item-phonetic">
+                    {item.phonetic || ""}
+                  </div>
+                </div>
 
-      <div className="vocab-question-box">
+                <button onClick={() => playAudio(item)}>🔊</button>
+              </div>
 
-        <div className="vocab-question-text">
-          {question?.question || ""}
-        </div>
+              <div>{item.definition || item.meaning}</div>
 
-        {currentItem && (
-          <button
-            className="vocab-audio-btn"
-            onClick={() => playAudio(currentItem)}
-          >
-            🔊 Listen
-          </button>
-        )}
-
-        <div className="vocab-options">
-          {question?.shuffledOptions?.map((opt) => (
-            <AnswerOption
-              key={opt}
-              label={opt}
-              disabled={showResult}
-              state={
-                showResult
-                  ? opt === question.correctAnswer
-                    ? "correct"
-                    : opt === selected
-                    ? "wrong"
-                    : "default"
-                  : selected === opt
-                  ? "selected"
-                  : "default"
-              }
-              onClick={() => setSelected(opt)}
-            />
+              {item.example && <div>{item.example}</div>}
+            </div>
           ))}
         </div>
+      )}
 
-        {!showResult ? (
-          <button
-            className="vocab-btn primary"
-            disabled={!selected}
-            onClick={() => {
-              if (selected === question.correctAnswer) {
-                playCorrect();
-              } else {
-                playWrong();
-              }
-              setShowResult(true);
-            }}
-          >
-            Check
-          </button>
-        ) : (
-          <button
-            className="vocab-btn primary"
-            onClick={() => {
-              if (isLast) {
-                navigate(`/vocabulary/${level}`);
-                return;
-              }
+      {/* ================= QUIZ ================= */}
+      {mode === "quiz" && (
+        <div>
+          <div>{question.question}</div>
 
-              setSelected(null);
-              setShowResult(false);
-              setCurrentQuestion((prev) => prev + 1);
-            }}
-          >
-            {isLast ? "Finish" : "Next"}
+          <div>
+            {question.shuffledOptions.map((opt) => (
+              <AnswerOption
+                key={opt}
+                label={opt}
+                disabled={showResult}
+                state={
+                  showResult
+                    ? opt === question.correctAnswer
+                      ? "correct"
+                      : opt === selected
+                      ? "wrong"
+                      : "default"
+                    : selected === opt
+                    ? "selected"
+                    : "default"
+                }
+                onClick={() => setSelected(opt)}
+              />
+            ))}
+          </div>
+
+          {!showResult ? (
+            <button
+              disabled={!selected}
+              onClick={() => {
+                if (selected === question.correctAnswer) {
+                  playCorrect();
+                } else {
+                  playWrong();
+                }
+                setShowResult(true);
+              }}
+            >
+              Check
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setSelected(null);
+                setShowResult(false);
+                setCurrentQuestion((p) => p + 1);
+              }}
+            >
+              Next
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ================= LISTENING ================= */}
+      {mode === "listening" && (
+        <div>
+          <h3>🔊 Listen and choose the word</h3>
+
+          <button onClick={() => playAudio(currentItem)}>
+            🔊 Replay
           </button>
-        )}
-      </div>
+
+          <div style={{ marginTop: 20 }}>
+            {question.shuffledOptions.map((opt) => (
+              <AnswerOption
+                key={opt}
+                label={opt}
+                disabled={showResult}
+                state={
+                  showResult
+                    ? opt === question.correctAnswer
+                      ? "correct"
+                      : opt === selected
+                      ? "wrong"
+                      : "default"
+                    : selected === opt
+                    ? "selected"
+                    : "default"
+                }
+                onClick={() => setSelected(opt)}
+              />
+            ))}
+          </div>
+
+          {!showResult ? (
+            <button
+              disabled={!selected}
+              onClick={() => {
+                if (selected === question.correctAnswer) {
+                  playCorrect();
+                } else {
+                  playWrong();
+                }
+                setShowResult(true);
+              }}
+            >
+              Check
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                if (isLast) {
+                  navigate(`/vocabulary/${level}`);
+                  return;
+                }
+
+                setSelected(null);
+                setShowResult(false);
+                setCurrentQuestion((p) => p + 1);
+              }}
+            >
+              Next
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
