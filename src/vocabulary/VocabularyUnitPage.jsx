@@ -83,7 +83,12 @@ export default function VocabularyUnitPage() {
   const question = questions[currentQuestion];
 
   // 🔥 FIX 2: ربط مباشر بالـ index
-  const currentItem = content?.items?.[currentQuestion] || null;
+  const currentItem =
+  content?.items?.find(
+    (item) =>
+      item.word?.toLowerCase().trim() ===
+      question?.correctAnswer?.toLowerCase().trim()
+  ) || null;
 
   const isLast = currentQuestion >= questions.length - 1;
 
