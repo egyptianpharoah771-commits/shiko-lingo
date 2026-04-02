@@ -22,7 +22,7 @@ export default function VocabularyUnitPage() {
   const normalizedLevel = level?.toUpperCase() || "";
   const unitKey = `unit${unitId}`;
 
-  const [mode, setMode] = useState("learn"); // learn | quiz | listening
+  const [mode, setMode] = useState("learn");
   const [content, setContent] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -41,6 +41,8 @@ export default function VocabularyUnitPage() {
         item.audio ||
         `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
+      console.log("🔊 PLAY:", src);
+
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -52,6 +54,7 @@ export default function VocabularyUnitPage() {
       audio.play().catch(() => {
         console.warn("Audio failed:", src);
       });
+
     } catch (e) {
       console.error("Audio error:", e);
     }
@@ -73,37 +76,32 @@ export default function VocabularyUnitPage() {
     }
   }, [normalizedLevel, unitKey]);
 
-  // 🔊 auto play في listening
+  // 🔊 FIX: get item safely
+  const question = questions[currentQuestion];
+  const currentItem =
+    content?.items?.find((item) => item.word === question?.word) ||
+    null;
+
+  const isLast = currentQuestion >= questions.length - 1;
+
+  // 🔊 FIX: autoplay listening
   useEffect(() => {
     if (mode !== "listening") return;
+    if (!currentItem) return;
 
-    const question = questions[currentQuestion];
-    if (!question) return;
+    setTimeout(() => {
+      playAudio(currentItem);
+    }, 300);
+  }, [mode, currentQuestion, currentItem]);
 
-    const item = content?.items?.find(
-      (w) => w.word === question.word
-    );
-
-    if (item) {
-      setTimeout(() => playAudio(item), 300);
-    }
-  }, [currentQuestion, mode]);
-
-  const question = questions[currentQuestion];
-  const isLast = currentQuestion === questions.length - 1;
-
-  const currentItem = content?.items?.find(
-    (item) => item.word === question?.word
-  );
-
-  if (!content || !question) {
+  if (!content || !questions.length) {
     return <div style={{ padding: 40 }}>Loading...</div>;
   }
 
   return (
     <div className="vocab-page">
 
-      {/* 🔥 MODE SWITCH */}
+      {/* MODE SWITCH */}
       <div style={{ marginBottom: 20 }}>
         <button onClick={() => setMode("learn")}>Learn</button>
         <button onClick={() => setMode("quiz")}>Quiz</button>
@@ -118,9 +116,7 @@ export default function VocabularyUnitPage() {
               <div className="vocab-item-header">
                 <div>
                   <div className="vocab-item-word">{item.word}</div>
-                  <div className="vocab-item-phonetic">
-                    {item.phonetic || ""}
-                  </div>
+                  <div>{item.phonetic || ""}</div>
                 </div>
 
                 <button onClick={() => playAudio(item)}>🔊</button>
@@ -137,69 +133,11 @@ export default function VocabularyUnitPage() {
       {/* ================= QUIZ ================= */}
       {mode === "quiz" && (
         <div>
-          <div>{question.question}</div>
+
+          <div>{question?.question}</div>
 
           <div>
-            {question.shuffledOptions.map((opt) => (
-              <AnswerOption
-                key={opt}
-                label={opt}
-                disabled={showResult}
-                state={
-                  showResult
-                    ? opt === question.correctAnswer
-                      ? "correct"
-                      : opt === selected
-                      ? "wrong"
-                      : "default"
-                    : selected === opt
-                    ? "selected"
-                    : "default"
-                }
-                onClick={() => setSelected(opt)}
-              />
-            ))}
-          </div>
-
-          {!showResult ? (
-            <button
-              disabled={!selected}
-              onClick={() => {
-                if (selected === question.correctAnswer) {
-                  playCorrect();
-                } else {
-                  playWrong();
-                }
-                setShowResult(true);
-              }}
-            >
-              Check
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setSelected(null);
-                setShowResult(false);
-                setCurrentQuestion((p) => p + 1);
-              }}
-            >
-              Next
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ================= LISTENING ================= */}
-      {mode === "listening" && (
-        <div>
-          <h3>🔊 Listen and choose the word</h3>
-
-          <button onClick={() => playAudio(currentItem)}>
-            🔊 Replay
-          </button>
-
-          <div style={{ marginTop: 20 }}>
-            {question.shuffledOptions.map((opt) => (
+            {question?.shuffledOptions?.map((opt) => (
               <AnswerOption
                 key={opt}
                 label={opt}
@@ -244,7 +182,72 @@ export default function VocabularyUnitPage() {
 
                 setSelected(null);
                 setShowResult(false);
-                setCurrentQuestion((p) => p + 1);
+                setCurrentQuestion((prev) => prev + 1);
+              }}
+            >
+              Next
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ================= LISTENING ================= */}
+      {mode === "listening" && (
+        <div>
+
+          <h3>🔊 Listen and choose the word</h3>
+
+          <button onClick={() => playAudio(currentItem)}>
+            🔊 Replay
+          </button>
+
+          <div style={{ marginTop: 20 }}>
+            {question?.shuffledOptions?.map((opt) => (
+              <AnswerOption
+                key={opt}
+                label={opt}
+                disabled={showResult}
+                state={
+                  showResult
+                    ? opt === question.correctAnswer
+                      ? "correct"
+                      : opt === selected
+                      ? "wrong"
+                      : "default"
+                    : selected === opt
+                    ? "selected"
+                    : "default"
+                }
+                onClick={() => setSelected(opt)}
+              />
+            ))}
+          </div>
+
+          {!showResult ? (
+            <button
+              disabled={!selected}
+              onClick={() => {
+                if (selected === question.correctAnswer) {
+                  playCorrect();
+                } else {
+                  playWrong();
+                }
+                setShowResult(true);
+              }}
+            >
+              Check
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                if (isLast) {
+                  navigate(`/vocabulary/${level}`);
+                  return;
+                }
+
+                setSelected(null);
+                setShowResult(false);
+                setCurrentQuestion((prev) => prev + 1);
               }}
             >
               Next
