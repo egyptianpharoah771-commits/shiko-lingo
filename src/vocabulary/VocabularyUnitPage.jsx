@@ -41,8 +41,6 @@ export default function VocabularyUnitPage() {
         item.audio ||
         `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
-      console.log("🔊 PLAY:", src);
-
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -54,12 +52,12 @@ export default function VocabularyUnitPage() {
       audio.play().catch(() => {
         console.warn("Audio failed:", src);
       });
-
     } catch (e) {
       console.error("Audio error:", e);
     }
   };
 
+  // 🔥 FIX 1: reload + reset state
   useEffect(() => {
     const unitData =
       VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
@@ -74,17 +72,22 @@ export default function VocabularyUnitPage() {
 
       setQuestions(prepared);
     }
+
+    // ✅ reset state عند تغيير الوحدة
+    setCurrentQuestion(0);
+    setSelected(null);
+    setShowResult(false);
+
   }, [normalizedLevel, unitKey]);
 
-  // 🔊 FIX: get item safely
   const question = questions[currentQuestion];
-  const currentItem =
-    content?.items?.find((item) => item.word === question?.word) ||
-    null;
+
+  // 🔥 FIX 2: ربط مباشر بالـ index
+  const currentItem = content?.items?.[currentQuestion] || null;
 
   const isLast = currentQuestion >= questions.length - 1;
 
-  // 🔊 FIX: autoplay listening
+  // 🔊 autoplay listening
   useEffect(() => {
     if (mode !== "listening") return;
     if (!currentItem) return;
@@ -108,14 +111,14 @@ export default function VocabularyUnitPage() {
         <button onClick={() => setMode("listening")}>🔊 Listening</button>
       </div>
 
-      {/* ================= LEARN ================= */}
+      {/* LEARN */}
       {mode === "learn" && (
         <div className="vocab-items">
-          {content.items?.map((item, i) => (
+          {content.items.map((item, i) => (
             <div key={i} className="vocab-item-card">
               <div className="vocab-item-header">
                 <div>
-                  <div className="vocab-item-word">{item.word}</div>
+                  <div>{item.word}</div>
                   <div>{item.phonetic || ""}</div>
                 </div>
 
@@ -130,14 +133,13 @@ export default function VocabularyUnitPage() {
         </div>
       )}
 
-      {/* ================= QUIZ ================= */}
+      {/* QUIZ */}
       {mode === "quiz" && (
         <div>
-
           <div>{question?.question}</div>
 
           <div>
-            {question?.shuffledOptions?.map((opt) => (
+            {question?.shuffledOptions.map((opt) => (
               <AnswerOption
                 key={opt}
                 label={opt}
@@ -162,11 +164,9 @@ export default function VocabularyUnitPage() {
             <button
               disabled={!selected}
               onClick={() => {
-                if (selected === question.correctAnswer) {
-                  playCorrect();
-                } else {
-                  playWrong();
-                }
+                selected === question.correctAnswer
+                  ? playCorrect()
+                  : playWrong();
                 setShowResult(true);
               }}
             >
@@ -182,7 +182,7 @@ export default function VocabularyUnitPage() {
 
                 setSelected(null);
                 setShowResult(false);
-                setCurrentQuestion((prev) => prev + 1);
+                setCurrentQuestion((p) => p + 1);
               }}
             >
               Next
@@ -191,18 +191,17 @@ export default function VocabularyUnitPage() {
         </div>
       )}
 
-      {/* ================= LISTENING ================= */}
+      {/* LISTENING */}
       {mode === "listening" && (
         <div>
-
-          <h3>🔊 Listen and choose the word</h3>
+          <h3>🔊 Listen and choose</h3>
 
           <button onClick={() => playAudio(currentItem)}>
             🔊 Replay
           </button>
 
           <div style={{ marginTop: 20 }}>
-            {question?.shuffledOptions?.map((opt) => (
+            {question?.shuffledOptions.map((opt) => (
               <AnswerOption
                 key={opt}
                 label={opt}
@@ -227,11 +226,9 @@ export default function VocabularyUnitPage() {
             <button
               disabled={!selected}
               onClick={() => {
-                if (selected === question.correctAnswer) {
-                  playCorrect();
-                } else {
-                  playWrong();
-                }
+                selected === question.correctAnswer
+                  ? playCorrect()
+                  : playWrong();
                 setShowResult(true);
               }}
             >
@@ -247,7 +244,7 @@ export default function VocabularyUnitPage() {
 
                 setSelected(null);
                 setShowResult(false);
-                setCurrentQuestion((prev) => prev + 1);
+                setCurrentQuestion((p) => p + 1);
               }}
             >
               Next
