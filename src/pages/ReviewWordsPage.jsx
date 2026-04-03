@@ -2,43 +2,50 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
-function normalize(text) {
-  return text?.toLowerCase().trim();
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 function removeDuplicates(words = []) {
   const seen = new Set();
 
   return words.filter((w) => {
-    const key = normalize(w.word);
-    if (seen.has(key)) return false;
-    seen.add(key);
+    if (seen.has(w.id)) return false;
+    seen.add(w.id);
     return true;
   });
 }
 
+function generateOptions(correctWord, allWords) {
+  const wrong = allWords.filter((w) => w.id !== correctWord.id);
+  const shuffled = shuffleArray(wrong).slice(0, 3);
+  return shuffleArray([correctWord, ...shuffled]);
+}
+
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
-  const audioRef = useRef(null);
 
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [lastIndex, setLastIndex] = useState(null);
-  const [mode, setMode] = useState("mcq");
   const [selected, setSelected] = useState(null);
-  const [input, setInput] = useState("");
-  const [checking, setChecking] = useState(false);
+  const [showResult, setShowResult] = useState(false);
   const [feedback, setFeedback] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  const [score, setScore] = useState(0);
   const [progress, setProgress] = useState(0);
   const TOTAL = 20;
   const [finished, setFinished] = useState(false);
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // ✅ LOAD ALL A1 UNITS (FIX)
+  // ✅ LOAD WORDS (DETERMINISTIC)
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
@@ -51,10 +58,8 @@ export default function ReviewWordsPage() {
       }
 
       const allWords = Object.values(levelData)
-        .flatMap((unit) => unit?.content?.items || []);
-
-      const prepared = removeDuplicates(
-        allWords.map((w) => ({
+        .flatMap((unit) => unit?.content?.items || [])
+        .map((w) => ({
           id: w.word,
           word: w.word,
           definition:
@@ -62,9 +67,9 @@ export default function ReviewWordsPage() {
             w.definition ||
             w.meaning ||
             "",
-          audio: w.audio || "",
-        }))
-      );
+        }));
+
+      const prepared = shuffleArray(removeDuplicates(allWords));
 
       setWords(prepared);
     } catch {
@@ -80,55 +85,45 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔊 AUDIO
-  const playAudio = () => {
-    if (!currentWord?.audio) return;
-
-    try {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-
-      const audio = new Audio(currentWord.audio);
-      audioRef.current = audio;
-
-      audio.play().catch(() => {});
-    } catch {}
-  };
-
-  // 🔥 OPTIONS
-  const generateOptions = useCallback(() => {
-    if (!currentWord || words.length < 4) return [];
-
-    const wrong = words
-      .filter((w) => w.word !== currentWord.word)
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3);
-
-    return [...wrong, currentWord]
-      .sort(() => 0.5 - Math.random())
-      .map((w) => w.definition);
+  // ✅ OPTIONS (ID BASED)
+  useEffect(() => {
+    if (!currentWord) return;
+    setOptions(generateOptions(currentWord, words));
   }, [currentWord, words]);
 
-  useEffect(() => {
-    if (mode === "mcq" || mode === "listen") {
-      setOptions(generateOptions());
-    }
-  }, [currentWord, mode, generateOptions]);
+  // ✅ CHECK
+  const handleCheck = () => {
+    if (!selected || showResult) return;
 
-  // 🔥 NEXT
-  const goNext = () => {
+    const isCorrect = selected.id === currentWord.id;
+
+    setShowResult(true);
+    setFeedback(isCorrect ? "correct" : "wrong");
+
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      playCorrect();
+    } else {
+      playWrong();
+
+      // 🔥 enqueue for review
+      setReviewQueue((prev) => [
+        ...prev,
+        { word: currentWord, delay: 2 },
+      ]);
+    }
+  };
+
+  // ✅ NEXT
+  const handleNext = () => {
     if (progress + 1 >= TOTAL) {
       setFinished(true);
       return;
     }
 
     setProgress((p) => p + 1);
-
     setSelected(null);
-    setInput("");
-    setChecking(false);
+    setShowResult(false);
     setFeedback(null);
 
     setReviewQueue((prev) => {
@@ -138,76 +133,35 @@ export default function ReviewWordsPage() {
       if (ready) {
         const idx = words.findIndex((w) => w.id === ready.word.id);
         if (idx !== -1) {
-          setLastIndex(currentIndex);
           setCurrentIndex(idx);
         }
         return updated.filter((i) => i.word.id !== ready.word.id);
       }
 
-      let next;
-      do {
-        next = Math.floor(Math.random() * words.length);
-      } while (next === currentIndex || next === lastIndex);
-
-      setLastIndex(currentIndex);
-      setCurrentIndex(next);
-
+      setCurrentIndex((prevIndex) => prevIndex + 1);
       return updated;
     });
-
-    setMode((prev) =>
-      prev === "mcq" ? "type" : prev === "type" ? "listen" : "mcq"
-    );
   };
 
-  // 🔥 ANSWER
-  const handleAnswer = (answer) => {
-    if (!currentWord || checking) return;
-
-    if (mode === "type" && !normalize(answer)) return;
-
-    const correctAnswer =
-      mode === "mcq" || mode === "listen"
-        ? currentWord.definition
-        : currentWord.word;
-
-    const isCorrect =
-      normalize(answer) === normalize(correctAnswer);
-
-    setChecking(true);
-    setFeedback(isCorrect ? "correct" : "wrong");
-
-    if (isCorrect) {
-      playCorrect();
-    } else {
-      playWrong();
-    }
-
-    if (!isCorrect) {
-      setReviewQueue((prev) => [
-        ...prev,
-        { word: currentWord, delay: 2 },
-      ]);
-    }
-
-    if (mode !== "type") setSelected(answer);
-
-    timeoutRef.current = setTimeout(goNext, 1200);
-  };
-
+  // CLEANUP
   useEffect(() => {
     return () => clearTimeout(timeoutRef.current);
   }, []);
 
-  // 🔥 UI
+  // ✅ UI
   if (finished) {
     return (
       <div style={{ padding: 20 }}>
-        <h2>✅ Session Complete</h2>
+        <h2>Review Complete</h2>
+        <p>
+          Score: {score} / {TOTAL}
+        </p>
         <button
           onClick={() => {
             setProgress(0);
+            setScore(0);
             setFinished(false);
+            setCurrentIndex(0);
           }}
         >
           Restart
@@ -224,89 +178,61 @@ export default function ReviewWordsPage() {
       <h2>Review</h2>
 
       <p>
-        {progress} / {TOTAL}
+        {progress + 1} / {TOTAL}
       </p>
 
-      {mode === "type" && (
-        <div>
-          <p style={{ fontSize: 18, marginBottom: 10 }}>
-            {currentWord.definition}
-          </p>
+      <div style={{ marginBottom: 20 }}>
+        <p>{currentWord.definition}</p>
+      </div>
 
-          {currentWord.audio && (
-            <button onClick={playAudio}>🔊</button>
-          )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {options.map((opt) => {
+          const isSelected = selected?.id === opt.id;
+          const isCorrect = opt.id === currentWord.id;
 
-          <input
-            style={{ padding: 10, width: "100%", marginTop: 10 }}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={checking}
-          />
+          let background = "#f1f1f1";
 
-          <button
-            style={{ marginTop: 10 }}
-            onClick={() => handleAnswer(input)}
-          >
-            Submit
+          if (showResult) {
+            if (isCorrect) background = "#4caf50";
+            else if (isSelected) background = "#f44336";
+          } else if (isSelected) {
+            background = "#ddd";
+          }
+
+          return (
+            <button
+              key={opt.id}
+              onClick={() => !showResult && setSelected(opt)}
+              style={{
+                padding: 12,
+                border: "none",
+                cursor: "pointer",
+                background,
+                color: showResult ? "#fff" : "#000",
+              }}
+            >
+              {opt.word}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ marginTop: 20 }}>
+        {!showResult ? (
+          <button onClick={handleCheck} disabled={!selected}>
+            Check
           </button>
-        </div>
-      )}
+        ) : (
+          <button onClick={handleNext}>Next</button>
+        )}
+      </div>
 
-      {mode === "mcq" && (
-        <div>
-          <h3>{currentWord.word}</h3>
+      <div style={{ marginTop: 20 }}>
+        <strong>Score: {score}</strong>
+      </div>
 
-          {currentWord.audio && (
-            <button onClick={playAudio}>🔊</button>
-          )}
-
-          <div style={{ marginTop: 15 }}>
-            {options.map((opt, i) => (
-              <button
-                key={i}
-                onClick={() => handleAnswer(opt)}
-                style={{
-                  display: "block",
-                  width: "100%",
-                  padding: "12px",
-                  marginBottom: "10px",
-                  borderRadius: "8px",
-                }}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {mode === "listen" && (
-        <div>
-          <button onClick={playAudio}>🔊 Play</button>
-
-          <div style={{ marginTop: 15 }}>
-            {options.map((opt, i) => (
-              <button
-                key={i}
-                onClick={() => handleAnswer(opt)}
-                style={{
-                  display: "block",
-                  width: "100%",
-                  padding: "12px",
-                  marginBottom: "10px",
-                  borderRadius: "8px",
-                }}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {feedback === "correct" && <p>✅ Correct</p>}
-      {feedback === "wrong" && <p>❌ Wrong</p>}
+      {feedback === "correct" && <p>Correct</p>}
+      {feedback === "wrong" && <p>Wrong</p>}
     </div>
   );
 }
