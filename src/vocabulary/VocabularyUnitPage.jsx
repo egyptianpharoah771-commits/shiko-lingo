@@ -15,15 +15,6 @@ function normalizeWord(word) {
   return word?.toLowerCase().trim().replace(/\s+/g, "_");
 }
 
-// 🔥 FIX: normalize قوي للمقارنة
-function clean(text) {
-  return text
-    ?.toLowerCase()
-    .trim()
-    .replace(/[^\w\s]/g, "") // remove punctuation
-    .replace(/\s+/g, " ");
-}
-
 export default function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
@@ -40,15 +31,16 @@ export default function VocabularyUnitPage() {
 
   const audioRef = useRef(null);
 
-  const playAudio = (item) => {
+  // 🔥 FIX: تشغيل مباشر من الكلمة بدون أي matching
+  const playAudioFromWord = (word) => {
     try {
-      if (!item?.word) return;
+      if (!word) return;
 
-      const fileName = normalizeWord(item.word);
+      const fileName = normalizeWord(word);
 
-      const src =
-        item.audio ||
-        `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
+      const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
+
+      console.log("🔊 TRY:", src);
 
       if (audioRef.current) {
         audioRef.current.pause();
@@ -59,8 +51,9 @@ export default function VocabularyUnitPage() {
       audioRef.current = audio;
 
       audio.play().catch(() => {
-        console.warn("Audio failed:", src);
+        console.warn("❌ NOT FOUND:", src);
       });
+
     } catch (e) {
       console.error("Audio error:", e);
     }
@@ -88,23 +81,18 @@ export default function VocabularyUnitPage() {
   }, [normalizedLevel, unitKey]);
 
   const question = questions[currentQuestion];
-
-  // 🔥 FIX: matching قوي بدون مشاكل
-  const currentItem =
-    content?.items?.find(
-      (item) => clean(item.word) === clean(question?.correctAnswer)
-    ) || null;
-
   const isLast = currentQuestion >= questions.length - 1;
 
+  // 🔊 Listening autoplay
   useEffect(() => {
     if (mode !== "listening") return;
-    if (!currentItem) return;
+    if (!question?.correctAnswer) return;
 
     setTimeout(() => {
-      playAudio(currentItem);
+      playAudioFromWord(question.correctAnswer);
     }, 300);
-  }, [mode, currentQuestion, currentItem]);
+
+  }, [mode, currentQuestion, question]);
 
   if (!content || !questions.length) {
     return <div style={{ padding: 40 }}>Loading...</div>;
@@ -119,18 +107,19 @@ export default function VocabularyUnitPage() {
         <button onClick={() => setMode("listening")}>🔊 Listening</button>
       </div>
 
+      {/* LEARN */}
       {mode === "learn" && (
         <div className="vocab-items">
           {content.items.map((item, i) => (
             <div key={i} className="vocab-item-card">
-              <div className="vocab-item-header">
-                <div>
-                  <div>{item.word}</div>
-                  <div>{item.phonetic || ""}</div>
-                </div>
-
-                <button onClick={() => playAudio(item)}>🔊</button>
+              <div>
+                <div>{item.word}</div>
+                <div>{item.phonetic || ""}</div>
               </div>
+
+              <button onClick={() => playAudioFromWord(item.word)}>
+                🔊
+              </button>
 
               <div>{item.definition || item.meaning}</div>
 
@@ -140,6 +129,7 @@ export default function VocabularyUnitPage() {
         </div>
       )}
 
+      {/* QUIZ */}
       {mode === "quiz" && (
         <div>
           <div>{question?.question}</div>
@@ -197,11 +187,12 @@ export default function VocabularyUnitPage() {
         </div>
       )}
 
+      {/* LISTENING */}
       {mode === "listening" && (
         <div>
           <h3>🔊 Listen and choose</h3>
 
-          <button onClick={() => playAudio(currentItem)}>
+          <button onClick={() => playAudioFromWord(question.correctAnswer)}>
             🔊 Replay
           </button>
 
