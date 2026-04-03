@@ -1,11 +1,24 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import AnswerOption from "../core/ui/AnswerOption";
+import "../core/ui/answer-option.css";
 import "./vocabulary.css";
 import { VOCABULARY_DATA } from "./vocabularyIndex";
+import { playCorrect, playWrong } from "../utils/sfx";
 
 /* ======================
    Utils
 ====================== */
+function shuffle(array) {
+  if (!Array.isArray(array)) return [];
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 function normalizeWord(word) {
   return word
     ?.toLowerCase()
@@ -24,134 +37,179 @@ export default function VocabularyUnitPage() {
   const unitKey = `unit${unitId}`;
 
   const [content, setContent] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [results, setResults] = useState({});
 
-  const wordAudioRef = useRef(null);
-  const [playingWord, setPlayingWord] = useState(null);
+  const audioRef = useRef(null);
 
   /* ======================
-     Load Unit Data
+     Load Data
   ====================== */
   useEffect(() => {
-    setLoading(true);
-
     const unitData =
       VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
 
-    if (unitData && unitData.content) {
+    if (unitData && unitData.content && unitData.questions) {
       setContent(unitData.content);
+
+      const prepared = unitData.questions.map((q, index) => ({
+        ...q,
+        id: index,
+        shuffledOptions: shuffle(q.options),
+      }));
+
+      setQuestions(prepared);
     } else {
       setContent(null);
+      setQuestions([]);
     }
 
-    setLoading(false);
+    setAnswers({});
+    setResults({});
   }, [normalizedLevel, unitKey]);
 
   /* ======================
-     Audio (MP3)
+     Audio
   ====================== */
-  const playWordAudio = (word) => {
+  const playAudio = (word) => {
     if (!word) return;
 
     const fileName = normalizeWord(word);
 
     const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
-    if (wordAudioRef.current) {
-      wordAudioRef.current.pause();
-      wordAudioRef.current.currentTime = 0;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
 
     const audio = new Audio(src);
-    wordAudioRef.current = audio;
-
-    setPlayingWord(word.toLowerCase());
+    audioRef.current = audio;
 
     audio.play().catch(() => {
-      console.warn("❌ Missing audio:", src);
-      setPlayingWord(null);
+      console.warn("Missing audio:", src);
     });
-
-    audio.onended = () => {
-      setPlayingWord(null);
-      wordAudioRef.current = null;
-    };
   };
 
   /* ======================
-     Navigation
+     Handlers
   ====================== */
-  const handleBack = () => {
-    navigate(`/vocabulary/${level}`);
+  const handleSelect = (qid, option) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [qid]: option,
+    }));
   };
 
-  /* ======================
-     States
-  ====================== */
-  if (loading) return <div className="vocab-loading">Loading...</div>;
+  const handleCheck = (qid, correct) => {
+    const selected = answers[qid];
 
-  if (!content || !Array.isArray(content.items)) {
-    return <div className="vocab-loading">Unit not found.</div>;
-  }
+    const isCorrect = selected === correct;
+
+    if (isCorrect) playCorrect();
+    else playWrong();
+
+    setResults((prev) => ({
+      ...prev,
+      [qid]: true,
+    }));
+  };
 
   /* ======================
      UI
   ====================== */
+  if (!content || !content.items?.length) {
+    return <div style={{ padding: 40 }}>No words available</div>;
+  }
+
   return (
     <div className="vocab-page vocab-unit-page">
-      <div className="vocab-unit-header">
-        <h1>{content.level} – Unit {content.unit}</h1>
-        <h2>{content.title}</h2>
-        <p className="vocab-unit-desc">{content.description}</p>
-      </div>
 
-      <div className="vocab-items-section">
-        <div className="vocab-items">
-          {content.items.map((item, i) => (
-            <div key={i} className="vocab-item-card">
-              <div className="vocab-item-header">
-                <div>
-                  <div className="vocab-item-word">{item.word}</div>
-                  <div className="vocab-item-phonetic">
-                    {item.phonetic}
-                  </div>
+      {content.items.map((item, index) => {
+        const q = questions[index];
+
+        return (
+          <div key={index} className="vocab-item-card">
+
+            {/* WORD */}
+            <div className="vocab-item-header">
+              <div>
+                <div className="vocab-item-word">{item.word}</div>
+                <div className="vocab-item-phonetic">
+                  {item.phonetic}
                 </div>
-
-                <button
-                  className={`vocab-audio-btn ${
-                    playingWord === item.word.toLowerCase()
-                      ? "playing"
-                      : ""
-                  }`}
-                  onClick={() => playWordAudio(item.word)}
-                >
-                  🔊
-                </button>
               </div>
 
-              <div className="vocab-item-meaning">
-                <strong>Meaning:</strong> {item.meaning}
-              </div>
-
-              {item.arabic && (
-                <div className="vocab-item-meaning-ar">
-                  <strong>Arabic:</strong> {item.arabic}
-                </div>
-              )}
-
-              <div className="vocab-item-example">
-                <strong>Example:</strong> {item.example}
-              </div>
+              <button
+                className="vocab-audio-btn"
+                onClick={() => playAudio(item.word)}
+              >
+                🔊
+              </button>
             </div>
-          ))}
-        </div>
-      </div>
+
+            <div className="vocab-item-meaning">
+              {item.meaning}
+            </div>
+
+            {item.example && (
+              <div className="vocab-item-example">
+                {item.example}
+              </div>
+            )}
+
+            {/* QUESTION */}
+            {q && (
+              <div style={{ marginTop: 20 }}>
+                <div className="vocab-question-text">
+                  {q.question}
+                </div>
+
+                <div>
+                  {q.shuffledOptions.map((opt) => (
+                    <AnswerOption
+                      key={opt}
+                      label={opt}
+                      disabled={results[q.id]}
+                      state={
+                        results[q.id]
+                          ? opt === q.correctAnswer
+                            ? "correct"
+                            : opt === answers[q.id]
+                            ? "wrong"
+                            : "default"
+                          : answers[q.id] === opt
+                          ? "selected"
+                          : "default"
+                      }
+                      onClick={() => handleSelect(q.id, opt)}
+                    />
+                  ))}
+                </div>
+
+                {!results[q.id] && (
+                  <button
+                    disabled={!answers[q.id]}
+                    onClick={() =>
+                      handleCheck(q.id, q.correctAnswer)
+                    }
+                  >
+                    Check
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       <div style={{ textAlign: "center", marginTop: 30 }}>
-        <button className="vocab-btn" onClick={handleBack}>
+        <button onClick={() => navigate(`/vocabulary/${level}`)}>
           ← Back
         </button>
       </div>
+
     </div>
   );
 }
