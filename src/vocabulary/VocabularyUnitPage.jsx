@@ -34,7 +34,6 @@ export default function VocabularyUnitPage() {
   const normalizedLevel =
     typeof level === "string" ? level.trim().toUpperCase() : null;
 
-  // ✅ FIX هنا
   const unitKey = `unit${Number(unitId)}`;
 
   const [content, setContent] = useState(null);
@@ -72,13 +71,15 @@ export default function VocabularyUnitPage() {
   }, [normalizedLevel, unitKey]);
 
   /* ======================
-     Audio
+     Audio (DEBUG VERSION)
   ====================== */
   const playAudio = (word) => {
     if (!word) return;
 
     const fileName = normalizeWord(word);
     const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
+
+    console.log("🔊 TRY:", src);
 
     if (audioRef.current) {
       audioRef.current.pause();
@@ -88,8 +89,16 @@ export default function VocabularyUnitPage() {
     const audio = new Audio(src);
     audioRef.current = audio;
 
-    audio.play().catch(() => {
-      console.warn("Missing audio:", src);
+    audio.oncanplaythrough = () => {
+      console.log("✅ READY:", src);
+    };
+
+    audio.onerror = () => {
+      console.error("❌ ERROR LOADING:", src);
+    };
+
+    audio.play().catch((e) => {
+      console.error("❌ PLAY FAILED:", e, src);
     });
   };
 
