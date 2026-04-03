@@ -15,6 +15,15 @@ function normalizeWord(word) {
   return word?.toLowerCase().trim().replace(/\s+/g, "_");
 }
 
+// 🔥 FIX: normalize قوي للمقارنة
+function clean(text) {
+  return text
+    ?.toLowerCase()
+    .trim()
+    .replace(/[^\w\s]/g, "") // remove punctuation
+    .replace(/\s+/g, " ");
+}
+
 export default function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
@@ -57,7 +66,6 @@ export default function VocabularyUnitPage() {
     }
   };
 
-  // 🔥 FIX 1: reload + reset state
   useEffect(() => {
     const unitData =
       VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
@@ -73,7 +81,6 @@ export default function VocabularyUnitPage() {
       setQuestions(prepared);
     }
 
-    // ✅ reset state عند تغيير الوحدة
     setCurrentQuestion(0);
     setSelected(null);
     setShowResult(false);
@@ -82,17 +89,14 @@ export default function VocabularyUnitPage() {
 
   const question = questions[currentQuestion];
 
-  // 🔥 FIX 2: ربط مباشر بالـ index
+  // 🔥 FIX: matching قوي بدون مشاكل
   const currentItem =
-  content?.items?.find(
-    (item) =>
-      item.word?.toLowerCase().trim() ===
-      question?.correctAnswer?.toLowerCase().trim()
-  ) || null;
+    content?.items?.find(
+      (item) => clean(item.word) === clean(question?.correctAnswer)
+    ) || null;
 
   const isLast = currentQuestion >= questions.length - 1;
 
-  // 🔊 autoplay listening
   useEffect(() => {
     if (mode !== "listening") return;
     if (!currentItem) return;
@@ -109,14 +113,12 @@ export default function VocabularyUnitPage() {
   return (
     <div className="vocab-page">
 
-      {/* MODE SWITCH */}
       <div style={{ marginBottom: 20 }}>
         <button onClick={() => setMode("learn")}>Learn</button>
         <button onClick={() => setMode("quiz")}>Quiz</button>
         <button onClick={() => setMode("listening")}>🔊 Listening</button>
       </div>
 
-      {/* LEARN */}
       {mode === "learn" && (
         <div className="vocab-items">
           {content.items.map((item, i) => (
@@ -138,7 +140,6 @@ export default function VocabularyUnitPage() {
         </div>
       )}
 
-      {/* QUIZ */}
       {mode === "quiz" && (
         <div>
           <div>{question?.question}</div>
@@ -196,7 +197,6 @@ export default function VocabularyUnitPage() {
         </div>
       )}
 
-      {/* LISTENING */}
       {mode === "listening" && (
         <div>
           <h3>🔊 Listen and choose</h3>
