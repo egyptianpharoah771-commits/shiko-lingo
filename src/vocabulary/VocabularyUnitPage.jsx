@@ -34,7 +34,8 @@ export default function VocabularyUnitPage() {
   const normalizedLevel =
     typeof level === "string" ? level.trim().toUpperCase() : null;
 
-  const unitKey = `unit${unitId}`;
+  // ✅ FIX هنا
+  const unitKey = `unit${Number(unitId)}`;
 
   const [content, setContent] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -148,7 +149,7 @@ export default function VocabularyUnitPage() {
         ))}
       </div>
 
-      {/* 🔹 QUESTION (تحت الكلمات) */}
+      {/* 🔹 QUESTION */}
       {question && (
         <div style={{ marginTop: 30 }}>
           <div className="vocab-question-text">
