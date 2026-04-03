@@ -38,8 +38,9 @@ export default function VocabularyUnitPage() {
 
   const [content, setContent] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState({});
-  const [results, setResults] = useState({});
+  const [current, setCurrent] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [showResult, setShowResult] = useState(false);
 
   const audioRef = useRef(null);
 
@@ -53,9 +54,8 @@ export default function VocabularyUnitPage() {
     if (unitData && unitData.content && unitData.questions) {
       setContent(unitData.content);
 
-      const prepared = unitData.questions.map((q, index) => ({
+      const prepared = unitData.questions.map((q) => ({
         ...q,
-        id: index,
         shuffledOptions: shuffle(q.options),
       }));
 
@@ -65,8 +65,9 @@ export default function VocabularyUnitPage() {
       setQuestions([]);
     }
 
-    setAnswers({});
-    setResults({});
+    setCurrent(0);
+    setSelected(null);
+    setShowResult(false);
   }, [normalizedLevel, unitKey]);
 
   /* ======================
@@ -76,7 +77,6 @@ export default function VocabularyUnitPage() {
     if (!word) return;
 
     const fileName = normalizeWord(word);
-
     const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
     if (audioRef.current) {
@@ -93,27 +93,27 @@ export default function VocabularyUnitPage() {
   };
 
   /* ======================
-     Handlers
+     Question Logic
   ====================== */
-  const handleSelect = (qid, option) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [qid]: option,
-    }));
-  };
+  const question = questions[current];
+  const isLast = current === questions.length - 1;
 
-  const handleCheck = (qid, correct) => {
-    const selected = answers[qid];
-
-    const isCorrect = selected === correct;
-
-    if (isCorrect) playCorrect();
+  const handleCheck = () => {
+    if (selected === question.correctAnswer) playCorrect();
     else playWrong();
 
-    setResults((prev) => ({
-      ...prev,
-      [qid]: true,
-    }));
+    setShowResult(true);
+  };
+
+  const handleNext = () => {
+    if (isLast) {
+      navigate(`/vocabulary/${level}`);
+      return;
+    }
+
+    setCurrent((p) => p + 1);
+    setSelected(null);
+    setShowResult(false);
   };
 
   /* ======================
@@ -126,13 +126,10 @@ export default function VocabularyUnitPage() {
   return (
     <div className="vocab-page vocab-unit-page">
 
-      {content.items.map((item, index) => {
-        const q = questions[index];
-
-        return (
-          <div key={index} className="vocab-item-card">
-
-            {/* WORD */}
+      {/* 🔹 WORD LIST */}
+      <div className="vocab-items">
+        {content.items.map((item, i) => (
+          <div key={i} className="vocab-item-card">
             <div className="vocab-item-header">
               <div>
                 <div className="vocab-item-word">{item.word}</div>
@@ -141,74 +138,56 @@ export default function VocabularyUnitPage() {
                 </div>
               </div>
 
-              <button
-                className="vocab-audio-btn"
-                onClick={() => playAudio(item.word)}
-              >
+              <button onClick={() => playAudio(item.word)}>
                 🔊
               </button>
             </div>
 
-            <div className="vocab-item-meaning">
-              {item.meaning}
-            </div>
-
-            {item.example && (
-              <div className="vocab-item-example">
-                {item.example}
-              </div>
-            )}
-
-            {/* QUESTION */}
-            {q && (
-              <div style={{ marginTop: 20 }}>
-                <div className="vocab-question-text">
-                  {q.question}
-                </div>
-
-                <div>
-                  {q.shuffledOptions.map((opt) => (
-                    <AnswerOption
-                      key={opt}
-                      label={opt}
-                      disabled={results[q.id]}
-                      state={
-                        results[q.id]
-                          ? opt === q.correctAnswer
-                            ? "correct"
-                            : opt === answers[q.id]
-                            ? "wrong"
-                            : "default"
-                          : answers[q.id] === opt
-                          ? "selected"
-                          : "default"
-                      }
-                      onClick={() => handleSelect(q.id, opt)}
-                    />
-                  ))}
-                </div>
-
-                {!results[q.id] && (
-                  <button
-                    disabled={!answers[q.id]}
-                    onClick={() =>
-                      handleCheck(q.id, q.correctAnswer)
-                    }
-                  >
-                    Check
-                  </button>
-                )}
-              </div>
-            )}
+            <div>{item.meaning}</div>
           </div>
-        );
-      })}
-
-      <div style={{ textAlign: "center", marginTop: 30 }}>
-        <button onClick={() => navigate(`/vocabulary/${level}`)}>
-          ← Back
-        </button>
+        ))}
       </div>
+
+      {/* 🔹 QUESTION (تحت الكلمات) */}
+      {question && (
+        <div style={{ marginTop: 30 }}>
+          <div className="vocab-question-text">
+            {question.question}
+          </div>
+
+          <div>
+            {question.shuffledOptions.map((opt) => (
+              <AnswerOption
+                key={opt}
+                label={opt}
+                disabled={showResult}
+                state={
+                  showResult
+                    ? opt === question.correctAnswer
+                      ? "correct"
+                      : opt === selected
+                      ? "wrong"
+                      : "default"
+                    : selected === opt
+                    ? "selected"
+                    : "default"
+                }
+                onClick={() => setSelected(opt)}
+              />
+            ))}
+          </div>
+
+          {!showResult ? (
+            <button disabled={!selected} onClick={handleCheck}>
+              Check
+            </button>
+          ) : (
+            <button onClick={handleNext}>
+              {isLast ? "Next Unit" : "Next"}
+            </button>
+          )}
+        </div>
+      )}
 
     </div>
   );
