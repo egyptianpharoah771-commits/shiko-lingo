@@ -1,121 +1,93 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
-const TOTAL = 60;
-
-function normalize(word) {
-  return word?.toLowerCase().trim();
+function shuffleArray(array) {
+  return [...array].sort(() => Math.random() - 0.5);
 }
 
-function buildId(level, unitId, word, extra = "") {
-  return `${level}_${unitId}_${normalize(word)}${extra}`;
-}
-
-function stableShuffle(arr, seed) {
-  const array = [...arr];
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = (i + seed) % array.length;
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
+function removeDuplicates(words = []) {
+  const seen = new Set();
+  return words.filter((w) => {
+    const key = w.word?.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export default function ReviewWordsPage() {
-  const [pool, setPool] = useState([]);
-  const [session, setSession] = useState(null);
-  const [index, setIndex] = useState(0);
-  const [score, setScore] = useState(0);
+  const TOTAL = 60;
+
+  const [allWords, setAllWords] = useState([]);
+  const [testWords, setTestWords] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
+
+  const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
-  useEffect(() => {
-    try {
-      let words = [];
+  const loadWords = useCallback(() => {
+    setLoading(true);
 
-      Object.entries(VOCABULARY_DATA).forEach(([level, units]) => {
-        Object.entries(units).forEach(([unitId, unit]) => {
-          (unit.content?.items || []).forEach((w) => {
-            if (w.word && (w.definition || w.definition_hard)) {
-              words.push({
-                id: buildId(level, unitId, w.word),
-                word: normalize(w.word),
-                definition:
-                  w.definition_hard ||
-                  w.definition_medium ||
-                  w.definition ||
-                  "",
-                level,
-                unit: unitId,
-              });
-            }
-          });
+    let pool = [];
+
+    Object.entries(VOCABULARY_DATA || {}).forEach(([level, levelData]) => {
+      Object.values(levelData).forEach((unit, unitIndex) => {
+        (unit?.content?.items || []).forEach((w) => {
+          const def =
+            w.definition_hard ||
+            w.definition_medium ||
+            w.definition ||
+            "";
+
+          if (w.word && def.length > 5) {
+            pool.push({
+              id: `${level}-${unitIndex}-${w.word}`,
+              word: w.word,
+              definition: def,
+              level,
+            });
+          }
         });
       });
+    });
 
-      const initialSession = stableShuffle(words, 7).slice(0, TOTAL);
+    const unique = removeDuplicates(pool);
+    const shuffled = shuffleArray(unique);
 
-      setPool(words);
-      setSession(initialSession);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    setAllWords(shuffled);
+    setTestWords(shuffled.slice(0, TOTAL));
+
+    setCurrentIndex(0);
+    setLoading(false);
   }, []);
 
-  // 🔥 safe current word
-  const currentWord = useMemo(() => {
-    if (!session) return null;
-
-    for (let i = index; i < session.length; i++) {
-      const w = session[i];
-      if (w && w.definition) return w;
-    }
-
-    return null;
-  }, [session, index]);
-
-  // 🔥 FIX: skip invalid خارج render
   useEffect(() => {
-    if (!session) return;
+    loadWords();
+  }, [loadWords]);
 
-    if (!currentWord && index < session.length) {
-      setIndex((prev) => prev + 1);
-    }
-  }, [currentWord, session, index]);
+  const currentWord = testWords[currentIndex];
 
   const options = useMemo(() => {
-    if (!currentWord || pool.length < 4) return [];
+    if (!currentWord || allWords.length < 4) return [];
 
-    const baseIndex = index * 3;
+    const wrong = allWords
+      .filter((w) => w.word !== currentWord.word)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3);
 
-    const distractors = [];
-    for (let i = 0; i < pool.length && distractors.length < 3; i++) {
-      const candidate = pool[(baseIndex + i) % pool.length];
-      if (candidate.id !== currentWord.id) {
-        distractors.push(candidate);
-      }
-    }
-
-    return stableShuffle([...distractors, currentWord], index + 1);
-  }, [currentWord, pool, index]);
-
-  const handleSelect = (opt) => {
-    if (showResult) return;
-    setSelected(opt);
-
-    try {
-      new Audio("/sounds/select.mp3").play();
-    } catch {}
-  };
+    return shuffleArray([currentWord, ...wrong]);
+  }, [currentWord, allWords]);
 
   const handleCheck = () => {
     if (!selected || showResult || !currentWord) return;
 
-    const isCorrect = selected.id === currentWord.id;
+    const isCorrect = selected.word === currentWord.word;
+
     setShowResult(true);
 
     if (isCorrect) {
@@ -123,111 +95,103 @@ export default function ReviewWordsPage() {
       playCorrect();
     } else {
       playWrong();
-
-      const retryWord = {
-        ...currentWord,
-        id: currentWord.id + "_retry_" + Date.now(),
-      };
-
-      setSession((prev) => [...prev, retryWord]);
+      setTestWords((prev) => [...prev, currentWord]);
     }
   };
 
+  // 🔥 FIX: navigation بسيط وواضح
   const handleNext = () => {
-    setIndex((prev) => prev + 1);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex >= TOTAL) {
+      setFinished(true);
+      return;
+    }
+
+    setCurrentIndex(nextIndex);
     setSelected(null);
     setShowResult(false);
   };
 
-  useEffect(() => {
-    if (index >= TOTAL) {
-      setFinished(true);
-    }
-  }, [index]);
-
-  if (loading || !session) {
-    return <div style={{ textAlign: "center", padding: 50 }}>Preparing...</div>;
+  if (loading) {
+    return <div style={{ padding: 40 }}>Loading...</div>;
   }
 
   if (finished) {
     return (
-      <div style={{ textAlign: "center", padding: 50 }}>
-        <h2>Review Complete 🎉</h2>
-        <p>{score} / {TOTAL}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
+      <div style={{ padding: 40, textAlign: "center" }}>
+        <h2>Review Complete</h2>
+        <p>
+          Score: {score} / {TOTAL}
+        </p>
+        <button onClick={() => window.location.reload()}>
+          Restart
+        </button>
       </div>
     );
   }
 
   if (!currentWord) {
-    return <div style={{ textAlign: "center", padding: 50 }}>Fixing...</div>;
+    return <div style={{ padding: 40 }}>Preparing...</div>;
   }
 
   return (
-    <div style={{ padding: 20, maxWidth: 500, margin: "auto", textAlign: "center" }}>
-      <div style={{ marginBottom: 20 }}>
-        {Math.min(index + 1, TOTAL)} / {TOTAL} | Score: {score}
+    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
+      <h2>Review</h2>
+
+      <p>Question {currentIndex + 1}</p>
+
+      <p style={{ marginBottom: 20 }}>
+        {currentWord.definition}
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {options.map((opt) => {
+          const isSelected = selected?.id === opt.id;
+          const isCorrect = opt.word === currentWord.word;
+
+          let background = "#eee";
+
+          if (showResult) {
+            if (isCorrect) background = "#4caf50";
+            else if (isSelected) background = "#f44336";
+          } else if (isSelected) {
+            background = "#ddd";
+          }
+
+          return (
+            <button
+              key={opt.id}
+              onClick={() => !showResult && setSelected(opt)}
+              style={{
+                padding: 12,
+                border: "none",
+                cursor: "pointer",
+                background,
+                color: showResult ? "#fff" : "#000",
+              }}
+            >
+              {opt.word}
+            </button>
+          );
+        })}
       </div>
 
-      <div
-        style={{
-          background: "#f9f9f9",
-          padding: 30,
-          borderRadius: 15,
-          marginBottom: 20,
-          border: "1px solid #ddd",
-        }}
-      >
-        <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
-          {currentWord.definition}
-        </p>
-      </div>
-
-      <div style={{ display: "grid", gap: 10 }}>
-        {options.map((opt) => (
-          <button
-            key={opt.id}
-            disabled={showResult}
-            onClick={() => handleSelect(opt)}
-            style={{
-              padding: 15,
-              borderRadius: 10,
-              cursor: "pointer",
-              border: "2px solid",
-              borderColor: selected?.id === opt.id ? "#007bff" : "#eee",
-              backgroundColor: showResult
-                ? opt.id === currentWord.id
-                  ? "#d4edda"
-                  : selected?.id === opt.id
-                  ? "#f8d7da"
-                  : "white"
-                : selected?.id === opt.id
-                ? "#e7f1ff"
-                : "white",
-            }}
-          >
-            {opt.word}
+      <div style={{ marginTop: 20 }}>
+        {!showResult ? (
+          <button onClick={handleCheck} disabled={!selected}>
+            Check
           </button>
-        ))}
+        ) : (
+          <button onClick={handleNext}>
+            Next
+          </button>
+        )}
       </div>
 
-      <button
-        onClick={showResult ? handleNext : handleCheck}
-        disabled={!selected}
-        style={{
-          marginTop: 30,
-          width: "100%",
-          padding: 15,
-          background: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: 10,
-          fontSize: "1.1rem",
-          cursor: "pointer",
-        }}
-      >
-        {showResult ? "Next" : "Check"}
-      </button>
+      <div style={{ marginTop: 20 }}>
+        <strong>Score: {score}</strong>
+      </div>
     </div>
   );
 }
