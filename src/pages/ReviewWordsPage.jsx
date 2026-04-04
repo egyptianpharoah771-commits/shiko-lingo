@@ -66,8 +66,24 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  const currentWord =
-    session && index < session.length ? session[index] : null;
+  // 🔥 FIX: skip invalid words automatically
+  const currentWord = useMemo(() => {
+    if (!session) return null;
+
+    let i = index;
+
+    while (i < session.length) {
+      const word = session[i];
+
+      if (word && word.definition) {
+        return word;
+      }
+
+      i++;
+    }
+
+    return null;
+  }, [session, index]);
 
   const options = useMemo(() => {
     if (!currentWord || pool.length < 4) return [];
@@ -106,7 +122,6 @@ export default function ReviewWordsPage() {
     } else {
       playWrong();
 
-      // ✅ FIX: clone + unique retry id
       const retryWord = {
         ...currentWord,
         id: currentWord.id + "_retry_" + Date.now(),
@@ -142,8 +157,10 @@ export default function ReviewWordsPage() {
     );
   }
 
+  // 🔥 FIX: prevent freeze forever
   if (!currentWord) {
-    return <div style={{ textAlign: "center", padding: 50 }}>Preparing...</div>;
+    setIndex((prev) => prev + 1);
+    return <div style={{ textAlign: "center", padding: 50 }}>Fixing...</div>;
   }
 
   return (
