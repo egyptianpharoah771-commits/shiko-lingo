@@ -7,16 +7,19 @@ function normalizeWord(word) {
   if (!word) return null;
 
   return {
-    id: word.id || word.word,
+    // ✅ FIX الحقيقي
+    id:
+      word.id ||
+      `${word.level || "unknown"}_${word.unit || "0"}_${word.word?.toLowerCase().trim()}`,
+
     word: word.word?.trim(),
 
     definition:
       word.simple_definition?.trim() ||
       word.definition?.trim() ||
       word.meaning?.trim() ||
-      "",
+      "No definition",
 
-    // ✅ audio لو موجود
     audio: word.audio || null,
 
     level: word.level,
@@ -37,7 +40,7 @@ export function prepareReviewWords(words) {
 
   return words
     .map(normalizeWord)
-    .filter((w) => w && w.word && w.definition);
+    .filter((w) => w && w.word); // ✅ شيلنا شرط definition
 }
 
 /**
@@ -85,11 +88,11 @@ function normalizeWordToFile(word) {
   return word
     ?.toLowerCase()
     .trim()
-    .replace(/\s+/g, "_"); // ✅ المهم — بدون حذف حروف
+    .replace(/\s+/g, "_");
 }
 
 /**
- * 🔊 FIXED AUDIO SYSTEM (FINAL)
+ * 🔊 AUDIO SYSTEM
  */
 export function playWordAudio(word) {
   try {
@@ -97,11 +100,9 @@ export function playWordAudio(word) {
 
     let src = word.audio;
 
-    // ✅ fallback لو مفيش audio في الداتا
     if (!src) {
       const fileName = normalizeWordToFile(word.word);
 
-      // ⚠️ لازم level و unit يكونوا موجودين في word
       const level = word.level?.toUpperCase();
       const unit = word.unit ? `unit${word.unit}` : null;
 
