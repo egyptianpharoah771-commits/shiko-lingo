@@ -8,11 +8,10 @@ function normalize(word) {
   return word?.toLowerCase().trim();
 }
 
-function buildId(level, unitId, word) {
-  return `${level}_${unitId}_${normalize(word)}`;
+function buildId(level, unitId, word, extra = "") {
+  return `${level}_${unitId}_${normalize(word)}${extra}`;
 }
 
-// deterministic shuffle
 function stableShuffle(arr, seed) {
   const array = [...arr];
   for (let i = array.length - 1; i > 0; i--) {
@@ -67,7 +66,6 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  // ✅ SAFE currentWord (NO undefined ever)
   const currentWord =
     session && index < session.length ? session[index] : null;
 
@@ -87,15 +85,13 @@ export default function ReviewWordsPage() {
     return stableShuffle([...distractors, currentWord], index + 1);
   }, [currentWord, pool, index]);
 
-  // 🔥 SELECT (with sound)
   const handleSelect = (opt) => {
     if (showResult) return;
     setSelected(opt);
 
-    // ✅ restore selection sound
     try {
       new Audio("/sounds/select.mp3").play();
-    } catch (e) {}
+    } catch {}
   };
 
   const handleCheck = () => {
@@ -110,21 +106,18 @@ export default function ReviewWordsPage() {
     } else {
       playWrong();
 
-      // ✅ SAFE append بدون race
-      setSession((prev) => {
-        if (!prev) return prev;
-        return [...prev, currentWord];
-      });
+      // ✅ FIX: clone + unique retry id
+      const retryWord = {
+        ...currentWord,
+        id: currentWord.id + "_retry_" + Date.now(),
+      };
+
+      setSession((prev) => [...prev, retryWord]);
     }
   };
 
   const handleNext = () => {
-    // 🔥 CRITICAL: prevent overflow
-    setIndex((prev) => {
-      if (!session) return prev;
-      return prev + 1 < session.length ? prev + 1 : prev;
-    });
-
+    setIndex((prev) => prev + 1);
     setSelected(null);
     setShowResult(false);
   };
