@@ -25,15 +25,16 @@ export default function ReviewWordsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lastIndex, setLastIndex] = useState(null);
   const [mode, setMode] = useState("mcq");
+
   const [selected, setSelected] = useState(null);
-  const [input, setInput] = useState("");
   const [checking, setChecking] = useState(false);
   const [feedback, setFeedback] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState([]);
 
   const [progress, setProgress] = useState(0);
-  const TOTAL = 60; // 🔥 بس ده اللي اتغير
+  const TOTAL = 60;
   const [finished, setFinished] = useState(false);
 
   const [reviewQueue, setReviewQueue] = useState([]);
@@ -44,12 +45,7 @@ export default function ReviewWordsPage() {
 
       const levelData = VOCABULARY_DATA?.A1;
 
-      if (!levelData) {
-        setWords([]);
-        return;
-      }
-
-      const allWords = Object.values(levelData)
+      const allWords = Object.values(levelData || {})
         .flatMap((unit) => unit?.content?.items || []);
 
       const prepared = removeDuplicates(
@@ -79,22 +75,17 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
+  // 🔊 AUDIO FIX (always fresh instance)
   const playAudio = () => {
     if (!currentWord?.audio) return;
 
     try {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-
       const audio = new Audio(currentWord.audio);
-      audioRef.current = audio;
-
       audio.play().catch(() => {});
     } catch {}
   };
 
+  // 🔥 CLEAN OPTIONS (English only)
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -105,7 +96,7 @@ export default function ReviewWordsPage() {
 
     return [...wrong, currentWord]
       .sort(() => 0.5 - Math.random())
-      .map((w) => w.definition);
+      .map((w) => w.word); // 🔥 كلها English
   }, [currentWord, words]);
 
   useEffect(() => {
@@ -114,6 +105,16 @@ export default function ReviewWordsPage() {
     }
   }, [currentWord, mode, generateOptions]);
 
+  const handleSelect = (opt) => {
+    if (checking) return;
+    setSelected(opt);
+
+    // 🔊 select sound
+    try {
+      new Audio("/sounds/select.mp3").play();
+    } catch {}
+  };
+
   const goNext = () => {
     if (progress + 1 >= TOTAL) {
       setFinished(true);
@@ -121,9 +122,7 @@ export default function ReviewWordsPage() {
     }
 
     setProgress((p) => p + 1);
-
     setSelected(null);
-    setInput("");
     setChecking(false);
     setFeedback(null);
 
@@ -152,18 +151,16 @@ export default function ReviewWordsPage() {
     });
 
     setMode((prev) =>
-      prev === "mcq" ? "type" : prev === "type" ? "listen" : "mcq"
+      prev === "mcq" ? "listen" : "mcq"
     );
   };
 
   const handleAnswer = (answer) => {
     if (!currentWord || checking) return;
 
-    if (mode === "type" && !normalize(answer)) return;
-
     const correctAnswer =
       mode === "mcq" || mode === "listen"
-        ? currentWord.definition
+        ? currentWord.word
         : currentWord.word;
 
     const isCorrect =
@@ -182,9 +179,7 @@ export default function ReviewWordsPage() {
       ]);
     }
 
-    if (mode !== "type") setSelected(answer);
-
-    timeoutRef.current = setTimeout(goNext, 1200);
+    timeoutRef.current = setTimeout(goNext, 1000);
   };
 
   useEffect(() => {
@@ -193,16 +188,9 @@ export default function ReviewWordsPage() {
 
   if (finished) {
     return (
-      <div style={{ padding: 20 }}>
+      <div style={{ padding: 20, textAlign: "center" }}>
         <h2>✅ Session Complete</h2>
-        <button
-          onClick={() => {
-            setProgress(0);
-            setFinished(false);
-          }}
-        >
-          Restart
-        </button>
+        <p>{progress} / {TOTAL}</p>
       </div>
     );
   }
@@ -211,42 +199,73 @@ export default function ReviewWordsPage() {
   if (!words.length) return <div style={{ padding: 20 }}>No words</div>;
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
+    <div style={{ padding: 20, maxWidth: 500, margin: "auto" }}>
       <h2>Review</h2>
 
       <p>{progress} / {TOTAL}</p>
 
-      {mode === "type" && (
-        <div>
-          <p style={{ fontSize: 18 }}>{currentWord.definition}</p>
-
-          {currentWord.audio && <button onClick={playAudio}>🔊</button>}
-
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={checking}
-          />
-
-          <button onClick={() => handleAnswer(input)}>Submit</button>
-        </div>
+      {/* 🔥 QUESTION */}
+      {mode === "mcq" && (
+        <h3 style={{ marginBottom: 15 }}>{currentWord.definition}</h3>
       )}
 
-      {(mode === "mcq" || mode === "listen") && (
-        <div>
-          {mode === "mcq" && <h3>{currentWord.word}</h3>}
-          {mode === "listen" && <button onClick={playAudio}>🔊 Play</button>}
+      {mode === "listen" && (
+        <button onClick={playAudio} style={{ marginBottom: 15 }}>
+          🔊 Play Audio
+        </button>
+      )}
 
-          {options.map((opt, i) => (
-            <button key={i} onClick={() => handleAnswer(opt)}>
+      {/* 🔥 OPTIONS */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {options.map((opt, i) => {
+          const isSelected = selected === opt;
+          const isCorrect = opt === currentWord.word;
+
+          let bg = "#fff";
+
+          if (checking) {
+            if (isCorrect) bg = "#4caf50";
+            else if (isSelected) bg = "#f44336";
+          } else if (isSelected) {
+            bg = "#e3f2fd";
+          }
+
+          return (
+            <button
+              key={i}
+              onClick={() => handleSelect(opt)}
+              disabled={checking}
+              style={{
+                padding: 14,
+                borderRadius: 12,
+                border: "1px solid #ddd",
+                cursor: "pointer",
+                background: bg,
+                color: checking ? "#fff" : "#000",
+                fontSize: 16,
+              }}
+            >
               {opt}
             </button>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
 
-      {feedback === "correct" && <p>✅ Correct</p>}
-      {feedback === "wrong" && <p>❌ Wrong</p>}
+      <button
+        onClick={() => handleAnswer(selected)}
+        disabled={!selected || checking}
+        style={{
+          marginTop: 20,
+          width: "100%",
+          padding: 14,
+          borderRadius: 10,
+          background: "#007bff",
+          color: "#fff",
+          border: "none",
+        }}
+      >
+        Check
+      </button>
     </div>
   );
 }
