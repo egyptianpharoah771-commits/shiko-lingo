@@ -11,7 +11,7 @@ function shuffleArray(array) {
   return arr;
 }
 
-// ✅ FIX: remove duplicates by word (NOT id)
+// ✅ remove duplicates by word
 function removeDuplicates(words = []) {
   const seen = new Set();
 
@@ -42,34 +42,55 @@ export default function ReviewWordsPage() {
 
   const [score, setScore] = useState(0);
   const [progress, setProgress] = useState(0);
-  const TOTAL = 20;
+  const TOTAL = 60;
   const [finished, setFinished] = useState(false);
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // ✅ MIXED REVIEW (A1 → C1)
+  // 🎯 توزيع الصعوبة
+  const LEVEL_DISTRIBUTION = {
+    A1: 0.1,
+    A2: 0.15,
+    B1: 0.25,
+    B2: 0.25,
+    C1: 0.25,
+  };
+
+  // ✅ MIXED + HARD MODE
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
 
-      const allLevels = Object.values(VOCABULARY_DATA || {});
+      const result = [];
 
-      const allWords = allLevels
-        .flatMap((level) => Object.values(level))
-        .flatMap((unit) => unit?.content?.items || [])
-        .map((w, index) => ({
-          id: `${w.word}_${index}`, // unique stable id
-          word: w.word,
-          definition:
-            w.definition_easy ||
-            w.definition ||
-            w.meaning ||
-            "",
-        }));
+      Object.entries(LEVEL_DISTRIBUTION).forEach(([level, ratio]) => {
+        const levelData = VOCABULARY_DATA?.[level];
+        if (!levelData) return;
 
-      const prepared = shuffleArray(removeDuplicates(allWords));
+        const words = Object.values(levelData)
+          .flatMap((unit) => unit?.content?.items || [])
+          .map((w, index) => ({
+            id: `${level}_${w.word}_${index}`,
+            word: w.word,
+            definition:
+              w.definition_hard ||
+              w.definition ||
+              w.definition_easy ||
+              w.meaning ||
+              "",
+            level,
+          }));
 
-      setWords(prepared);
+        const cleaned = removeDuplicates(words);
+        const count = Math.floor(TOTAL * ratio);
+        const picked = shuffleArray(cleaned).slice(0, count);
+
+        result.push(...picked);
+      });
+
+      const finalWords = shuffleArray(result);
+
+      setWords(finalWords);
     } catch {
       setWords([]);
     } finally {
@@ -111,7 +132,7 @@ export default function ReviewWordsPage() {
     }
   };
 
-  // ✅ NEXT (WITH REVIEW QUEUE)
+  // ✅ NEXT
   const handleNext = () => {
     if (progress + 1 >= TOTAL) {
       setFinished(true);
@@ -174,7 +195,7 @@ export default function ReviewWordsPage() {
       <h2>Mixed Review (A1–C1)</h2>
 
       <p>
-        {progress + 1} / {TOTAL}
+        {Math.min(progress + 1, TOTAL)} / {TOTAL}
       </p>
 
       <div style={{ marginBottom: 20 }}>
