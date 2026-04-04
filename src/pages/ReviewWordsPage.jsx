@@ -42,7 +42,7 @@ export default function ReviewWordsPage() {
 
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [feedback, setFeedback] = useState(null); // ✅ رجعناه
+  const [feedback, setFeedback] = useState(null);
 
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -85,7 +85,11 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  const currentWord = sessionWords[currentIndex];
+  // ✅ SAFE ACCESS
+  const currentWord =
+    currentIndex < sessionWords.length
+      ? sessionWords[currentIndex]
+      : null;
 
   // ---------- options ----------
   const options = useMemo(() => {
@@ -111,7 +115,14 @@ export default function ReviewWordsPage() {
       playCorrect();
     } else {
       playWrong();
-      setSessionWords((prev) => [...prev, currentWord]);
+
+      // ✅ SAFE append
+      setSessionWords((prev) => {
+        if (!prev.find((w) => w.id === currentWord.id)) {
+          return [...prev, currentWord];
+        }
+        return prev;
+      });
     }
   };
 
@@ -119,8 +130,14 @@ export default function ReviewWordsPage() {
   const handleNext = () => {
     const nextIndex = currentIndex + 1;
 
-    // ✅ FIX الحقيقي
+    // ✅ FINAL FIX
     if (nextIndex >= TOTAL) {
+      setFinished(true);
+      return;
+    }
+
+    // ✅ GUARANTEE index safe
+    if (nextIndex >= sessionWords.length) {
       setFinished(true);
       return;
     }
@@ -146,7 +163,7 @@ export default function ReviewWordsPage() {
   }
 
   if (!currentWord) {
-    return <div style={{ padding: 20 }}>Loading...</div>;
+    return <div style={{ padding: 20 }}>Preparing next...</div>;
   }
 
   return (
@@ -166,10 +183,10 @@ export default function ReviewWordsPage() {
 
           if (showResult) {
             if (opt.id === currentWord.id) {
-              background = "#d4edda"; // ✅ أخضر
+              background = "#d4edda";
               border = "2px solid #28a745";
             } else if (selected?.id === opt.id) {
-              background = "#f8d7da"; // ❌ أحمر
+              background = "#f8d7da";
               border = "2px solid #dc3545";
             }
           } else if (selected?.id === opt.id) {
