@@ -19,12 +19,10 @@ function removeDuplicates(words = []) {
 
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
-  const audioRef = useRef(null);
 
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lastIndex, setLastIndex] = useState(null);
-  const [mode, setMode] = useState("mcq");
 
   const [selected, setSelected] = useState(null);
   const [checking, setChecking] = useState(false);
@@ -57,7 +55,6 @@ export default function ReviewWordsPage() {
             w.definition ||
             w.meaning ||
             "",
-          audio: w.audio || "",
         }))
       );
 
@@ -75,17 +72,7 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔊 AUDIO FIX (always fresh instance)
-  const playAudio = () => {
-    if (!currentWord?.audio) return;
-
-    try {
-      const audio = new Audio(currentWord.audio);
-      audio.play().catch(() => {});
-    } catch {}
-  };
-
-  // 🔥 CLEAN OPTIONS (English only)
+  // 🔥 OPTIONS (MCQ only)
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -96,20 +83,17 @@ export default function ReviewWordsPage() {
 
     return [...wrong, currentWord]
       .sort(() => 0.5 - Math.random())
-      .map((w) => w.word); // 🔥 كلها English
+      .map((w) => w.word);
   }, [currentWord, words]);
 
   useEffect(() => {
-    if (mode === "mcq" || mode === "listen") {
-      setOptions(generateOptions());
-    }
-  }, [currentWord, mode, generateOptions]);
+    setOptions(generateOptions());
+  }, [currentWord, generateOptions]);
 
   const handleSelect = (opt) => {
     if (checking) return;
     setSelected(opt);
 
-    // 🔊 select sound
     try {
       new Audio("/sounds/select.mp3").play();
     } catch {}
@@ -149,22 +133,13 @@ export default function ReviewWordsPage() {
 
       return updated;
     });
-
-    setMode((prev) =>
-      prev === "mcq" ? "listen" : "mcq"
-    );
   };
 
-  const handleAnswer = (answer) => {
-    if (!currentWord || checking) return;
-
-    const correctAnswer =
-      mode === "mcq" || mode === "listen"
-        ? currentWord.word
-        : currentWord.word;
+  const handleAnswer = () => {
+    if (!selected || checking || !currentWord) return;
 
     const isCorrect =
-      normalize(answer) === normalize(correctAnswer);
+      normalize(selected) === normalize(currentWord.word);
 
     setChecking(true);
     setFeedback(isCorrect ? "correct" : "wrong");
@@ -204,18 +179,12 @@ export default function ReviewWordsPage() {
 
       <p>{progress} / {TOTAL}</p>
 
-      {/* 🔥 QUESTION */}
-      {mode === "mcq" && (
-        <h3 style={{ marginBottom: 15 }}>{currentWord.definition}</h3>
-      )}
+      {/* السؤال */}
+      <h3 style={{ marginBottom: 15 }}>
+        {currentWord.definition}
+      </h3>
 
-      {mode === "listen" && (
-        <button onClick={playAudio} style={{ marginBottom: 15 }}>
-          🔊 Play Audio
-        </button>
-      )}
-
-      {/* 🔥 OPTIONS */}
+      {/* الاختيارات */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {options.map((opt, i) => {
           const isSelected = selected === opt;
@@ -252,7 +221,7 @@ export default function ReviewWordsPage() {
       </div>
 
       <button
-        onClick={() => handleAnswer(selected)}
+        onClick={handleAnswer}
         disabled={!selected || checking}
         style={{
           marginTop: 20,
