@@ -21,31 +21,24 @@ function removeDuplicates(words = []) {
   });
 }
 
-// ✅ clean options (no duplicates)
 function generateOptions(correctWord, allWords) {
   if (!correctWord) return [];
 
-  const sameLevel = allWords.filter(
-    (w) => w.level === correctWord.level && w.id !== correctWord.id
-  );
+  const pool = allWords.filter((w) => w.id !== correctWord.id);
 
-  let pool =
-    sameLevel.length >= 3
-      ? sameLevel
-      : allWords.filter((w) => w.id !== correctWord.id);
-
-  const uniquePool = [];
+  const unique = [];
   const seen = new Set();
 
   for (const w of pool) {
     const key = w.word.toLowerCase().trim();
     if (!seen.has(key)) {
       seen.add(key);
-      uniquePool.push(w);
+      unique.push(w);
     }
   }
 
-  const picked = shuffleArray(uniquePool).slice(0, 3);
+  const picked = shuffleArray(unique).slice(0, 3);
+
   return shuffleArray([correctWord, ...picked]);
 }
 
@@ -65,7 +58,6 @@ export default function ReviewWordsPage() {
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // ✅ FIX: global pool (no starvation)
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
@@ -93,11 +85,6 @@ export default function ReviewWordsPage() {
           w.word.length > 2
       );
 
-      if (!cleaned.length) {
-        setWords([]);
-        return;
-      }
-
       const shuffled = shuffleArray(cleaned);
       const selected = shuffled.slice(0, TOTAL);
 
@@ -116,8 +103,13 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
+  // 🔥 FIX: reset options properly
   useEffect(() => {
-    if (!currentWord) return;
+    if (!currentWord) {
+      setOptions([]);
+      return;
+    }
+
     setOptions(generateOptions(currentWord, words));
   }, [currentWord, words]);
 
@@ -166,8 +158,12 @@ export default function ReviewWordsPage() {
         return updated.filter((i) => i.word.id !== ready.word.id);
       }
 
-      // ✅ sequential flow (no repetition)
-      setCurrentIndex((prev) => prev + 1);
+      // 🔥 FIX: guard index
+      setCurrentIndex((prev) => {
+        const next = prev + 1;
+        return next >= words.length ? words.length - 1 : next;
+      });
+
       return updated;
     });
   };
@@ -176,19 +172,7 @@ export default function ReviewWordsPage() {
     return (
       <div style={{ padding: 20 }}>
         <h2>Review Complete</h2>
-        <p>
-          Score: {score} / {TOTAL}
-        </p>
-        <button
-          onClick={() => {
-            setProgress(0);
-            setScore(0);
-            setFinished(false);
-            setCurrentIndex(0);
-          }}
-        >
-          Restart
-        </button>
+        <p>Score: {score} / {TOTAL}</p>
       </div>
     );
   }
@@ -196,66 +180,39 @@ export default function ReviewWordsPage() {
   if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
   if (!words.length) return <div style={{ padding: 20 }}>No words</div>;
 
+  // 🔥 FIX: block render لو مفيش currentWord
+  if (!currentWord) {
+    return <div style={{ padding: 20 }}>Loading next question...</div>;
+  }
+
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
-      <h2>Mixed Review (A1–C1)</h2>
+      <h2>Review</h2>
 
-      <p>
-        {Math.min(progress + 1, TOTAL)} / {TOTAL}
-      </p>
+      <p>{Math.min(progress + 1, TOTAL)} / {TOTAL}</p>
 
-      <div style={{ marginBottom: 20 }}>
-        <p>{currentWord?.definition}</p>
-      </div>
+      <p>{currentWord.definition}</p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {options.map((opt) => {
-          const isSelected = selected?.id === opt.id;
-          const isCorrect = opt.id === currentWord?.id;
-
-          let background = "#f1f1f1";
-
-          if (showResult) {
-            if (isCorrect) background = "#4caf50";
-            else if (isSelected) background = "#f44336";
-          } else if (isSelected) {
-            background = "#ddd";
-          }
-
-          return (
-            <button
-              key={opt.id}
-              onClick={() => !showResult && setSelected(opt)}
-              style={{
-                padding: 12,
-                border: "none",
-                cursor: "pointer",
-                background,
-                color: showResult ? "#fff" : "#000",
-              }}
-            >
-              {opt.word}
-            </button>
-          );
-        })}
-      </div>
-
-      <div style={{ marginTop: 20 }}>
-        {!showResult ? (
-          <button onClick={handleCheck} disabled={!selected}>
-            Check
+      <div>
+        {options.map((opt) => (
+          <button
+            key={opt.id}
+            onClick={() => !showResult && setSelected(opt)}
+          >
+            {opt.word}
           </button>
-        ) : (
-          <button onClick={handleNext}>Next</button>
-        )}
+        ))}
       </div>
 
-      <div style={{ marginTop: 20 }}>
-        <strong>Score: {score}</strong>
-      </div>
+      {!showResult ? (
+        <button onClick={handleCheck} disabled={!selected}>
+          Check
+        </button>
+      ) : (
+        <button onClick={handleNext}>Next</button>
+      )}
 
-      {feedback === "correct" && <p>Correct</p>}
-      {feedback === "wrong" && <p>Wrong</p>}
+      <p>Score: {score}</p>
     </div>
   );
 }
