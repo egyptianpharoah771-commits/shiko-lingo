@@ -28,6 +28,13 @@ function removeDuplicates(words = []) {
   });
 }
 
+function playSelect() {
+  try {
+    const audio = new Audio("/sounds/select.mp3");
+    audio.play();
+  } catch {}
+}
+
 export default function ReviewWordsPage() {
   const [allWords, setAllWords] = useState([]);
   const [sessionWords, setSessionWords] = useState([]);
@@ -49,7 +56,7 @@ export default function ReviewWordsPage() {
         .flatMap(([level, levelData]) =>
           Object.entries(levelData).flatMap(([unitId, unit]) =>
             (unit?.content?.items || []).map((w) => ({
-              id: `${level}_${unitId}_${normalize(w.word)}`, // ✅ FIXED
+              id: `${level}_${unitId}_${normalize(w.word)}`,
               word: w.word,
               definition:
                 w.definition_hard ||
@@ -79,12 +86,11 @@ export default function ReviewWordsPage() {
 
   const currentWord = sessionWords[currentIndex];
 
-  // ---------- stable options ----------
+  // ---------- options ----------
   const options = useMemo(() => {
     if (!currentWord) return [];
 
     const pool = allWords.filter((w) => w.id !== currentWord.id);
-
     const picked = shuffleArray(pool).slice(0, 3);
 
     return shuffleArray([currentWord, ...picked]);
@@ -111,7 +117,8 @@ export default function ReviewWordsPage() {
   const handleNext = () => {
     const nextIndex = currentIndex + 1;
 
-    if (nextIndex >= TOTAL) {
+    // ✅ FIX الحقيقي
+    if (nextIndex >= sessionWords.length || nextIndex >= TOTAL) {
       setFinished(true);
       return;
     }
@@ -145,28 +152,49 @@ export default function ReviewWordsPage() {
 
       <p>{currentIndex + 1} / {TOTAL}</p>
 
-      <p>{currentWord.definition}</p>
+      <div style={{ marginBottom: 20 }}>
+        <strong>{currentWord.definition}</strong>
+      </div>
 
-      <div>
+      {/* ✅ UI FIX */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {options.map((opt) => (
           <button
             key={opt.id}
-            onClick={() => !showResult && setSelected(opt)}
+            onClick={() => {
+              if (!showResult) {
+                setSelected(opt);
+                playSelect();
+              }
+            }}
+            style={{
+              padding: 12,
+              borderRadius: 8,
+              border:
+                selected?.id === opt.id
+                  ? "2px solid #007bff"
+                  : "1px solid #ccc",
+              background:
+                selected?.id === opt.id ? "#e7f1ff" : "white",
+              cursor: "pointer",
+            }}
           >
             {opt.word}
           </button>
         ))}
       </div>
 
-      {!showResult ? (
-        <button onClick={handleCheck} disabled={!selected}>
-          Check
-        </button>
-      ) : (
-        <button onClick={handleNext}>Next</button>
-      )}
+      <div style={{ marginTop: 20 }}>
+        {!showResult ? (
+          <button onClick={handleCheck} disabled={!selected}>
+            Check
+          </button>
+        ) : (
+          <button onClick={handleNext}>Next</button>
+        )}
+      </div>
 
-      <p>Score: {score}</p>
+      <p style={{ marginTop: 10 }}>Score: {score}</p>
     </div>
   );
 }
