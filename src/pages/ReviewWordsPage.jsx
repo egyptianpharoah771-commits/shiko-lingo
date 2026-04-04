@@ -42,6 +42,7 @@ export default function ReviewWordsPage() {
 
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
+  const [feedback, setFeedback] = useState(null); // ✅ رجعناه
 
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -103,6 +104,7 @@ export default function ReviewWordsPage() {
     const isCorrect = selected.id === currentWord.id;
 
     setShowResult(true);
+    setFeedback(isCorrect ? "correct" : "wrong");
 
     if (isCorrect) {
       setScore((s) => s + 1);
@@ -118,7 +120,7 @@ export default function ReviewWordsPage() {
     const nextIndex = currentIndex + 1;
 
     // ✅ FIX الحقيقي
-    if (nextIndex >= sessionWords.length || nextIndex >= TOTAL) {
+    if (nextIndex >= TOTAL) {
       setFinished(true);
       return;
     }
@@ -126,6 +128,7 @@ export default function ReviewWordsPage() {
     setCurrentIndex(nextIndex);
     setSelected(null);
     setShowResult(false);
+    setFeedback(null);
   };
 
   // ---------- UI ----------
@@ -156,32 +159,45 @@ export default function ReviewWordsPage() {
         <strong>{currentWord.definition}</strong>
       </div>
 
-      {/* ✅ UI FIX */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {options.map((opt) => (
-          <button
-            key={opt.id}
-            onClick={() => {
-              if (!showResult) {
-                setSelected(opt);
-                playSelect();
-              }
-            }}
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              border:
-                selected?.id === opt.id
-                  ? "2px solid #007bff"
-                  : "1px solid #ccc",
-              background:
-                selected?.id === opt.id ? "#e7f1ff" : "white",
-              cursor: "pointer",
-            }}
-          >
-            {opt.word}
-          </button>
-        ))}
+        {options.map((opt) => {
+          let background = "white";
+          let border = "1px solid #ccc";
+
+          if (showResult) {
+            if (opt.id === currentWord.id) {
+              background = "#d4edda"; // ✅ أخضر
+              border = "2px solid #28a745";
+            } else if (selected?.id === opt.id) {
+              background = "#f8d7da"; // ❌ أحمر
+              border = "2px solid #dc3545";
+            }
+          } else if (selected?.id === opt.id) {
+            background = "#e7f1ff";
+            border = "2px solid #007bff";
+          }
+
+          return (
+            <button
+              key={opt.id}
+              onClick={() => {
+                if (!showResult) {
+                  setSelected(opt);
+                  playSelect();
+                }
+              }}
+              style={{
+                padding: 12,
+                borderRadius: 8,
+                border,
+                background,
+                cursor: "pointer",
+              }}
+            >
+              {opt.word}
+            </button>
+          );
+        })}
       </div>
 
       <div style={{ marginTop: 20 }}>
