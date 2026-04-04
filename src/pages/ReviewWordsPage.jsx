@@ -12,18 +12,19 @@ function buildId(level, unitId, word) {
   return `${level}_${unitId}_${normalize(word)}`;
 }
 
-function deterministicShuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(i / 2);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+// 🔥 deterministic shuffle (stable)
+function stableShuffle(arr, seed) {
+  const array = [...arr];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = (i + seed) % array.length;
+    [array[i], array[j]] = [array[j], array[i]];
   }
-  return arr;
+  return array;
 }
 
 export default function ReviewWordsPage() {
   const [pool, setPool] = useState([]);
-  const [session, setSession] = useState(null); // 🔥 مهم: null مش []
+  const [session, setSession] = useState(null);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -31,7 +32,6 @@ export default function ReviewWordsPage() {
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
-  // ✅ Build pool + session مع بعض (atomic)
   useEffect(() => {
     try {
       let words = [];
@@ -56,11 +56,10 @@ export default function ReviewWordsPage() {
         });
       });
 
-      const shuffled = deterministicShuffle(words);
-      const initialSession = shuffled.slice(0, TOTAL);
+      const initialSession = stableShuffle(words, 7).slice(0, TOTAL);
 
       setPool(words);
-      setSession(initialSession); // 🔥 guaranteed ready together
+      setSession(initialSession);
     } catch (err) {
       console.error(err);
     } finally {
@@ -68,18 +67,33 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  // ❌ مفيش useMemo هنا — مشتقة مباشرة
   const currentWord = session ? session[index] : null;
 
+  // ✅ FIXED options
   const options = useMemo(() => {
     if (!currentWord || pool.length < 4) return [];
 
-    const distractors = pool
-      .filter((w) => w.id !== currentWord.id)
-      .slice(0, 3);
+    // 🔥 dynamic distractors (مش أول 3)
+    const baseIndex = index * 3;
 
-    return [...distractors, currentWord];
-  }, [currentWord, pool]);
+    const distractors = [];
+    for (let i = 0; i < pool.length && distractors.length < 3; i++) {
+      const candidate = pool[(baseIndex + i) % pool.length];
+      if (candidate.id !== currentWord.id) {
+        distractors.push(candidate);
+      }
+    }
+
+    const combined = [...distractors, currentWord];
+
+    // 🔥 shuffle options (fix correct always last)
+    return stableShuffle(combined, index + 1);
+  }, [currentWord, pool, index]);
+
+  const handleSelect = (opt) => {
+    if (showResult) return;
+    setSelected(opt);
+  };
 
   const handleCheck = () => {
     if (!selected || showResult || !currentWord) return;
@@ -102,14 +116,12 @@ export default function ReviewWordsPage() {
     setShowResult(false);
   };
 
-  // ✅ completion الوحيد
   useEffect(() => {
     if (index >= TOTAL) {
       setFinished(true);
     }
   }, [index]);
 
-  // 🔥 Guards صحيحة
   if (loading || !session) {
     return <div style={{ textAlign: "center", padding: 50 }}>Preparing...</div>;
   }
@@ -153,7 +165,7 @@ export default function ReviewWordsPage() {
           <button
             key={opt.id}
             disabled={showResult}
-            onClick={() => setSelected(opt)}
+            onClick={() => handleSelect(opt)}
             style={{
               padding: 15,
               borderRadius: 10,
