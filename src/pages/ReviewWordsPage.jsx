@@ -2,43 +2,65 @@ import { useEffect, useState, useMemo } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
-const TARGET_SCORE = 60; 
+const TOTAL = 60;
+
+function normalize(word) {
+  return word?.toLowerCase().trim();
+}
+
+function buildId(level, unitId, word) {
+  return `${level}_${unitId}_${normalize(word)}`;
+}
+
+function deterministicShuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(i / 2);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 export default function ReviewWordsPage() {
-  const [allWords, setAllWords] = useState([]);
-  const [sessionQueue, setSessionQueue] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [pool, setPool] = useState([]);
+  const [session, setSession] = useState([]);
+  const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
+  // 🔹 Build clean pool (NO random IDs, NO collisions)
   useEffect(() => {
     try {
-      let pool = [];
-      // تجميع كل الكلمات من كل المستويات بدون استثناء
+      let words = [];
+
       Object.entries(VOCABULARY_DATA).forEach(([level, units]) => {
         Object.entries(units).forEach(([unitId, unit]) => {
-          (unit.content?.items || []).forEach((w, i) => {
+          (unit.content?.items || []).forEach((w) => {
             if (w.word && (w.definition || w.definition_hard)) {
-              pool.push({
-                // صنع ID فريد يمنع تداخل الكلمات
-                id: `review_${level}_${unitId}_${i}_${Math.random()}`, 
-                word: w.word,
-                definition: w.definition_hard || w.definition_medium || w.definition || "",
-                level
+              words.push({
+                id: buildId(level, unitId, w.word),
+                word: normalize(w.word),
+                definition:
+                  w.definition_hard ||
+                  w.definition_medium ||
+                  w.definition ||
+                  "",
+                level,
+                unit: unitId,
               });
             }
           });
         });
       });
 
-      // خلط عشوائي واختيار كلمات فريدة
-      const shuffled = [...pool].sort(() => Math.random() - 0.5);
-      // تأكد إننا بناخد كلمات كتير عشان لو المستخدم غلط نلاقي "مخزون"
-      setAllWords(shuffled); 
-      setSessionQueue(shuffled.slice(0, TARGET_SCORE));
+      const shuffled = deterministicShuffle(words);
+      const initialSession = shuffled.slice(0, TOTAL);
+
+      setPool(words);
+      setSession(initialSession);
     } catch (err) {
       console.error(err);
     } finally {
@@ -46,66 +68,84 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  const currentWord = sessionQueue[currentIndex];
+  const currentWord = session[index] || null;
 
+  // 🔹 Stable options (NO random per render)
   const options = useMemo(() => {
-    if (!currentWord || allWords.length < 4) return [];
-    // نجيب خيارات غلط من الـ pool الكبير
-    const distractors = allWords
-      .filter(w => w.word.toLowerCase() !== currentWord.word.toLowerCase())
-      .sort(() => Math.random() - 0.5)
+    if (!currentWord || pool.length < 4) return [];
+
+    const distractors = pool
+      .filter((w) => w.id !== currentWord.id)
       .slice(0, 3);
-    return [...distractors, currentWord].sort(() => Math.random() - 0.5);
-  }, [currentWord, allWords]);
+
+    return [...distractors, currentWord];
+  }, [currentWord, pool]);
 
   const handleCheck = () => {
     if (!selected || showResult) return;
-    const isCorrect = selected.word === currentWord.word;
+
+    const isCorrect = selected.id === currentWord.id;
     setShowResult(true);
 
     if (isCorrect) {
-      setScore(s => s + 1);
+      setScore((s) => s + 1);
       playCorrect();
     } else {
       playWrong();
-      // أهم حتة: الكلمة اللي غلطت فيها بتنزل في آخر الطابور عشان تظهر تاني
-      setSessionQueue(prev => [...prev, { ...currentWord, id: currentWord.id + "_retry" }]);
+      // append wrong word safely
+      setSession((prev) => [...prev, currentWord]);
     }
   };
 
   const handleNext = () => {
-    // التعديل السحري: الاختبار يخلص بس لو جاوبنا 60 صح أو الطابور خلص فعلياً
-    if (currentIndex + 1 >= sessionQueue.length) {
-      setFinished(true);
-    } else {
-      setCurrentIndex(prev => prev + 1);
-      setSelected(null);
-      setShowResult(false);
-    }
+    setIndex((prev) => prev + 1);
+    setSelected(null);
+    setShowResult(false);
   };
 
-  if (loading) return <div style={{textAlign:'center', padding:50}}>جاري تجهيز الـ 60 سؤال...</div>;
-  
-  if (finished || (score >= TARGET_SCORE && showResult === false)) {
+  // 🔹 ONLY completion rule
+  useEffect(() => {
+    if (index >= TOTAL) {
+      setFinished(true);
+    }
+  }, [index]);
+
+  if (loading)
+    return <div style={{ textAlign: "center", padding: 50 }}>Preparing review...</div>;
+
+  if (finished) {
     return (
-      <div style={{textAlign:'center', padding:50}}>
-        <h2>Review Complete! 🎉</h2>
-        <p>لقد أتممت المراجعة بنتيجة: {score} من {TARGET_SCORE}</p>
-        <button onClick={() => window.location.reload()}>إعادة المحاولة</button>
+      <div style={{ textAlign: "center", padding: 50 }}>
+        <h2>Review Complete 🎉</h2>
+        <p>
+          {score} / {TOTAL}
+        </p>
+        <button onClick={() => window.location.reload()}>Retry</button>
       </div>
     );
   }
 
-  if (!currentWord) return null;
+  if (!currentWord)
+    return <div style={{ textAlign: "center", padding: 50 }}>Preparing...</div>;
 
   return (
     <div style={{ padding: 20, maxWidth: 500, margin: "auto", textAlign: "center" }}>
-      <div style={{marginBottom: 20, fontSize: '1.1rem'}}>
-         السؤال الحالي: <strong>{currentIndex + 1}</strong> | النتيجة: <strong>{score}</strong>
+      <div style={{ marginBottom: 20 }}>
+        {Math.min(index + 1, TOTAL)} / {TOTAL} | Score: {score}
       </div>
 
-      <div style={{ background: "#f9f9f9", padding: 30, borderRadius: 15, marginBottom: 20, border: '1px solid #ddd' }}>
-        <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{currentWord.definition}</p>
+      <div
+        style={{
+          background: "#f9f9f9",
+          padding: 30,
+          borderRadius: 15,
+          marginBottom: 20,
+          border: "1px solid #ddd",
+        }}
+      >
+        <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>
+          {currentWord.definition}
+        </p>
       </div>
 
       <div style={{ display: "grid", gap: 10 }}>
@@ -115,11 +155,20 @@ export default function ReviewWordsPage() {
             disabled={showResult}
             onClick={() => setSelected(opt)}
             style={{
-              padding: 15, borderRadius: 10, cursor: "pointer", border: "2px solid",
+              padding: 15,
+              borderRadius: 10,
+              cursor: "pointer",
+              border: "2px solid",
               borderColor: selected?.id === opt.id ? "#007bff" : "#eee",
-              backgroundColor: showResult 
-                ? (opt.word === currentWord.word ? "#d4edda" : (selected?.id === opt.id ? "#f8d7da" : "white"))
-                : (selected?.id === opt.id ? "#e7f1ff" : "white")
+              backgroundColor: showResult
+                ? opt.id === currentWord.id
+                  ? "#d4edda"
+                  : selected?.id === opt.id
+                  ? "#f8d7da"
+                  : "white"
+                : selected?.id === opt.id
+                ? "#e7f1ff"
+                : "white",
             }}
           >
             {opt.word}
@@ -131,11 +180,18 @@ export default function ReviewWordsPage() {
         onClick={showResult ? handleNext : handleCheck}
         disabled={!selected}
         style={{
-          marginTop: 30, width: "100%", padding: 15, background: "#007bff", color: "white", 
-          border: "none", borderRadius: 10, fontSize: '1.1rem', cursor: 'pointer'
+          marginTop: 30,
+          width: "100%",
+          padding: 15,
+          background: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: 10,
+          fontSize: "1.1rem",
+          cursor: "pointer",
         }}
       >
-        {showResult ? "السؤال التالي" : "تحقق من الإجابة"}
+        {showResult ? "Next" : "Check"}
       </button>
     </div>
   );
