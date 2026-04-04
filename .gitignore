@@ -38,10 +38,18 @@ project_structure.txt
 # ===============================
 # Audio / Heavy Assets
 # ===============================
-public/sounds/
+# ❌ كنا بنمنع الصوت بالكامل
+# public/sounds/
+
+# ✅ نسمح بالصوت
+!public/sounds/
+!public/sounds/**
+
 *.mp4
 
-# ❗ IMPORTANT: allow ONLY listening data + audio
+# ===============================
+# Listening (مسموح)
+# ===============================
 !public/listening/
 !public/listening/**
 

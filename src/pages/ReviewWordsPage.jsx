@@ -1,204 +1,149 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
-const TOTAL = 60;
-
-// ---------- utils ----------
-function shuffleArray(array) {
-  return [...array].sort(() => Math.random() - 0.5);
-}
-
-function normalize(word) {
-  return word?.toLowerCase().trim();
-}
-
-function playSelect() {
-  try {
-    new Audio("/sounds/select.mp3").play();
-  } catch {}
-}
+const TOTAL_TO_WIN = 60; // الهدف هو الإجابة على 60 كلمة صح
 
 export default function ReviewWordsPage() {
-  const queueRef = useRef([]);
-
   const [allWords, setAllWords] = useState([]);
-  const [currentWord, setCurrentWord] = useState(null);
-
-  const [cursor, setCursor] = useState(0);
-  const [progress, setProgress] = useState(0);
-
+  const [sessionQueue, setSessionQueue] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
-
-  const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
-  // ---------- init ----------
+  // --- تجميع الداتا مرة واحدة عند البداية ---
   useEffect(() => {
     try {
-      setLoading(true);
+      let pool = [];
+      Object.entries(VOCABULARY_DATA).forEach(([level, units]) => {
+        Object.entries(units).forEach(([unitId, unit]) => {
+          (unit.content?.items || []).forEach((w, i) => {
+            if (w.word && (w.definition || w.definition_hard)) {
+              pool.push({
+                // ID فريد جداً عشان ما يحصلش تكرار
+                id: `${level}_${unitId}_${i}_${w.word.toLowerCase().trim()}`,
+                word: w.word,
+                definition: w.definition_hard || w.definition_medium || w.definition || "",
+                level
+              });
+            }
+          });
+        });
+      });
 
-      const words = Object.entries(VOCABULARY_DATA || {})
-        .flatMap(([level, units]) =>
-          Object.entries(units).flatMap(([unitId, unit]) =>
-            (unit?.content?.items || []).map((w, i) => ({
-              id: `${level}_${unitId}_${i}_${normalize(w.word)}`,
-              word: w.word,
-              definition:
-                w.definition_hard ||
-                w.definition_medium ||
-                w.definition ||
-                "",
-            }))
-          )
-        )
-        .filter((w) => w.word && w.definition);
-
-      const shuffled = shuffleArray(words);
-      const initial = shuffled.slice(0, TOTAL);
-
-      queueRef.current = [...initial];
-
-      setAllWords(words);
-      setCurrentWord(initial[0]);
-      setCursor(0);
-      setProgress(0);
-    } catch {
-      setAllWords([]);
+      // خلط الكل واختيار أول 60 عشوائياً من كل المستويات
+      const shuffledFull = [...pool].sort(() => Math.random() - 0.5);
+      const uniquePool = Array.from(new Map(shuffledFull.map(item => [item.word.toLowerCase().trim(), item])).values());
+      
+      setAllWords(uniquePool);
+      setSessionQueue(uniquePool.slice(0, TOTAL_TO_WIN));
+    } catch (err) {
+      console.error("Error loading vocabulary:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // ---------- options ----------
+  // الكلمة الحالية مشتقة دائماً من الـ Index والـ Queue
+  const currentWord = sessionQueue[currentIndex];
+
+  // توليد الخيارات (تتحدث تلقائياً مع تغير الكلمة)
   const options = useMemo(() => {
-    if (!currentWord) return [];
-
-    const pool = allWords.filter((w) => w.id !== currentWord.id);
-    const picked = shuffleArray(pool).slice(0, 3);
-
-    return shuffleArray([currentWord, ...picked]);
+    if (!currentWord || allWords.length < 4) return [];
+    const wrongOnes = allWords
+      .filter(w => w.word.toLowerCase() !== currentWord.word.toLowerCase())
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3);
+    return [...wrongOnes, currentWord].sort(() => Math.random() - 0.5);
   }, [currentWord, allWords]);
 
-  // ---------- check ----------
   const handleCheck = () => {
-    if (!selected || showResult || !currentWord) return;
+    if (!selected || showResult) return;
 
-    const isCorrect = selected.id === currentWord.id;
-
+    const isCorrect = selected.word === currentWord.word;
     setShowResult(true);
 
     if (isCorrect) {
-      setScore((s) => s + 1);
+      setScore(s => s + 1);
       playCorrect();
     } else {
       playWrong();
-      queueRef.current.push(currentWord); // 🔥 append safely
+      // لو غلط: ضيف الكلمة في آخر الطابور عشان تظهر له تاني
+      setSessionQueue(prev => [...prev, currentWord]);
     }
   };
 
-  // ---------- next ----------
   const handleNext = () => {
-    const nextProgress = progress + 1;
-
-    if (nextProgress >= TOTAL) {
+    // لو جاوبنا صح على 60 كلمة مختلفة أو وصلنا لآخر الطابور
+    if (score >= TOTAL_TO_WIN || currentIndex + 1 >= sessionQueue.length) {
       setFinished(true);
-      return;
+    } else {
+      setCurrentIndex(prev => prev + 1);
+      setSelected(null);
+      setShowResult(false);
     }
-
-    const nextCursor = cursor + 1;
-    const nextWord = queueRef.current[nextCursor];
-
-    if (!nextWord) {
-      setFinished(true);
-      return;
-    }
-
-    setCursor(nextCursor);
-    setCurrentWord(nextWord);
-    setProgress(nextProgress);
-
-    setSelected(null);
-    setShowResult(false);
   };
 
-  // ---------- UI ----------
-  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
-  if (!currentWord) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (loading) return <div style={centerStyle}>Loading vocabulary...</div>;
+  if (finished) return (
+    <div style={centerStyle}>
+      <h2>Review Complete! 🎉</h2>
+      <p style={{fontSize: '1.5rem'}}>Final Score: {score} / {TOTAL_TO_WIN}</p>
+      <button onClick={() => window.location.reload()} style={btnStyle}>Restart</button>
+    </div>
+  );
 
-  if (finished) {
-    return (
-      <div style={{ padding: 20 }}>
-        <h2>Review Complete</h2>
-        <p>Score: {score} / {TOTAL}</p>
-      </div>
-    );
-  }
+  if (!currentWord) return null;
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
-      <h2>Review</h2>
-
-      <p>{progress + 1} / {TOTAL}</p>
-
-      <div style={{ marginBottom: 20 }}>
-        <strong>{currentWord.definition}</strong>
+    <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <span>Question: {currentIndex + 1}</span> | <span>Correct: {score}</span>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {options.map((opt) => {
-          let background = "white";
-          let border = "1px solid #ccc";
-
-          if (showResult) {
-            if (opt.id === currentWord.id) {
-              background = "#d4edda";
-              border = "2px solid #28a745";
-            } else if (selected?.id === opt.id) {
-              background = "#f8d7da";
-              border = "2px solid #dc3545";
-            }
-          } else if (selected?.id === opt.id) {
-            background = "#e7f1ff";
-            border = "2px solid #007bff";
-          }
-
-          return (
-            <button
-              key={opt.id}
-              onClick={() => {
-                if (!showResult) {
-                  setSelected(opt);
-                  playSelect();
-                }
-              }}
-              style={{
-                padding: 12,
-                borderRadius: 8,
-                border,
-                background,
-                cursor: "pointer",
-              }}
-            >
-              {opt.word}
-            </button>
-          );
-        })}
+      <div style={cardStyle}>
+        <p style={{ fontSize: "1.1rem", fontWeight: "600" }}>{currentWord.definition}</p>
       </div>
 
-      <div style={{ marginTop: 20 }}>
-        {!showResult ? (
-          <button onClick={handleCheck} disabled={!selected}>
-            Check
+      <div style={{ display: "grid", gap: "10px" }}>
+        {options.map((opt) => (
+          <button
+            key={opt.id}
+            disabled={showResult}
+            onClick={() => setSelected(opt)}
+            style={{
+              padding: "15px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              border: "2px solid",
+              borderColor: selected?.id === opt.id ? "#007bff" : "#eee",
+              backgroundColor: showResult 
+                ? (opt.word === currentWord.word ? "#d4edda" : (selected?.id === opt.id ? "#f8d7da" : "white"))
+                : (selected?.id === opt.id ? "#e7f1ff" : "white")
+            }}
+          >
+            {opt.word}
           </button>
-        ) : (
-          <button onClick={handleNext}>Next</button>
-        )}
+        ))}
       </div>
 
-      <p style={{ marginTop: 10 }}>Score: {score}</p>
+      <button
+        onClick={showResult ? handleNext : handleCheck}
+        disabled={!selected}
+        style={{
+          marginTop: "20px", width: "100%", padding: "15px", 
+          backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "10px"
+        }}
+      >
+        {showResult ? "Next" : "Check Answer"}
+      </button>
     </div>
   );
 }
+
+const centerStyle = { padding: "50px", textAlign: "center" };
+const cardStyle = { padding: "20px", background: "#f8f9fa", borderRadius: "15px", marginBottom: "20px", textAlign: "center" };
+const btnStyle = { padding: "10px 20px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" };
