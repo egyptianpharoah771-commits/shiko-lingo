@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
@@ -13,7 +13,6 @@ function shuffleArray(array) {
 
 function removeDuplicates(words = []) {
   const seen = new Set();
-
   return words.filter((w) => {
     const key = w.word?.toLowerCase().trim();
     if (seen.has(key)) return false;
@@ -22,7 +21,7 @@ function removeDuplicates(words = []) {
   });
 }
 
-// ✅ FIX: no duplicate options + same-level trap
+// ✅ clean options (no duplicates)
 function generateOptions(correctWord, allWords) {
   if (!correctWord) return [];
 
@@ -47,7 +46,6 @@ function generateOptions(correctWord, allWords) {
   }
 
   const picked = shuffleArray(uniquePool).slice(0, 3);
-
   return shuffleArray([correctWord, ...picked]);
 }
 
@@ -66,63 +64,44 @@ export default function ReviewWordsPage() {
   const [finished, setFinished] = useState(false);
 
   const [reviewQueue, setReviewQueue] = useState([]);
-  const [lastWordId, setLastWordId] = useState(null); // 🔥 anti-repeat
 
-  const LEVEL_DISTRIBUTION = {
-    A1: 0.1,
-    A2: 0.15,
-    B1: 0.25,
-    B2: 0.25,
-    C1: 0.25,
-  };
-
+  // ✅ FIX: global pool (no starvation)
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
 
-      const result = [];
-
-      Object.entries(LEVEL_DISTRIBUTION).forEach(([level, ratio]) => {
-        const levelData = VOCABULARY_DATA?.[level];
-        if (!levelData) return;
-
-        const words = Object.values(levelData)
-          .flatMap((unit) => unit?.content?.items || [])
-          .map((w, index) => ({
-            id: `${level}_${w.word}_${index}`,
-            word: w.word,
-            definition:
-              w.definition_hard ||
-              w.definition_medium ||
-              w.definition ||
-              "",
-            level,
-          }));
-
-        const cleaned = removeDuplicates(words).filter(
-          (w) => w.definition && w.definition.length > 10
+      const allWordsRaw = Object.entries(VOCABULARY_DATA || {})
+        .flatMap(([level, levelData]) =>
+          Object.values(levelData).flatMap((unit) =>
+            (unit?.content?.items || []).map((w, index) => ({
+              id: `${level}_${w.word}_${index}`,
+              word: w.word,
+              definition:
+                w.definition_hard ||
+                w.definition_medium ||
+                w.definition ||
+                "",
+              level,
+            }))
+          )
         );
 
-        const count = Math.floor(TOTAL * ratio);
-        const picked = shuffleArray(cleaned).slice(0, count);
+      const cleaned = removeDuplicates(allWordsRaw).filter(
+        (w) =>
+          w.definition &&
+          w.definition.length > 10 &&
+          w.word.length > 2
+      );
 
-        result.push(...picked);
-      });
-
-      let finalWords = shuffleArray(result);
-
-      if (finalWords.length === 0) {
+      if (!cleaned.length) {
         setWords([]);
         return;
       }
 
-      while (finalWords.length < TOTAL) {
-        finalWords.push(
-          finalWords[Math.floor(Math.random() * finalWords.length)]
-        );
-      }
+      const shuffled = shuffleArray(cleaned);
+      const selected = shuffled.slice(0, TOTAL);
 
-      setWords(finalWords);
+      setWords(selected);
       setCurrentIndex(0);
     } catch {
       setWords([]);
@@ -135,8 +114,7 @@ export default function ReviewWordsPage() {
     fetchWords();
   }, [fetchWords]);
 
-  const safeIndex = Math.min(currentIndex, words.length - 1);
-  const currentWord = words[safeIndex];
+  const currentWord = words[currentIndex];
 
   useEffect(() => {
     if (!currentWord) return;
@@ -156,7 +134,6 @@ export default function ReviewWordsPage() {
       playCorrect();
     } else {
       playWrong();
-
       setReviewQueue((prev) => [
         ...prev,
         { word: currentWord, delay: 2 },
@@ -184,28 +161,13 @@ export default function ReviewWordsPage() {
       if (ready) {
         const idx = words.findIndex((w) => w.id === ready.word.id);
         if (idx !== -1) {
-          setLastWordId(currentWord?.id);
           setCurrentIndex(idx);
         }
         return updated.filter((i) => i.word.id !== ready.word.id);
       }
 
-      // 🔥 anti-repeat logic
-      let nextIndex;
-      let attempts = 0;
-
-      do {
-        nextIndex = Math.floor(Math.random() * words.length);
-        attempts++;
-      } while (
-        (words[nextIndex]?.id === lastWordId ||
-          words[nextIndex]?.id === currentWord?.id) &&
-        attempts < 10
-      );
-
-      setLastWordId(currentWord?.id);
-      setCurrentIndex(nextIndex);
-
+      // ✅ sequential flow (no repetition)
+      setCurrentIndex((prev) => prev + 1);
       return updated;
     });
   };
@@ -243,7 +205,7 @@ export default function ReviewWordsPage() {
       </p>
 
       <div style={{ marginBottom: 20 }}>
-        <p>{currentWord?.definition || "..."}</p>
+        <p>{currentWord?.definition}</p>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
