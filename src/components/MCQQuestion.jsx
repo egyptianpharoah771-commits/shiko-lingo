@@ -3,6 +3,10 @@ import { generateMCQOptions } from "../../utils/mcqGenerator";
 import TypeQuestion from "./TypeQuestion";
 import { playCorrect, playWrong } from "../../utils/sfx";
 
+function normalize(text) {
+  return text?.toLowerCase().trim();
+}
+
 export default function MCQQuestion({ word, words, onAnswer }) {
   const audioRef = useRef(null);
 
@@ -12,7 +16,6 @@ export default function MCQQuestion({ word, words, onAnswer }) {
 
   if (!word) return null;
 
-  // 🔊 تشغيل صوت الكلمة (local فقط)
   function playWordAudio() {
     if (!word?.audio) return;
 
@@ -31,15 +34,15 @@ export default function MCQQuestion({ word, words, onAnswer }) {
     }
   }
 
-  // 🔥 fallback → TYPE لو options قليلة
+  // fallback → TYPE
   if (!options || options.length < 4) {
     return <TypeQuestion word={word} onAnswer={onAnswer} />;
   }
 
   function handleAnswer(opt) {
-    const isCorrect = opt === word.definition;
+    const isCorrect =
+      normalize(opt) === normalize(word.definition);
 
-    // 🔊 صوت الصح / الغلط (system موحد)
     if (isCorrect) {
       playCorrect();
     } else {
@@ -51,27 +54,20 @@ export default function MCQQuestion({ word, words, onAnswer }) {
 
   return (
     <div style={{ maxWidth: 600, margin: "auto" }}>
-      {/* ✅ الكلمة دايمًا إنجليزي */}
       <h3 style={{ marginBottom: 10 }}>
         {word.word}
       </h3>
 
-      {/* 🔊 زر الصوت */}
       {word.audio && (
-        <button
-          onClick={playWordAudio}
-          style={{ marginBottom: 10 }}
-        >
+        <button onClick={playWordAudio} style={{ marginBottom: 10 }}>
           🔊
         </button>
       )}
 
-      {/* 🧠 توضيح للمستخدم */}
       <p style={{ opacity: 0.6, marginBottom: 15 }}>
         Choose the correct meaning
       </p>
 
-      {/* ✅ الخيارات */}
       {options.map((opt, i) => (
         <button
           key={i}
