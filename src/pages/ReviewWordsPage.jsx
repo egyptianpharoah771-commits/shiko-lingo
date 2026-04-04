@@ -66,24 +66,26 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  // 🔥 FIX: skip invalid words automatically
+  // 🔥 safe current word
   const currentWord = useMemo(() => {
     if (!session) return null;
 
-    let i = index;
-
-    while (i < session.length) {
-      const word = session[i];
-
-      if (word && word.definition) {
-        return word;
-      }
-
-      i++;
+    for (let i = index; i < session.length; i++) {
+      const w = session[i];
+      if (w && w.definition) return w;
     }
 
     return null;
   }, [session, index]);
+
+  // 🔥 FIX: skip invalid خارج render
+  useEffect(() => {
+    if (!session) return;
+
+    if (!currentWord && index < session.length) {
+      setIndex((prev) => prev + 1);
+    }
+  }, [currentWord, session, index]);
 
   const options = useMemo(() => {
     if (!currentWord || pool.length < 4) return [];
@@ -157,9 +159,7 @@ export default function ReviewWordsPage() {
     );
   }
 
-  // 🔥 FIX: prevent freeze forever
   if (!currentWord) {
-    setIndex((prev) => prev + 1);
     return <div style={{ textAlign: "center", padding: 50 }}>Fixing...</div>;
   }
 
