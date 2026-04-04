@@ -12,7 +12,7 @@ function buildId(level, unitId, word) {
   return `${level}_${unitId}_${normalize(word)}`;
 }
 
-// 🔥 deterministic shuffle (stable)
+// deterministic shuffle
 function stableShuffle(arr, seed) {
   const array = [...arr];
   for (let i = array.length - 1; i > 0; i--) {
@@ -67,13 +67,13 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  const currentWord = session ? session[index] : null;
+  // ✅ SAFE currentWord (NO undefined ever)
+  const currentWord =
+    session && index < session.length ? session[index] : null;
 
-  // ✅ FIXED options
   const options = useMemo(() => {
     if (!currentWord || pool.length < 4) return [];
 
-    // 🔥 dynamic distractors (مش أول 3)
     const baseIndex = index * 3;
 
     const distractors = [];
@@ -84,15 +84,18 @@ export default function ReviewWordsPage() {
       }
     }
 
-    const combined = [...distractors, currentWord];
-
-    // 🔥 shuffle options (fix correct always last)
-    return stableShuffle(combined, index + 1);
+    return stableShuffle([...distractors, currentWord], index + 1);
   }, [currentWord, pool, index]);
 
+  // 🔥 SELECT (with sound)
   const handleSelect = (opt) => {
     if (showResult) return;
     setSelected(opt);
+
+    // ✅ restore selection sound
+    try {
+      new Audio("/sounds/select.mp3").play();
+    } catch (e) {}
   };
 
   const handleCheck = () => {
@@ -106,12 +109,22 @@ export default function ReviewWordsPage() {
       playCorrect();
     } else {
       playWrong();
-      setSession((prev) => [...prev, currentWord]);
+
+      // ✅ SAFE append بدون race
+      setSession((prev) => {
+        if (!prev) return prev;
+        return [...prev, currentWord];
+      });
     }
   };
 
   const handleNext = () => {
-    setIndex((prev) => prev + 1);
+    // 🔥 CRITICAL: prevent overflow
+    setIndex((prev) => {
+      if (!session) return prev;
+      return prev + 1 < session.length ? prev + 1 : prev;
+    });
+
     setSelected(null);
     setShowResult(false);
   };
