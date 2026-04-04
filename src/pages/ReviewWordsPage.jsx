@@ -22,6 +22,7 @@ function removeDuplicates(words = []) {
   });
 }
 
+// ✅ FIX: no duplicate options + same-level trap
 function generateOptions(correctWord, allWords) {
   if (!correctWord) return [];
 
@@ -34,14 +35,23 @@ function generateOptions(correctWord, allWords) {
       ? sameLevel
       : allWords.filter((w) => w.id !== correctWord.id);
 
-  const shuffled = shuffleArray(pool).slice(0, 3);
+  const uniquePool = [];
+  const seen = new Set();
 
-  return shuffleArray([correctWord, ...shuffled]);
+  for (const w of pool) {
+    const key = w.word.toLowerCase().trim();
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniquePool.push(w);
+    }
+  }
+
+  const picked = shuffleArray(uniquePool).slice(0, 3);
+
+  return shuffleArray([correctWord, ...picked]);
 }
 
 export default function ReviewWordsPage() {
-  const timeoutRef = useRef(null);
-
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -56,6 +66,7 @@ export default function ReviewWordsPage() {
   const [finished, setFinished] = useState(false);
 
   const [reviewQueue, setReviewQueue] = useState([]);
+  const [lastWordId, setLastWordId] = useState(null); // 🔥 anti-repeat
 
   const LEVEL_DISTRIBUTION = {
     A1: 0.1,
@@ -100,7 +111,6 @@ export default function ReviewWordsPage() {
 
       let finalWords = shuffleArray(result);
 
-      // 🔥 ضمان minimum length
       if (finalWords.length === 0) {
         setWords([]);
         return;
@@ -125,7 +135,6 @@ export default function ReviewWordsPage() {
     fetchWords();
   }, [fetchWords]);
 
-  // ✅ SAFE INDEX
   const safeIndex = Math.min(currentIndex, words.length - 1);
   const currentWord = words[safeIndex];
 
@@ -175,23 +184,31 @@ export default function ReviewWordsPage() {
       if (ready) {
         const idx = words.findIndex((w) => w.id === ready.word.id);
         if (idx !== -1) {
+          setLastWordId(currentWord?.id);
           setCurrentIndex(idx);
         }
         return updated.filter((i) => i.word.id !== ready.word.id);
       }
 
-      setCurrentIndex((prevIndex) => {
-        const next = prevIndex + 1;
-        return next >= words.length ? words.length - 1 : next;
-      });
+      // 🔥 anti-repeat logic
+      let nextIndex;
+      let attempts = 0;
+
+      do {
+        nextIndex = Math.floor(Math.random() * words.length);
+        attempts++;
+      } while (
+        (words[nextIndex]?.id === lastWordId ||
+          words[nextIndex]?.id === currentWord?.id) &&
+        attempts < 10
+      );
+
+      setLastWordId(currentWord?.id);
+      setCurrentIndex(nextIndex);
 
       return updated;
     });
   };
-
-  useEffect(() => {
-    return () => clearTimeout(timeoutRef.current);
-  }, []);
 
   if (finished) {
     return (
