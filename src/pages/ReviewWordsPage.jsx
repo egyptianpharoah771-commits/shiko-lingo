@@ -18,16 +18,6 @@ function normalize(word) {
   return word?.toLowerCase().trim();
 }
 
-function removeDuplicates(words = []) {
-  const seen = new Set();
-  return words.filter((w) => {
-    const key = normalize(w.word);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
 function playSelect() {
   try {
     const audio = new Audio("/sounds/select.mp3");
@@ -57,8 +47,8 @@ export default function ReviewWordsPage() {
       const allWordsRaw = Object.entries(VOCABULARY_DATA || {})
         .flatMap(([level, levelData]) =>
           Object.entries(levelData).flatMap(([unitId, unit]) =>
-            (unit?.content?.items || []).map((w) => ({
-              id: `${level}_${unitId}_${normalize(w.word)}`,
+            (unit?.content?.items || []).map((w, index) => ({
+              id: `${level}_${unitId}_${index}_${normalize(w.word)}`, // ✅ UNIQUE
               word: w.word,
               definition:
                 w.definition_hard ||
@@ -69,19 +59,15 @@ export default function ReviewWordsPage() {
           )
         );
 
-      const cleaned = removeDuplicates(allWordsRaw).filter(
+      // ❌ حذفنا removeDuplicates بالكامل
+
+      const cleaned = allWordsRaw.filter(
         (w) => w.definition && w.word
       );
 
       const shuffled = shuffleArray(cleaned);
 
-      // ✅ ضمان session ثابتة بالحجم المطلوب
-      let pool = [...shuffled];
-      while (pool.length < TOTAL) {
-        pool = [...pool, ...shuffleArray(cleaned)];
-      }
-
-      const session = pool.slice(0, TOTAL);
+      const session = shuffled.slice(0, TOTAL);
 
       setAllWords(cleaned);
       setSessionWords(session);
