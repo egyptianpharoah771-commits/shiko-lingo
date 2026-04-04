@@ -44,7 +44,6 @@ export default function ReviewWordsPage() {
 
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [feedback, setFeedback] = useState(null);
 
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -76,8 +75,16 @@ export default function ReviewWordsPage() {
 
       const shuffled = shuffleArray(cleaned);
 
+      // ✅ ضمان session ثابتة بالحجم المطلوب
+      let pool = [...shuffled];
+      while (pool.length < TOTAL) {
+        pool = [...pool, ...shuffleArray(cleaned)];
+      }
+
+      const session = pool.slice(0, TOTAL);
+
       setAllWords(cleaned);
-      setSessionWords(shuffled.slice(0, TOTAL));
+      setSessionWords(session);
       setCurrentIndex(0);
       setProgress(0);
     } catch {
@@ -88,7 +95,6 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  // ✅ DERIVED STATE (FIX الحقيقي)
   const currentWord = sessionWords[currentIndex];
 
   // ---------- options ----------
@@ -108,7 +114,6 @@ export default function ReviewWordsPage() {
     const isCorrect = selected.id === currentWord.id;
 
     setShowResult(true);
-    setFeedback(isCorrect ? "correct" : "wrong");
 
     if (isCorrect) {
       setScore((s) => s + 1);
@@ -133,7 +138,6 @@ export default function ReviewWordsPage() {
 
     setSelected(null);
     setShowResult(false);
-    setFeedback(null);
   };
 
   // ---------- UI ----------
@@ -151,7 +155,7 @@ export default function ReviewWordsPage() {
   }
 
   if (!currentWord) {
-    return <div style={{ padding: 20 }}>Loading next...</div>;
+    return <div style={{ padding: 20 }}>Loading...</div>;
   }
 
   return (
