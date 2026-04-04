@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
-const TOTAL_TO_WIN = 60; // الهدف هو الإجابة على 60 كلمة صح
+const TARGET_SCORE = 60; 
 
 export default function ReviewWordsPage() {
   const [allWords, setAllWords] = useState([]);
@@ -14,17 +14,17 @@ export default function ReviewWordsPage() {
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
-  // --- تجميع الداتا مرة واحدة عند البداية ---
   useEffect(() => {
     try {
       let pool = [];
+      // تجميع كل الكلمات من كل المستويات بدون استثناء
       Object.entries(VOCABULARY_DATA).forEach(([level, units]) => {
         Object.entries(units).forEach(([unitId, unit]) => {
           (unit.content?.items || []).forEach((w, i) => {
             if (w.word && (w.definition || w.definition_hard)) {
               pool.push({
-                // ID فريد جداً عشان ما يحصلش تكرار
-                id: `${level}_${unitId}_${i}_${w.word.toLowerCase().trim()}`,
+                // صنع ID فريد يمنع تداخل الكلمات
+                id: `review_${level}_${unitId}_${i}_${Math.random()}`, 
                 word: w.word,
                 definition: w.definition_hard || w.definition_medium || w.definition || "",
                 level
@@ -34,35 +34,32 @@ export default function ReviewWordsPage() {
         });
       });
 
-      // خلط الكل واختيار أول 60 عشوائياً من كل المستويات
-      const shuffledFull = [...pool].sort(() => Math.random() - 0.5);
-      const uniquePool = Array.from(new Map(shuffledFull.map(item => [item.word.toLowerCase().trim(), item])).values());
-      
-      setAllWords(uniquePool);
-      setSessionQueue(uniquePool.slice(0, TOTAL_TO_WIN));
+      // خلط عشوائي واختيار كلمات فريدة
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      // تأكد إننا بناخد كلمات كتير عشان لو المستخدم غلط نلاقي "مخزون"
+      setAllWords(shuffled); 
+      setSessionQueue(shuffled.slice(0, TARGET_SCORE));
     } catch (err) {
-      console.error("Error loading vocabulary:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // الكلمة الحالية مشتقة دائماً من الـ Index والـ Queue
   const currentWord = sessionQueue[currentIndex];
 
-  // توليد الخيارات (تتحدث تلقائياً مع تغير الكلمة)
   const options = useMemo(() => {
     if (!currentWord || allWords.length < 4) return [];
-    const wrongOnes = allWords
+    // نجيب خيارات غلط من الـ pool الكبير
+    const distractors = allWords
       .filter(w => w.word.toLowerCase() !== currentWord.word.toLowerCase())
       .sort(() => Math.random() - 0.5)
       .slice(0, 3);
-    return [...wrongOnes, currentWord].sort(() => Math.random() - 0.5);
+    return [...distractors, currentWord].sort(() => Math.random() - 0.5);
   }, [currentWord, allWords]);
 
   const handleCheck = () => {
     if (!selected || showResult) return;
-
     const isCorrect = selected.word === currentWord.word;
     setShowResult(true);
 
@@ -71,14 +68,14 @@ export default function ReviewWordsPage() {
       playCorrect();
     } else {
       playWrong();
-      // لو غلط: ضيف الكلمة في آخر الطابور عشان تظهر له تاني
-      setSessionQueue(prev => [...prev, currentWord]);
+      // أهم حتة: الكلمة اللي غلطت فيها بتنزل في آخر الطابور عشان تظهر تاني
+      setSessionQueue(prev => [...prev, { ...currentWord, id: currentWord.id + "_retry" }]);
     }
   };
 
   const handleNext = () => {
-    // لو جاوبنا صح على 60 كلمة مختلفة أو وصلنا لآخر الطابور
-    if (score >= TOTAL_TO_WIN || currentIndex + 1 >= sessionQueue.length) {
+    // التعديل السحري: الاختبار يخلص بس لو جاوبنا 60 صح أو الطابور خلص فعلياً
+    if (currentIndex + 1 >= sessionQueue.length) {
       setFinished(true);
     } else {
       setCurrentIndex(prev => prev + 1);
@@ -87,38 +84,38 @@ export default function ReviewWordsPage() {
     }
   };
 
-  if (loading) return <div style={centerStyle}>Loading vocabulary...</div>;
-  if (finished) return (
-    <div style={centerStyle}>
-      <h2>Review Complete! 🎉</h2>
-      <p style={{fontSize: '1.5rem'}}>Final Score: {score} / {TOTAL_TO_WIN}</p>
-      <button onClick={() => window.location.reload()} style={btnStyle}>Restart</button>
-    </div>
-  );
+  if (loading) return <div style={{textAlign:'center', padding:50}}>جاري تجهيز الـ 60 سؤال...</div>;
+  
+  if (finished || (score >= TARGET_SCORE && showResult === false)) {
+    return (
+      <div style={{textAlign:'center', padding:50}}>
+        <h2>Review Complete! 🎉</h2>
+        <p>لقد أتممت المراجعة بنتيجة: {score} من {TARGET_SCORE}</p>
+        <button onClick={() => window.location.reload()}>إعادة المحاولة</button>
+      </div>
+    );
+  }
 
   if (!currentWord) return null;
 
   return (
-    <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <span>Question: {currentIndex + 1}</span> | <span>Correct: {score}</span>
+    <div style={{ padding: 20, maxWidth: 500, margin: "auto", textAlign: "center" }}>
+      <div style={{marginBottom: 20, fontSize: '1.1rem'}}>
+         السؤال الحالي: <strong>{currentIndex + 1}</strong> | النتيجة: <strong>{score}</strong>
       </div>
 
-      <div style={cardStyle}>
-        <p style={{ fontSize: "1.1rem", fontWeight: "600" }}>{currentWord.definition}</p>
+      <div style={{ background: "#f9f9f9", padding: 30, borderRadius: 15, marginBottom: 20, border: '1px solid #ddd' }}>
+        <p style={{ fontSize: "1.2rem", fontWeight: "bold" }}>{currentWord.definition}</p>
       </div>
 
-      <div style={{ display: "grid", gap: "10px" }}>
+      <div style={{ display: "grid", gap: 10 }}>
         {options.map((opt) => (
           <button
             key={opt.id}
             disabled={showResult}
             onClick={() => setSelected(opt)}
             style={{
-              padding: "15px",
-              borderRadius: "10px",
-              cursor: "pointer",
-              border: "2px solid",
+              padding: 15, borderRadius: 10, cursor: "pointer", border: "2px solid",
               borderColor: selected?.id === opt.id ? "#007bff" : "#eee",
               backgroundColor: showResult 
                 ? (opt.word === currentWord.word ? "#d4edda" : (selected?.id === opt.id ? "#f8d7da" : "white"))
@@ -134,16 +131,12 @@ export default function ReviewWordsPage() {
         onClick={showResult ? handleNext : handleCheck}
         disabled={!selected}
         style={{
-          marginTop: "20px", width: "100%", padding: "15px", 
-          backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "10px"
+          marginTop: 30, width: "100%", padding: 15, background: "#007bff", color: "white", 
+          border: "none", borderRadius: 10, fontSize: '1.1rem', cursor: 'pointer'
         }}
       >
-        {showResult ? "Next" : "Check Answer"}
+        {showResult ? "السؤال التالي" : "تحقق من الإجابة"}
       </button>
     </div>
   );
 }
-
-const centerStyle = { padding: "50px", textAlign: "center" };
-const cardStyle = { padding: "20px", background: "#f8f9fa", borderRadius: "15px", marginBottom: "20px", textAlign: "center" };
-const btnStyle = { padding: "10px 20px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" };
