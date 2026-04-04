@@ -1,7 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
+const TOTAL = 60;
+
+// ---------- utils ----------
 function shuffleArray(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -11,54 +14,35 @@ function shuffleArray(array) {
   return arr;
 }
 
+function normalize(word) {
+  return word?.toLowerCase().trim();
+}
+
 function removeDuplicates(words = []) {
   const seen = new Set();
   return words.filter((w) => {
-    const key = w.word?.toLowerCase().trim();
+    const key = normalize(w.word);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
 
-function generateOptions(correctWord, allWords) {
-  if (!correctWord) return [];
-
-  const pool = allWords.filter((w) => w.id !== correctWord.id);
-
-  const unique = [];
-  const seen = new Set();
-
-  for (const w of pool) {
-    const key = w.word.toLowerCase().trim();
-    if (!seen.has(key)) {
-      seen.add(key);
-      unique.push(w);
-    }
-  }
-
-  const picked = shuffleArray(unique).slice(0, 3);
-
-  return shuffleArray([correctWord, ...picked]);
-}
-
+// ---------- main ----------
 export default function ReviewWordsPage() {
-  const [words, setWords] = useState([]);
+  const [sessionWords, setSessionWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [feedback, setFeedback] = useState(null);
-  const [options, setOptions] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   const [score, setScore] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const TOTAL = 60;
+  const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
-  const [reviewQueue, setReviewQueue] = useState([]);
-
-  const fetchWords = useCallback(() => {
+  // ---------- build session (ONCE) ----------
+  useEffect(() => {
     try {
       setLoading(true);
 
@@ -73,7 +57,6 @@ export default function ReviewWordsPage() {
                 w.definition_medium ||
                 w.definition ||
                 "",
-              level,
             }))
           )
         );
@@ -86,33 +69,41 @@ export default function ReviewWordsPage() {
       );
 
       const shuffled = shuffleArray(cleaned);
-      const selected = shuffled.slice(0, TOTAL);
+      const fixedSession = shuffled.slice(0, TOTAL);
 
-      setWords(selected);
+      setSessionWords(fixedSession);
       setCurrentIndex(0);
     } catch {
-      setWords([]);
+      setSessionWords([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchWords();
-  }, [fetchWords]);
+  const currentWord = sessionWords[currentIndex];
 
-  const currentWord = words[currentIndex];
+  // ---------- stable options ----------
+  const options = useMemo(() => {
+    if (!currentWord) return [];
 
-  // 🔥 FIX: reset options properly
-  useEffect(() => {
-    if (!currentWord) {
-      setOptions([]);
-      return;
+    const pool = sessionWords.filter((w) => w.id !== currentWord.id);
+
+    const unique = [];
+    const seen = new Set();
+
+    for (const w of pool) {
+      const key = normalize(w.word);
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(w);
+      }
     }
 
-    setOptions(generateOptions(currentWord, words));
-  }, [currentWord, words]);
+    const picked = shuffleArray(unique).slice(0, 3);
+    return shuffleArray([currentWord, ...picked]);
+  }, [currentWord, sessionWords]);
 
+  // ---------- check ----------
   const handleCheck = () => {
     if (!selected || showResult || !currentWord) return;
 
@@ -122,74 +113,64 @@ export default function ReviewWordsPage() {
     setFeedback(isCorrect ? "correct" : "wrong");
 
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      setScore((s) => s + 1);
       playCorrect();
     } else {
       playWrong();
-      setReviewQueue((prev) => [
-        ...prev,
-        { word: currentWord, delay: 2 },
-      ]);
+
+      // 🔥 append wrong word to end (simple review logic)
+      setSessionWords((prev) => [...prev, currentWord]);
     }
   };
 
+  // ---------- next ----------
   const handleNext = () => {
-    if (!words.length) return;
+    if (!sessionWords.length) return;
 
-    if (progress + 1 >= TOTAL) {
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex >= sessionWords.length || nextIndex >= TOTAL) {
       setFinished(true);
       return;
     }
 
-    setProgress((p) => p + 1);
+    setCurrentIndex(nextIndex);
     setSelected(null);
     setShowResult(false);
     setFeedback(null);
-
-    setReviewQueue((prev) => {
-      const updated = prev.map((i) => ({ ...i, delay: i.delay - 1 }));
-      const ready = updated.find((i) => i.delay <= 0);
-
-      if (ready) {
-        const idx = words.findIndex((w) => w.id === ready.word.id);
-        if (idx !== -1) {
-          setCurrentIndex(idx);
-        }
-        return updated.filter((i) => i.word.id !== ready.word.id);
-      }
-
-      // 🔥 FIX: guard index
-      setCurrentIndex((prev) => {
-        const next = prev + 1;
-        return next >= words.length ? words.length - 1 : next;
-      });
-
-      return updated;
-    });
   };
+
+  // ---------- UI ----------
+  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (!sessionWords.length)
+    return <div style={{ padding: 20 }}>No words</div>;
 
   if (finished) {
     return (
       <div style={{ padding: 20 }}>
         <h2>Review Complete</h2>
-        <p>Score: {score} / {TOTAL}</p>
+        <p>
+          Score: {score} / {TOTAL}
+        </p>
       </div>
     );
   }
 
-  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
-  if (!words.length) return <div style={{ padding: 20 }}>No words</div>;
-
-  // 🔥 FIX: block render لو مفيش currentWord
   if (!currentWord) {
-    return <div style={{ padding: 20 }}>Loading next question...</div>;
+    return (
+      <div style={{ padding: 20 }}>
+        Loading next question...
+      </div>
+    );
   }
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
       <h2>Review</h2>
 
-      <p>{Math.min(progress + 1, TOTAL)} / {TOTAL}</p>
+      <p>
+        {Math.min(currentIndex + 1, TOTAL)} / {TOTAL}
+      </p>
 
       <p>{currentWord.definition}</p>
 
