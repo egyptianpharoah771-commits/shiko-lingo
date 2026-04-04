@@ -11,7 +11,6 @@ function shuffleArray(array) {
   return arr;
 }
 
-// ✅ remove duplicates by word
 function removeDuplicates(words = []) {
   const seen = new Set();
 
@@ -23,8 +22,9 @@ function removeDuplicates(words = []) {
   });
 }
 
-// 🔥 C1 Trap Options (same-level distractors)
 function generateOptions(correctWord, allWords) {
+  if (!correctWord) return [];
+
   const sameLevel = allWords.filter(
     (w) => w.level === correctWord.level && w.id !== correctWord.id
   );
@@ -65,7 +65,6 @@ export default function ReviewWordsPage() {
     C1: 0.25,
   };
 
-  // ✅ MIXED + HARD + FILTERED
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
@@ -90,7 +89,7 @@ export default function ReviewWordsPage() {
           }));
 
         const cleaned = removeDuplicates(words).filter(
-          (w) => w.definition && w.definition.length > 15
+          (w) => w.definition && w.definition.length > 10
         );
 
         const count = Math.floor(TOTAL * ratio);
@@ -99,9 +98,22 @@ export default function ReviewWordsPage() {
         result.push(...picked);
       });
 
-      const finalWords = shuffleArray(result);
+      let finalWords = shuffleArray(result);
+
+      // 🔥 ضمان minimum length
+      if (finalWords.length === 0) {
+        setWords([]);
+        return;
+      }
+
+      while (finalWords.length < TOTAL) {
+        finalWords.push(
+          finalWords[Math.floor(Math.random() * finalWords.length)]
+        );
+      }
 
       setWords(finalWords);
+      setCurrentIndex(0);
     } catch {
       setWords([]);
     } finally {
@@ -113,7 +125,9 @@ export default function ReviewWordsPage() {
     fetchWords();
   }, [fetchWords]);
 
-  const currentWord = words[currentIndex];
+  // ✅ SAFE INDEX
+  const safeIndex = Math.min(currentIndex, words.length - 1);
+  const currentWord = words[safeIndex];
 
   useEffect(() => {
     if (!currentWord) return;
@@ -121,7 +135,7 @@ export default function ReviewWordsPage() {
   }, [currentWord, words]);
 
   const handleCheck = () => {
-    if (!selected || showResult) return;
+    if (!selected || showResult || !currentWord) return;
 
     const isCorrect = selected.id === currentWord.id;
 
@@ -142,6 +156,8 @@ export default function ReviewWordsPage() {
   };
 
   const handleNext = () => {
+    if (!words.length) return;
+
     if (progress + 1 >= TOTAL) {
       setFinished(true);
       return;
@@ -164,7 +180,11 @@ export default function ReviewWordsPage() {
         return updated.filter((i) => i.word.id !== ready.word.id);
       }
 
-      setCurrentIndex((prevIndex) => prevIndex + 1);
+      setCurrentIndex((prevIndex) => {
+        const next = prevIndex + 1;
+        return next >= words.length ? words.length - 1 : next;
+      });
+
       return updated;
     });
   };
@@ -206,13 +226,13 @@ export default function ReviewWordsPage() {
       </p>
 
       <div style={{ marginBottom: 20 }}>
-        <p>{currentWord.definition}</p>
+        <p>{currentWord?.definition || "..."}</p>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {options.map((opt) => {
           const isSelected = selected?.id === opt.id;
-          const isCorrect = opt.id === currentWord.id;
+          const isCorrect = opt.id === currentWord?.id;
 
           let background = "#f1f1f1";
 
