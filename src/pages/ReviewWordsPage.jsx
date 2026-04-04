@@ -23,9 +23,19 @@ function removeDuplicates(words = []) {
   });
 }
 
+// 🔥 C1 Trap Options (same-level distractors)
 function generateOptions(correctWord, allWords) {
-  const wrong = allWords.filter((w) => w.id !== correctWord.id);
-  const shuffled = shuffleArray(wrong).slice(0, 3);
+  const sameLevel = allWords.filter(
+    (w) => w.level === correctWord.level && w.id !== correctWord.id
+  );
+
+  let pool =
+    sameLevel.length >= 3
+      ? sameLevel
+      : allWords.filter((w) => w.id !== correctWord.id);
+
+  const shuffled = shuffleArray(pool).slice(0, 3);
+
   return shuffleArray([correctWord, ...shuffled]);
 }
 
@@ -47,7 +57,6 @@ export default function ReviewWordsPage() {
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // 🎯 توزيع الصعوبة
   const LEVEL_DISTRIBUTION = {
     A1: 0.1,
     A2: 0.15,
@@ -56,7 +65,7 @@ export default function ReviewWordsPage() {
     C1: 0.25,
   };
 
-  // ✅ MIXED + HARD MODE
+  // ✅ MIXED + HARD + FILTERED
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
@@ -74,14 +83,16 @@ export default function ReviewWordsPage() {
             word: w.word,
             definition:
               w.definition_hard ||
+              w.definition_medium ||
               w.definition ||
-              w.definition_easy ||
-              w.meaning ||
               "",
             level,
           }));
 
-        const cleaned = removeDuplicates(words);
+        const cleaned = removeDuplicates(words).filter(
+          (w) => w.definition && w.definition.length > 15
+        );
+
         const count = Math.floor(TOTAL * ratio);
         const picked = shuffleArray(cleaned).slice(0, count);
 
@@ -104,13 +115,11 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // ✅ OPTIONS
   useEffect(() => {
     if (!currentWord) return;
     setOptions(generateOptions(currentWord, words));
   }, [currentWord, words]);
 
-  // ✅ CHECK
   const handleCheck = () => {
     if (!selected || showResult) return;
 
@@ -132,7 +141,6 @@ export default function ReviewWordsPage() {
     }
   };
 
-  // ✅ NEXT
   const handleNext = () => {
     if (progress + 1 >= TOTAL) {
       setFinished(true);
@@ -165,7 +173,6 @@ export default function ReviewWordsPage() {
     return () => clearTimeout(timeoutRef.current);
   }, []);
 
-  // ✅ UI
   if (finished) {
     return (
       <div style={{ padding: 20 }}>
