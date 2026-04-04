@@ -38,7 +38,9 @@ function playSelect() {
 export default function ReviewWordsPage() {
   const [allWords, setAllWords] = useState([]);
   const [sessionWords, setSessionWords] = useState([]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [progress, setProgress] = useState(0); // ✅ الجديد
 
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -77,6 +79,7 @@ export default function ReviewWordsPage() {
       setAllWords(cleaned);
       setSessionWords(shuffled.slice(0, TOTAL));
       setCurrentIndex(0);
+      setProgress(0);
     } catch {
       setAllWords([]);
       setSessionWords([]);
@@ -85,11 +88,7 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  // ✅ SAFE ACCESS
-  const currentWord =
-    currentIndex < sessionWords.length
-      ? sessionWords[currentIndex]
-      : null;
+  const currentWord = sessionWords[currentIndex];
 
   // ---------- options ----------
   const options = useMemo(() => {
@@ -115,14 +114,7 @@ export default function ReviewWordsPage() {
       playCorrect();
     } else {
       playWrong();
-
-      // ✅ SAFE append
-      setSessionWords((prev) => {
-        if (!prev.find((w) => w.id === currentWord.id)) {
-          return [...prev, currentWord];
-        }
-        return prev;
-      });
+      setSessionWords((prev) => [...prev, currentWord]);
     }
   };
 
@@ -130,19 +122,17 @@ export default function ReviewWordsPage() {
   const handleNext = () => {
     const nextIndex = currentIndex + 1;
 
-    // ✅ FINAL FIX
-    if (nextIndex >= TOTAL) {
-      setFinished(true);
-      return;
-    }
+    const nextProgress = progress + 1;
 
-    // ✅ GUARANTEE index safe
-    if (nextIndex >= sessionWords.length) {
+    // ✅ التحكم الصحيح
+    if (nextProgress >= TOTAL) {
       setFinished(true);
       return;
     }
 
     setCurrentIndex(nextIndex);
+    setProgress(nextProgress);
+
     setSelected(null);
     setShowResult(false);
     setFeedback(null);
@@ -163,14 +153,14 @@ export default function ReviewWordsPage() {
   }
 
   if (!currentWord) {
-    return <div style={{ padding: 20 }}>Preparing next...</div>;
+    return <div style={{ padding: 20 }}>Preparing...</div>;
   }
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
       <h2>Review</h2>
 
-      <p>{currentIndex + 1} / {TOTAL}</p>
+      <p>{progress + 1} / {TOTAL}</p>
 
       <div style={{ marginBottom: 20 }}>
         <strong>{currentWord.definition}</strong>
