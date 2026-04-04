@@ -36,15 +36,19 @@ export default function ReviewWordsPage() {
   const [finished, setFinished] = useState(false);
 
   const [reviewQueue, setReviewQueue] = useState([]);
+  const [usedWords, setUsedWords] = useState(new Set()); // 🔥 جديد
 
+  // ✅ كل المستويات بدل A1 فقط
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
 
-      const levelData = VOCABULARY_DATA?.A1;
-
-      const allWords = Object.values(levelData || {})
-        .flatMap((unit) => unit?.content?.items || []);
+      const allWords = Object.values(VOCABULARY_DATA || {})
+        .flatMap((level) =>
+          Object.values(level).flatMap(
+            (unit) => unit?.content?.items || []
+          )
+        );
 
       const prepared = removeDuplicates(
         allWords.map((w) => ({
@@ -52,6 +56,7 @@ export default function ReviewWordsPage() {
           word: w.word,
           definition:
             w.definition_easy ||
+            w.definition_medium ||
             w.definition ||
             w.meaning ||
             "",
@@ -72,7 +77,7 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 OPTIONS (MCQ only)
+  // 🔥 OPTIONS
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -114,6 +119,7 @@ export default function ReviewWordsPage() {
       const updated = prev.map((i) => ({ ...i, delay: i.delay - 1 }));
       const ready = updated.find((i) => i.delay <= 0);
 
+      // 🔁 retry words فقط
       if (ready) {
         const idx = words.findIndex((w) => w.id === ready.word.id);
         if (idx !== -1) {
@@ -123,13 +129,29 @@ export default function ReviewWordsPage() {
         return updated.filter((i) => i.word.id !== ready.word.id);
       }
 
-      let next;
-      do {
-        next = Math.floor(Math.random() * words.length);
-      } while (next === currentIndex || next === lastIndex);
+      // 🔥 اختار كلمة جديدة مش متكررة
+      const available = words.filter(
+        (w) => !usedWords.has(w.id)
+      );
+
+      if (available.length === 0) {
+        setFinished(true);
+        return updated;
+      }
+
+      const randomWord =
+        available[Math.floor(Math.random() * available.length)];
+
+      const idx = words.findIndex((w) => w.id === randomWord.id);
+
+      setUsedWords((prevSet) => {
+        const newSet = new Set(prevSet);
+        newSet.add(randomWord.id);
+        return newSet;
+      });
 
       setLastIndex(currentIndex);
-      setCurrentIndex(next);
+      setCurrentIndex(idx);
 
       return updated;
     });
@@ -179,12 +201,10 @@ export default function ReviewWordsPage() {
 
       <p>{progress} / {TOTAL}</p>
 
-      {/* السؤال */}
       <h3 style={{ marginBottom: 15 }}>
         {currentWord.definition}
       </h3>
 
-      {/* الاختيارات */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {options.map((opt, i) => {
           const isSelected = selected === opt;
