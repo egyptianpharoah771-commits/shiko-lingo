@@ -23,7 +23,7 @@ function deterministicShuffle(array) {
 
 export default function ReviewWordsPage() {
   const [pool, setPool] = useState([]);
-  const [session, setSession] = useState([]);
+  const [session, setSession] = useState(null); // 🔥 مهم: null مش []
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -31,7 +31,7 @@ export default function ReviewWordsPage() {
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
-  // 🔹 Build clean pool (NO random IDs, NO collisions)
+  // ✅ Build pool + session مع بعض (atomic)
   useEffect(() => {
     try {
       let words = [];
@@ -60,7 +60,7 @@ export default function ReviewWordsPage() {
       const initialSession = shuffled.slice(0, TOTAL);
 
       setPool(words);
-      setSession(initialSession);
+      setSession(initialSession); // 🔥 guaranteed ready together
     } catch (err) {
       console.error(err);
     } finally {
@@ -68,9 +68,9 @@ export default function ReviewWordsPage() {
     }
   }, []);
 
-  const currentWord = session[index] || null;
+  // ❌ مفيش useMemo هنا — مشتقة مباشرة
+  const currentWord = session ? session[index] : null;
 
-  // 🔹 Stable options (NO random per render)
   const options = useMemo(() => {
     if (!currentWord || pool.length < 4) return [];
 
@@ -82,7 +82,7 @@ export default function ReviewWordsPage() {
   }, [currentWord, pool]);
 
   const handleCheck = () => {
-    if (!selected || showResult) return;
+    if (!selected || showResult || !currentWord) return;
 
     const isCorrect = selected.id === currentWord.id;
     setShowResult(true);
@@ -92,7 +92,6 @@ export default function ReviewWordsPage() {
       playCorrect();
     } else {
       playWrong();
-      // append wrong word safely
       setSession((prev) => [...prev, currentWord]);
     }
   };
@@ -103,30 +102,31 @@ export default function ReviewWordsPage() {
     setShowResult(false);
   };
 
-  // 🔹 ONLY completion rule
+  // ✅ completion الوحيد
   useEffect(() => {
     if (index >= TOTAL) {
       setFinished(true);
     }
   }, [index]);
 
-  if (loading)
-    return <div style={{ textAlign: "center", padding: 50 }}>Preparing review...</div>;
+  // 🔥 Guards صحيحة
+  if (loading || !session) {
+    return <div style={{ textAlign: "center", padding: 50 }}>Preparing...</div>;
+  }
 
   if (finished) {
     return (
       <div style={{ textAlign: "center", padding: 50 }}>
         <h2>Review Complete 🎉</h2>
-        <p>
-          {score} / {TOTAL}
-        </p>
+        <p>{score} / {TOTAL}</p>
         <button onClick={() => window.location.reload()}>Retry</button>
       </div>
     );
   }
 
-  if (!currentWord)
+  if (!currentWord) {
     return <div style={{ textAlign: "center", padding: 50 }}>Preparing...</div>;
+  }
 
   return (
     <div style={{ padding: 20, maxWidth: 500, margin: "auto", textAlign: "center" }}>
