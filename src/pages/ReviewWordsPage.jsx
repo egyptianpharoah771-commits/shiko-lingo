@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
@@ -6,12 +6,7 @@ const TOTAL = 60;
 
 // ---------- utils ----------
 function shuffleArray(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+  return [...array].sort(() => Math.random() - 0.5);
 }
 
 function normalize(word) {
@@ -20,16 +15,17 @@ function normalize(word) {
 
 function playSelect() {
   try {
-    const audio = new Audio("/sounds/select.mp3");
-    audio.play();
+    new Audio("/sounds/select.mp3").play();
   } catch {}
 }
 
 export default function ReviewWordsPage() {
-  const [allWords, setAllWords] = useState([]);
-  const [sessionWords, setSessionWords] = useState([]);
+  const queueRef = useRef([]);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [allWords, setAllWords] = useState([]);
+  const [currentWord, setCurrentWord] = useState(null);
+
+  const [cursor, setCursor] = useState(0);
   const [progress, setProgress] = useState(0);
 
   const [selected, setSelected] = useState(null);
@@ -39,16 +35,16 @@ export default function ReviewWordsPage() {
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
-  // ---------- build data ----------
+  // ---------- init ----------
   useEffect(() => {
     try {
       setLoading(true);
 
-      const allWordsRaw = Object.entries(VOCABULARY_DATA || {})
-        .flatMap(([level, levelData]) =>
-          Object.entries(levelData).flatMap(([unitId, unit]) =>
-            (unit?.content?.items || []).map((w, index) => ({
-              id: `${level}_${unitId}_${index}_${normalize(w.word)}`, // ✅ UNIQUE
+      const words = Object.entries(VOCABULARY_DATA || {})
+        .flatMap(([level, units]) =>
+          Object.entries(units).flatMap(([unitId, unit]) =>
+            (unit?.content?.items || []).map((w, i) => ({
+              id: `${level}_${unitId}_${i}_${normalize(w.word)}`,
               word: w.word,
               definition:
                 w.definition_hard ||
@@ -57,31 +53,24 @@ export default function ReviewWordsPage() {
                 "",
             }))
           )
-        );
+        )
+        .filter((w) => w.word && w.definition);
 
-      // ❌ حذفنا removeDuplicates بالكامل
+      const shuffled = shuffleArray(words);
+      const initial = shuffled.slice(0, TOTAL);
 
-      const cleaned = allWordsRaw.filter(
-        (w) => w.definition && w.word
-      );
+      queueRef.current = [...initial];
 
-      const shuffled = shuffleArray(cleaned);
-
-      const session = shuffled.slice(0, TOTAL);
-
-      setAllWords(cleaned);
-      setSessionWords(session);
-      setCurrentIndex(0);
+      setAllWords(words);
+      setCurrentWord(initial[0]);
+      setCursor(0);
       setProgress(0);
     } catch {
       setAllWords([]);
-      setSessionWords([]);
     } finally {
       setLoading(false);
     }
   }, []);
-
-  const currentWord = sessionWords[currentIndex];
 
   // ---------- options ----------
   const options = useMemo(() => {
@@ -106,7 +95,7 @@ export default function ReviewWordsPage() {
       playCorrect();
     } else {
       playWrong();
-      setSessionWords((prev) => [...prev, currentWord]);
+      queueRef.current.push(currentWord); // 🔥 append safely
     }
   };
 
@@ -119,7 +108,16 @@ export default function ReviewWordsPage() {
       return;
     }
 
-    setCurrentIndex((prev) => prev + 1);
+    const nextCursor = cursor + 1;
+    const nextWord = queueRef.current[nextCursor];
+
+    if (!nextWord) {
+      setFinished(true);
+      return;
+    }
+
+    setCursor(nextCursor);
+    setCurrentWord(nextWord);
     setProgress(nextProgress);
 
     setSelected(null);
@@ -128,8 +126,7 @@ export default function ReviewWordsPage() {
 
   // ---------- UI ----------
   if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
-  if (!sessionWords.length)
-    return <div style={{ padding: 20 }}>No words</div>;
+  if (!currentWord) return <div style={{ padding: 20 }}>Loading...</div>;
 
   if (finished) {
     return (
@@ -138,10 +135,6 @@ export default function ReviewWordsPage() {
         <p>Score: {score} / {TOTAL}</p>
       </div>
     );
-  }
-
-  if (!currentWord) {
-    return <div style={{ padding: 20 }}>Loading...</div>;
   }
 
   return (
