@@ -7,7 +7,7 @@ class ReviewErrorBoundary extends React.Component {
     this.state = {
       hasError: false,
       error: null,
-      retryKey: 0
+      retryKey: 0,
     };
 
     this.handleRetry = this.handleRetry.bind(this);
@@ -16,7 +16,7 @@ class ReviewErrorBoundary extends React.Component {
   static getDerivedStateFromError(error) {
     return {
       hasError: true,
-      error
+      error,
     };
   }
 
@@ -28,25 +28,27 @@ class ReviewErrorBoundary extends React.Component {
     this.setState((prev) => ({
       hasError: false,
       error: null,
-      retryKey: prev.retryKey + 1 // 💣 force remount
+      retryKey: prev.retryKey + 1,
     }));
   }
 
   render() {
     if (this.state.hasError) {
+      console.error("FULL ERROR:", this.state.error);
+
       return (
         <div
           style={{
             padding: 60,
             textAlign: "center",
             maxWidth: 500,
-            margin: "0 auto"
+            margin: "0 auto",
           }}
         >
-          <h2>⚠️ Review Session Interrupted</h2>
+          <h2>⚠️ Review Crash</h2>
 
           <p style={{ marginBottom: 20 }}>
-            Something went wrong, but your progress is safe.
+            {this.state.error?.message || "Unknown error"}
           </p>
 
           <button
@@ -58,13 +60,12 @@ class ReviewErrorBoundary extends React.Component {
               background: "#4A90E2",
               color: "#fff",
               cursor: "pointer",
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
           >
-            Continue Review
+            Retry
           </button>
 
-          {/* optional debug */}
           {process.env.NODE_ENV === "development" && (
             <pre
               style={{
@@ -74,17 +75,16 @@ class ReviewErrorBoundary extends React.Component {
                 padding: 10,
                 borderRadius: 6,
                 fontSize: 12,
-                overflow: "auto"
+                overflow: "auto",
               }}
             >
-              {this.state.error?.toString()}
+              {this.state.error?.stack}
             </pre>
           )}
         </div>
       );
     }
 
-    // 💣 key مهم جدًا علشان يعيد mount
     return (
       <React.Fragment key={this.state.retryKey}>
         {this.props.children}
@@ -94,5 +94,3 @@ class ReviewErrorBoundary extends React.Component {
 }
 
 export default ReviewErrorBoundary;
-
-
