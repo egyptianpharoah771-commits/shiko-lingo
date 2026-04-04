@@ -2,16 +2,10 @@
 
 import { generateMCQOptions } from "../../utils/mcqGenerator";
 
-/**
- * Normalize text
- */
 function normalize(text) {
   return text?.toLowerCase().trim();
 }
 
-/**
- * Get definition based on level
- */
 function getDefinition(word, level = "A1") {
   if (!word) return "";
 
@@ -47,7 +41,21 @@ function getDefinition(word, level = "A1") {
 }
 
 /**
- * Create a review question
+ * 🔥 SAFE word filter (CRITICAL FIX)
+ */
+export function filterValidWords(words, level = "A1") {
+  if (!Array.isArray(words)) return [];
+
+  return words.filter((w) => {
+    if (!w || !w.word) return false;
+
+    const def = getDefinition(w, level);
+    return typeof def === "string" && def.trim().length > 0;
+  });
+}
+
+/**
+ * 🔥 Create stable review question
  */
 export function createReviewQuestion(
   currentWord,
@@ -57,19 +65,41 @@ export function createReviewQuestion(
   if (!currentWord) return null;
 
   const correctAnswer = getDefinition(currentWord, level);
-
   if (!correctAnswer) return null;
+
+  // ✅ CRITICAL: فلترة pool بالكامل
+  const validWords = filterValidWords(allWords, level);
+
+  // ❌ لو مش كفاية كلمات → امنع crash
+  if (validWords.length < 4) {
+    return {
+      word: currentWord.word,
+      correctAnswer,
+      options: [correctAnswer],
+      fallback: true,
+    };
+  }
 
   const options = generateMCQOptions(
     {
       ...currentWord,
-      definition: correctAnswer, // مهم علشان mcqGenerator
+      definition: correctAnswer,
     },
-    allWords.map((w) => ({
+    validWords.map((w) => ({
       ...w,
       definition: getDefinition(w, level),
     }))
   );
+
+  // 🔥 HARD GUARD (يمنع Preparing)
+  if (!options || options.length < 2) {
+    return {
+      word: currentWord.word,
+      correctAnswer,
+      options: [correctAnswer],
+      fallback: true,
+    };
+  }
 
   return {
     word: currentWord.word,
@@ -84,18 +114,4 @@ export function createReviewQuestion(
 export function checkAnswer(selected, correctAnswer) {
   if (!selected || !correctAnswer) return false;
   return normalize(selected) === normalize(correctAnswer);
-}
-
-/**
- * Filter valid words
- */
-export function filterValidWords(words, level = "A1") {
-  if (!Array.isArray(words)) return [];
-
-  return words.filter((w) => {
-    if (!w || !w.word) return false;
-
-    const def = getDefinition(w, level);
-    return !!def;
-  });
 }
