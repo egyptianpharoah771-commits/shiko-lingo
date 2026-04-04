@@ -11,12 +11,14 @@ function shuffleArray(array) {
   return arr;
 }
 
+// ✅ FIX: remove duplicates by word (NOT id)
 function removeDuplicates(words = []) {
   const seen = new Set();
 
   return words.filter((w) => {
-    if (seen.has(w.id)) return false;
-    seen.add(w.id);
+    const key = w.word?.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
     return true;
   });
 }
@@ -45,22 +47,18 @@ export default function ReviewWordsPage() {
 
   const [reviewQueue, setReviewQueue] = useState([]);
 
-  // ✅ LOAD WORDS (DETERMINISTIC)
+  // ✅ MIXED REVIEW (A1 → C1)
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
 
-      const levelData = VOCABULARY_DATA?.A1;
+      const allLevels = Object.values(VOCABULARY_DATA || {});
 
-      if (!levelData) {
-        setWords([]);
-        return;
-      }
-
-      const allWords = Object.values(levelData)
+      const allWords = allLevels
+        .flatMap((level) => Object.values(level))
         .flatMap((unit) => unit?.content?.items || [])
-        .map((w) => ({
-          id: w.word,
+        .map((w, index) => ({
+          id: `${w.word}_${index}`, // unique stable id
           word: w.word,
           definition:
             w.definition_easy ||
@@ -85,7 +83,7 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // ✅ OPTIONS (ID BASED)
+  // ✅ OPTIONS
   useEffect(() => {
     if (!currentWord) return;
     setOptions(generateOptions(currentWord, words));
@@ -106,7 +104,6 @@ export default function ReviewWordsPage() {
     } else {
       playWrong();
 
-      // 🔥 enqueue for review
       setReviewQueue((prev) => [
         ...prev,
         { word: currentWord, delay: 2 },
@@ -114,7 +111,7 @@ export default function ReviewWordsPage() {
     }
   };
 
-  // ✅ NEXT
+  // ✅ NEXT (WITH REVIEW QUEUE)
   const handleNext = () => {
     if (progress + 1 >= TOTAL) {
       setFinished(true);
@@ -143,7 +140,6 @@ export default function ReviewWordsPage() {
     });
   };
 
-  // CLEANUP
   useEffect(() => {
     return () => clearTimeout(timeoutRef.current);
   }, []);
@@ -175,7 +171,7 @@ export default function ReviewWordsPage() {
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
-      <h2>Review</h2>
+      <h2>Mixed Review (A1–C1)</h2>
 
       <p>
         {progress + 1} / {TOTAL}
