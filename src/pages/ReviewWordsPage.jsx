@@ -28,29 +28,28 @@ function removeDuplicates(words = []) {
   });
 }
 
-// ---------- main ----------
 export default function ReviewWordsPage() {
+  const [allWords, setAllWords] = useState([]);
   const [sessionWords, setSessionWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [feedback, setFeedback] = useState(null);
 
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
 
-  // ---------- build session (ONCE) ----------
+  // ---------- build data ----------
   useEffect(() => {
     try {
       setLoading(true);
 
       const allWordsRaw = Object.entries(VOCABULARY_DATA || {})
         .flatMap(([level, levelData]) =>
-          Object.values(levelData).flatMap((unit) =>
-            (unit?.content?.items || []).map((w, index) => ({
-              id: `${level}_${w.word}_${index}`,
+          Object.entries(levelData).flatMap(([unitId, unit]) =>
+            (unit?.content?.items || []).map((w) => ({
+              id: `${level}_${unitId}_${normalize(w.word)}`, // ✅ FIXED
               word: w.word,
               definition:
                 w.definition_hard ||
@@ -62,18 +61,16 @@ export default function ReviewWordsPage() {
         );
 
       const cleaned = removeDuplicates(allWordsRaw).filter(
-        (w) =>
-          w.definition &&
-          w.definition.length > 10 &&
-          w.word.length > 2
+        (w) => w.definition && w.word
       );
 
       const shuffled = shuffleArray(cleaned);
-      const fixedSession = shuffled.slice(0, TOTAL);
 
-      setSessionWords(fixedSession);
+      setAllWords(cleaned);
+      setSessionWords(shuffled.slice(0, TOTAL));
       setCurrentIndex(0);
     } catch {
+      setAllWords([]);
       setSessionWords([]);
     } finally {
       setLoading(false);
@@ -86,22 +83,12 @@ export default function ReviewWordsPage() {
   const options = useMemo(() => {
     if (!currentWord) return [];
 
-    const pool = sessionWords.filter((w) => w.id !== currentWord.id);
+    const pool = allWords.filter((w) => w.id !== currentWord.id);
 
-    const unique = [];
-    const seen = new Set();
+    const picked = shuffleArray(pool).slice(0, 3);
 
-    for (const w of pool) {
-      const key = normalize(w.word);
-      if (!seen.has(key)) {
-        seen.add(key);
-        unique.push(w);
-      }
-    }
-
-    const picked = shuffleArray(unique).slice(0, 3);
     return shuffleArray([currentWord, ...picked]);
-  }, [currentWord, sessionWords]);
+  }, [currentWord, allWords]);
 
   // ---------- check ----------
   const handleCheck = () => {
@@ -110,26 +97,21 @@ export default function ReviewWordsPage() {
     const isCorrect = selected.id === currentWord.id;
 
     setShowResult(true);
-    setFeedback(isCorrect ? "correct" : "wrong");
 
     if (isCorrect) {
       setScore((s) => s + 1);
       playCorrect();
     } else {
       playWrong();
-
-      // 🔥 append wrong word to end (simple review logic)
       setSessionWords((prev) => [...prev, currentWord]);
     }
   };
 
   // ---------- next ----------
   const handleNext = () => {
-    if (!sessionWords.length) return;
-
     const nextIndex = currentIndex + 1;
 
-    if (nextIndex >= sessionWords.length || nextIndex >= TOTAL) {
+    if (nextIndex >= TOTAL) {
       setFinished(true);
       return;
     }
@@ -137,7 +119,6 @@ export default function ReviewWordsPage() {
     setCurrentIndex(nextIndex);
     setSelected(null);
     setShowResult(false);
-    setFeedback(null);
   };
 
   // ---------- UI ----------
@@ -149,28 +130,20 @@ export default function ReviewWordsPage() {
     return (
       <div style={{ padding: 20 }}>
         <h2>Review Complete</h2>
-        <p>
-          Score: {score} / {TOTAL}
-        </p>
+        <p>Score: {score} / {TOTAL}</p>
       </div>
     );
   }
 
   if (!currentWord) {
-    return (
-      <div style={{ padding: 20 }}>
-        Loading next question...
-      </div>
-    );
+    return <div style={{ padding: 20 }}>Loading...</div>;
   }
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
       <h2>Review</h2>
 
-      <p>
-        {Math.min(currentIndex + 1, TOTAL)} / {TOTAL}
-      </p>
+      <p>{currentIndex + 1} / {TOTAL}</p>
 
       <p>{currentWord.definition}</p>
 
