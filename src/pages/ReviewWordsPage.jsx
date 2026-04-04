@@ -39,7 +39,6 @@ export default function ReviewWordsPage() {
   const [allWords, setAllWords] = useState([]);
   const [sessionWords, setSessionWords] = useState([]);
 
-  const [currentWord, setCurrentWord] = useState(null); // ✅ FIX
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
 
@@ -76,11 +75,9 @@ export default function ReviewWordsPage() {
       );
 
       const shuffled = shuffleArray(cleaned);
-      const initial = shuffled.slice(0, TOTAL);
 
       setAllWords(cleaned);
-      setSessionWords(initial);
-      setCurrentWord(initial[0]); // ✅ أول كلمة
+      setSessionWords(shuffled.slice(0, TOTAL));
       setCurrentIndex(0);
       setProgress(0);
     } catch {
@@ -90,6 +87,9 @@ export default function ReviewWordsPage() {
       setLoading(false);
     }
   }, []);
+
+  // ✅ DERIVED STATE (FIX الحقيقي)
+  const currentWord = sessionWords[currentIndex];
 
   // ---------- options ----------
   const options = useMemo(() => {
@@ -128,22 +128,7 @@ export default function ReviewWordsPage() {
       return;
     }
 
-    const nextIndex = currentIndex + 1;
-
-    // ✅ SAFE WORD FETCH
-    const nextWord =
-      nextIndex < sessionWords.length
-        ? sessionWords[nextIndex]
-        : null;
-
-    if (!nextWord) {
-      // fallback (مستحيل تقريبًا بعد ده)
-      setFinished(true);
-      return;
-    }
-
-    setCurrentIndex(nextIndex);
-    setCurrentWord(nextWord); // ✅ FIX الحقيقي
+    setCurrentIndex((prev) => prev + 1);
     setProgress(nextProgress);
 
     setSelected(null);
@@ -166,7 +151,7 @@ export default function ReviewWordsPage() {
   }
 
   if (!currentWord) {
-    return <div style={{ padding: 20 }}>Preparing...</div>;
+    return <div style={{ padding: 20 }}>Loading next...</div>;
   }
 
   return (
