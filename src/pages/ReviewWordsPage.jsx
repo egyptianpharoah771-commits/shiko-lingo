@@ -17,6 +17,10 @@ function removeDuplicates(words = []) {
   });
 }
 
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
 export default function ReviewWordsPage() {
   const timeoutRef = useRef(null);
 
@@ -36,34 +40,51 @@ export default function ReviewWordsPage() {
   const [finished, setFinished] = useState(false);
 
   const [reviewQueue, setReviewQueue] = useState([]);
-  const [usedWords, setUsedWords] = useState(new Set()); // 🔥 جديد
+  const [usedWords, setUsedWords] = useState(new Set());
 
-  // ✅ كل المستويات بدل A1 فقط
+  // 🔥 Progressive Difficulty (بدون لمس engine)
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
 
-      const allWords = Object.values(VOCABULARY_DATA || {})
-        .flatMap((level) =>
-          Object.values(level).flatMap(
-            (unit) => unit?.content?.items || []
+      const allWords = Object.entries(VOCABULARY_DATA || {})
+        .flatMap(([level, levelData]) =>
+          Object.values(levelData).flatMap((unit) =>
+            (unit?.content?.items || []).map((w) => ({
+              id: `${level}_${w.word}`,
+              word: w.word,
+              definition:
+                w.definition_easy ||
+                w.definition_medium ||
+                w.definition ||
+                w.meaning ||
+                "",
+              level,
+            }))
           )
         );
 
-      const prepared = removeDuplicates(
-        allWords.map((w) => ({
-          id: w.word,
-          word: w.word,
-          definition:
-            w.definition_easy ||
-            w.definition_medium ||
-            w.definition ||
-            w.meaning ||
-            "",
-        }))
-      );
+      const clean = removeDuplicates(allWords);
 
-      setWords(prepared);
+      // 🔥 تقسيم حسب المستوى
+      const groups = {
+        A1: shuffle(clean.filter((w) => w.level === "A1")),
+        A2: shuffle(clean.filter((w) => w.level === "A2")),
+        B1: shuffle(clean.filter((w) => w.level === "B1")),
+        B2: shuffle(clean.filter((w) => w.level === "B2")),
+        C1: shuffle(clean.filter((w) => w.level === "C1")),
+      };
+
+      // 🔥 توزيع تدريجي
+      const session = [
+        ...groups.A1.slice(0, 15),
+        ...groups.A2.slice(0, 15),
+        ...groups.B1.slice(0, 10),
+        ...groups.B2.slice(0, 10),
+        ...groups.C1.slice(0, 10),
+      ];
+
+      setWords(session);
     } catch {
       setWords([]);
     } finally {
@@ -119,7 +140,6 @@ export default function ReviewWordsPage() {
       const updated = prev.map((i) => ({ ...i, delay: i.delay - 1 }));
       const ready = updated.find((i) => i.delay <= 0);
 
-      // 🔁 retry words فقط
       if (ready) {
         const idx = words.findIndex((w) => w.id === ready.word.id);
         if (idx !== -1) {
@@ -129,10 +149,7 @@ export default function ReviewWordsPage() {
         return updated.filter((i) => i.word.id !== ready.word.id);
       }
 
-      // 🔥 اختار كلمة جديدة مش متكررة
-      const available = words.filter(
-        (w) => !usedWords.has(w.id)
-      );
+      const available = words.filter((w) => !usedWords.has(w.id));
 
       if (available.length === 0) {
         setFinished(true);
