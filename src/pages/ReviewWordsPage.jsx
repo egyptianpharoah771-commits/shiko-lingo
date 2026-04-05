@@ -42,7 +42,6 @@ export default function ReviewWordsPage() {
   const [reviewQueue, setReviewQueue] = useState([]);
   const [usedWords, setUsedWords] = useState(new Set());
 
-  // 🔥 Progressive Difficulty (بدون لمس engine)
   const fetchWords = useCallback(() => {
     try {
       setLoading(true);
@@ -66,7 +65,6 @@ export default function ReviewWordsPage() {
 
       const clean = removeDuplicates(allWords);
 
-      // 🔥 تقسيم حسب المستوى
       const groups = {
         A1: shuffle(clean.filter((w) => w.level === "A1")),
         A2: shuffle(clean.filter((w) => w.level === "A2")),
@@ -75,7 +73,6 @@ export default function ReviewWordsPage() {
         C1: shuffle(clean.filter((w) => w.level === "C1")),
       };
 
-      // 🔥 توزيع تدريجي
       const session = [
         ...groups.A1.slice(0, 15),
         ...groups.A2.slice(0, 15),
@@ -98,7 +95,6 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 OPTIONS
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -200,6 +196,9 @@ export default function ReviewWordsPage() {
     return () => clearTimeout(timeoutRef.current);
   }, []);
 
+  // 🔥 نسبة التقدم
+  const progressPercent = Math.round((progress / TOTAL) * 100);
+
   if (finished) {
     return (
       <div style={{ padding: 20, textAlign: "center" }}>
@@ -216,7 +215,29 @@ export default function ReviewWordsPage() {
     <div style={{ padding: 20, maxWidth: 500, margin: "auto" }}>
       <h2>Review</h2>
 
-      <p>{progress} / {TOTAL}</p>
+      {/* 🔥 Progress Bar */}
+      <div style={{ marginBottom: 15 }}>
+        <div
+          style={{
+            height: 10,
+            background: "#eee",
+            borderRadius: 10,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: `${progressPercent}%`,
+              height: "100%",
+              background: "#4caf50",
+              transition: "width 0.3s ease",
+            }}
+          />
+        </div>
+        <p style={{ fontSize: 12, marginTop: 5 }}>
+          {progress} / {TOTAL}
+        </p>
+      </div>
 
       <h3 style={{ marginBottom: 15 }}>
         {currentWord.definition}
