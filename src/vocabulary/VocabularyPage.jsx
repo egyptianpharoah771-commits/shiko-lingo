@@ -525,7 +525,12 @@ function VocabularyPage() {
     </div>
   );
 }
+function isUnlocked(level, unitNumber) {
+  if (unitNumber === 1) return true;
 
+  const prevKey = `vocab_${level}_unit${unitNumber - 1}_done`;
+  return localStorage.getItem(prevKey) === "true";
+}
 export default VocabularyPage;
 
 
