@@ -11,11 +11,21 @@ const LEVEL_COLORS = {
   C1: "#D81B60",
 };
 
-// --- Helpers ---
+// ✅ FIX 1: NORMALIZATION
+function normalizeLevel(level) {
+  return String(level || "").toUpperCase().trim();
+}
+
+function buildKey(level, unitNumber) {
+  return `vocab_${normalizeLevel(level)}_unit${unitNumber}_done`;
+}
+
+// ✅ FIX 2: CONSISTENT UNLOCK
 function isUnlocked(level, unitNumber) {
   if (unitNumber === 1) return true;
-  const prevKey = `vocab_${level}_unit${unitNumber - 1}_done`;
-  return localStorage.getItem(prevKey) === "true";
+
+  const key = buildKey(level, unitNumber - 1);
+  return localStorage.getItem(key) === "true";
 }
 
 function VocabularyPage() {
@@ -81,26 +91,33 @@ function VocabularyPage() {
       setLoadingWords(false);
       return;
     }
+
     const loadDefinitions = async () => {
       const results = {};
+
       for (const word of savedWords) {
         try {
           const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+
           let definition = "";
           let example = "";
+
           if (dictRes.ok) {
             const data = await dictRes.json();
             definition = data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition || "";
             example = data?.[0]?.meanings?.[0]?.definitions?.[0]?.example || "";
           }
+
           results[word] = { definition, example };
         } catch (err) {
           results[word] = { definition: "Definition not available", example: "" };
         }
       }
+
       setWordDetails(results);
       setLoadingWords(false);
     };
+
     loadDefinitions();
   }, [savedWords]);
 
@@ -110,23 +127,31 @@ function VocabularyPage() {
         setSearchResult(null);
         return;
       }
+
       setSearchLoading(true);
+
       try {
         const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${searchWord}`);
+
         if (!dictRes.ok) {
           setSearchResult(null);
           setSearchLoading(false);
           return;
         }
+
         const data = await dictRes.json();
+
         const definition = data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition || "";
         const example = data?.[0]?.meanings?.[0]?.definitions?.[0]?.example || "";
+
         setSearchResult({ word: searchWord, definition, example });
       } catch (err) {
         setSearchResult(null);
       }
+
       setSearchLoading(false);
     }, 500);
+
     return () => clearTimeout(handler);
   }, [searchWord]);
 
@@ -186,23 +211,42 @@ function VocabularyPage() {
       {view === "units" && (
         <>
           <button onClick={() => setView("menu")}>← Back</button>
+
           {levels.map((level) => {
-            const units = Object.values(VOCABULARY_DATA[level] || {});
+            const levelData = VOCABULARY_DATA[level] || {};
+
+            // ✅ FIX 3: ORDER SAFE
+            const unitKeys = Object.keys(levelData).sort(
+              (a, b) => Number(a.replace("unit", "")) - Number(b.replace("unit", ""))
+            );
+
             return (
               <div key={level} className={`vocab-level level-${level}`}>
-                <div className="vocab-level-header">{level} Vocabulary</div>
+                <div className="vocab-level-header">
+                  {normalizeLevel(level)} Vocabulary
+                </div>
+
                 <div className="vocab-units">
-                  {units.map((unit, index) => {
+                  {unitKeys.map((unitKey, index) => {
                     const unitNumber = index + 1;
+                    const unit = levelData[unitKey];
+
                     const unlocked = isUnlocked(level, unitNumber);
+
                     return unlocked ? (
-                      <Link key={unitNumber} to={`/vocabulary/${level}/${unitNumber}`} style={{ textDecoration: "none" }}>
+                      <Link
+                        key={unitKey}
+                        to={`/vocabulary/${normalizeLevel(level)}/${unitNumber}`}
+                        style={{ textDecoration: "none" }}
+                      >
                         <div className="vocab-card">
-                          Unit {unitNumber}: {unit.content?.title}
+                          Unit {unitNumber}: {unit?.content?.title}
                         </div>
                       </Link>
                     ) : (
-                      <div key={unitNumber} className="vocab-card locked">🔒 Unit {unitNumber}</div>
+                      <div key={unitKey} className="vocab-card locked">
+                        🔒 Unit {unitNumber}
+                      </div>
                     );
                   })}
                 </div>
