@@ -30,7 +30,6 @@ export default function ReviewWordsPage() {
 
   const [selected, setSelected] = useState(null);
   const [checking, setChecking] = useState(false);
-  const [feedback, setFeedback] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [options, setOptions] = useState([]);
@@ -95,7 +94,6 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
-  // 🔥 SMART OPTIONS (improved quality)
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
@@ -121,8 +119,10 @@ export default function ReviewWordsPage() {
     setOptions(generateOptions());
   }, [currentWord, generateOptions]);
 
+  // 🔥 FIX: رجوع صوت السليكت
   const handleSelect = (opt) => {
     if (checking) return;
+
     setSelected(opt);
 
     try {
@@ -139,7 +139,6 @@ export default function ReviewWordsPage() {
     setProgress((p) => p + 1);
     setSelected(null);
     setChecking(false);
-    setFeedback(null);
 
     setReviewQueue((prev) => {
       const updated = prev.map((i) => ({ ...i, delay: i.delay - 1 }));
@@ -186,7 +185,6 @@ export default function ReviewWordsPage() {
       normalize(selected) === normalize(currentWord.word);
 
     setChecking(true);
-    setFeedback(isCorrect ? "correct" : "wrong");
 
     if (isCorrect) {
       playCorrect();
@@ -238,22 +236,14 @@ export default function ReviewWordsPage() {
     <div style={{ padding: 20, maxWidth: 500, margin: "auto" }}>
       <h2>Review</h2>
 
-      {/* 🔥 Progress */}
+      {/* Progress */}
       <div style={{ marginBottom: 15 }}>
-        <div
-          style={{
-            height: 10,
-            background: "#eee",
-            borderRadius: 10,
-            overflow: "hidden",
-          }}
-        >
+        <div style={{ height: 10, background: "#eee", borderRadius: 10 }}>
           <div
             style={{
               width: `${progressPercent}%`,
               height: "100%",
               background: "#4caf50",
-              transition: "width 0.3s ease",
             }}
           />
         </div>
@@ -281,13 +271,12 @@ export default function ReviewWordsPage() {
           return (
             <button
               key={i}
-              onClick={() => setSelected(opt)}
+              onClick={() => handleSelect(opt)}
               disabled={checking}
               style={{
                 padding: 14,
                 borderRadius: 12,
                 border: "1px solid #ddd",
-                cursor: "pointer",
                 background: bg,
                 color: checking ? "#fff" : "#000",
               }}
