@@ -95,17 +95,26 @@ export default function ReviewWordsPage() {
 
   const currentWord = words[currentIndex];
 
+  // 🔥 SMART OPTIONS (improved quality)
   const generateOptions = useCallback(() => {
     if (!currentWord || words.length < 4) return [];
 
-    const wrong = words
+    const targetLength = currentWord.word.length;
+
+    const similar = words.filter((w) => {
+      return (
+        w.word !== currentWord.word &&
+        Math.abs(w.word.length - targetLength) <= 2
+      );
+    });
+
+    const source = similar.length >= 3 ? similar : words;
+
+    const wrong = shuffle(source)
       .filter((w) => w.word !== currentWord.word)
-      .sort(() => 0.5 - Math.random())
       .slice(0, 3);
 
-    return [...wrong, currentWord]
-      .sort(() => 0.5 - Math.random())
-      .map((w) => w.word);
+    return shuffle([currentWord, ...wrong]).map((w) => w.word);
   }, [currentWord, words]);
 
   useEffect(() => {
@@ -197,28 +206,12 @@ export default function ReviewWordsPage() {
   }, []);
 
   const progressPercent = Math.round((progress / TOTAL) * 100);
-  const scorePercent = Math.round((progress / TOTAL) * 100);
-
-  // 🔥 تقييم الأداء
-  function getPerformanceMessage(percent) {
-    if (percent >= 90) return "🔥 Excellent!";
-    if (percent >= 75) return "💪 Great Job!";
-    if (percent >= 50) return "👍 Good Progress!";
-    return "📚 Keep Practicing!";
-  }
 
   if (finished) {
     return (
       <div style={{ padding: 30, textAlign: "center" }}>
-        <h2>{getPerformanceMessage(scorePercent)}</h2>
-
-        <p style={{ fontSize: 18, margin: "10px 0" }}>
-          You completed {TOTAL} questions
-        </p>
-
-        <p style={{ fontSize: 16, opacity: 0.7 }}>
-          Keep going to improve your English 🚀
-        </p>
+        <h2>🔥 Great Job!</h2>
+        <p>{progress} / {TOTAL}</p>
 
         <button
           onClick={() => window.location.reload()}
@@ -230,7 +223,6 @@ export default function ReviewWordsPage() {
             background: "#007bff",
             color: "#fff",
             border: "none",
-            fontSize: 16,
           }}
         >
           Restart
@@ -246,7 +238,7 @@ export default function ReviewWordsPage() {
     <div style={{ padding: 20, maxWidth: 500, margin: "auto" }}>
       <h2>Review</h2>
 
-      {/* Progress Bar */}
+      {/* 🔥 Progress */}
       <div style={{ marginBottom: 15 }}>
         <div
           style={{
@@ -265,9 +257,7 @@ export default function ReviewWordsPage() {
             }}
           />
         </div>
-        <p style={{ fontSize: 12, marginTop: 5 }}>
-          {progress} / {TOTAL}
-        </p>
+        <p style={{ fontSize: 12 }}>{progress} / {TOTAL}</p>
       </div>
 
       <h3 style={{ marginBottom: 15 }}>
@@ -291,7 +281,7 @@ export default function ReviewWordsPage() {
           return (
             <button
               key={i}
-              onClick={() => handleSelect(opt)}
+              onClick={() => setSelected(opt)}
               disabled={checking}
               style={{
                 padding: 14,
@@ -300,7 +290,6 @@ export default function ReviewWordsPage() {
                 cursor: "pointer",
                 background: bg,
                 color: checking ? "#fff" : "#000",
-                fontSize: 16,
               }}
             >
               {opt}
