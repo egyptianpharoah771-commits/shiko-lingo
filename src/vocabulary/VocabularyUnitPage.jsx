@@ -71,7 +71,7 @@ export default function VocabularyUnitPage() {
   }, [normalizedLevel, unitKey]);
 
   /* ======================
-     Audio (DEBUG VERSION)
+     Audio (FIXED)
   ====================== */
   const playAudio = (word) => {
     if (!word) return;
@@ -79,27 +79,10 @@ export default function VocabularyUnitPage() {
     const fileName = normalizeWord(word);
     const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
-    console.log("🔊 TRY:", src);
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
-    const audio = new Audio(src);
-    audioRef.current = audio;
-
-    audio.oncanplaythrough = () => {
-      console.log("✅ READY:", src);
-    };
-
-    audio.onerror = () => {
-      console.error("❌ ERROR LOADING:", src);
-    };
-
-    audio.play().catch((e) => {
-      console.error("❌ PLAY FAILED:", e, src);
-    });
+    try {
+      const audio = new Audio(src);
+      audio.play().catch(() => {});
+    } catch {}
   };
 
   /* ======================
@@ -127,6 +110,13 @@ export default function VocabularyUnitPage() {
   };
 
   /* ======================
+     Progress
+  ====================== */
+  const progressPercent = questions.length
+    ? Math.round((current / questions.length) * 100)
+    : 0;
+
+  /* ======================
      UI
   ====================== */
   if (!content || !content.items?.length) {
@@ -136,14 +126,59 @@ export default function VocabularyUnitPage() {
   return (
     <div className="vocab-page vocab-unit-page">
 
-      {/* 🔹 WORD LIST */}
+      {/* 🔥 PROGRESS BAR */}
+      <div style={{ marginBottom: 20 }}>
+        <div
+          style={{
+            height: 8,
+            background: "#eee",
+            borderRadius: 10,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              width: `${progressPercent}%`,
+              height: "100%",
+              background: "#4caf50",
+              transition: "width 0.3s ease",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* 🔹 WORD LIST (IMPROVED UI) */}
       <div className="vocab-items">
         {content.items.map((item, i) => (
-          <div key={i} className="vocab-item-card">
-            <div className="vocab-item-header">
+          <div
+            key={i}
+            className="vocab-item-card"
+            style={{
+              padding: 16,
+              borderRadius: 14,
+              border: "1px solid #eee",
+              marginBottom: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 8,
+              }}
+            >
               <div>
-                <div className="vocab-item-word">{item.word}</div>
-                <div className="vocab-item-phonetic">
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {item.word}
+                </div>
+
+                <div style={{ opacity: 0.6 }}>
                   {item.phonetic}
                 </div>
               </div>
@@ -153,7 +188,9 @@ export default function VocabularyUnitPage() {
               </button>
             </div>
 
-            <div>{item.meaning}</div>
+            <div style={{ fontSize: 15 }}>
+              {item.meaning}
+            </div>
           </div>
         ))}
       </div>
@@ -161,11 +198,17 @@ export default function VocabularyUnitPage() {
       {/* 🔹 QUESTION */}
       {question && (
         <div style={{ marginTop: 30 }}>
-          <div className="vocab-question-text">
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: "bold",
+              marginBottom: 15,
+            }}
+          >
             {question.question}
           </div>
 
-          <div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {question.shuffledOptions.map((opt) => (
               <AnswerOption
                 key={opt}
@@ -187,18 +230,38 @@ export default function VocabularyUnitPage() {
             ))}
           </div>
 
+          {/* 🔥 BUTTON */}
           {!showResult ? (
-            <button disabled={!selected} onClick={handleCheck}>
+            <button
+              disabled={!selected}
+              onClick={handleCheck}
+              style={{
+                marginTop: 20,
+                width: "100%",
+                padding: 14,
+                borderRadius: 10,
+              }}
+            >
               Check
             </button>
           ) : (
-            <button onClick={handleNext}>
+            <button
+              onClick={handleNext}
+              style={{
+                marginTop: 20,
+                width: "100%",
+                padding: 14,
+                borderRadius: 10,
+                background: "#007bff",
+                color: "#fff",
+                border: "none",
+              }}
+            >
               {isLast ? "Next Unit" : "Next"}
             </button>
           )}
         </div>
       )}
-
     </div>
   );
 }
