@@ -196,14 +196,45 @@ export default function ReviewWordsPage() {
     return () => clearTimeout(timeoutRef.current);
   }, []);
 
-  // 🔥 نسبة التقدم
   const progressPercent = Math.round((progress / TOTAL) * 100);
+  const scorePercent = Math.round((progress / TOTAL) * 100);
+
+  // 🔥 تقييم الأداء
+  function getPerformanceMessage(percent) {
+    if (percent >= 90) return "🔥 Excellent!";
+    if (percent >= 75) return "💪 Great Job!";
+    if (percent >= 50) return "👍 Good Progress!";
+    return "📚 Keep Practicing!";
+  }
 
   if (finished) {
     return (
-      <div style={{ padding: 20, textAlign: "center" }}>
-        <h2>✅ Session Complete</h2>
-        <p>{progress} / {TOTAL}</p>
+      <div style={{ padding: 30, textAlign: "center" }}>
+        <h2>{getPerformanceMessage(scorePercent)}</h2>
+
+        <p style={{ fontSize: 18, margin: "10px 0" }}>
+          You completed {TOTAL} questions
+        </p>
+
+        <p style={{ fontSize: 16, opacity: 0.7 }}>
+          Keep going to improve your English 🚀
+        </p>
+
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            marginTop: 20,
+            padding: 14,
+            width: "100%",
+            borderRadius: 10,
+            background: "#007bff",
+            color: "#fff",
+            border: "none",
+            fontSize: 16,
+          }}
+        >
+          Restart
+        </button>
       </div>
     );
   }
@@ -215,7 +246,7 @@ export default function ReviewWordsPage() {
     <div style={{ padding: 20, maxWidth: 500, margin: "auto" }}>
       <h2>Review</h2>
 
-      {/* 🔥 Progress Bar */}
+      {/* Progress Bar */}
       <div style={{ marginBottom: 15 }}>
         <div
           style={{
