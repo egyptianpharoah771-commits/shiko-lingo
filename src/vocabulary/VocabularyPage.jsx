@@ -187,18 +187,7 @@ function VocabularyPage() {
         let arabic = "";
 
         if (definition) {
-          const transRes = await fetch(
-            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
-              definition
-            )}&langpair=en|ar`
-          );
-
-          if (transRes.ok) {
-            const t = await transRes.json();
-            arabic = t?.responseData?.translatedText || "";
-          }
-        }
-
+          
         setSearchResult({
           word: searchWord,
           definition,
@@ -445,7 +434,7 @@ function VocabularyPage() {
 
           {levels.map((level) => {
             const units = Object.values(VOCABULARY_DATA[level] || {});
-            const completed = getProgress(level);
+            
 
             return (
               <div key={level} className={`vocab-level level-${level}`}>
@@ -478,10 +467,7 @@ function VocabularyPage() {
                   {units.map((unit, index) => {
                     const unitNumber = index + 1;
 
-                    const unlocked =
-                      unitNumber === 1 ||
-                      completed.includes(unitNumber - 1);
-
+const unlocked = isUnlocked(level, unitNumber);
                     return unlocked ? (
                       <Link
                         key={unitNumber}
@@ -531,6 +517,6 @@ function isUnlocked(level, unitNumber) {
   const prevKey = `vocab_${level}_unit${unitNumber - 1}_done`;
   return localStorage.getItem(prevKey) === "true";
 }
-export default VocabularyPage;
+
 
 
