@@ -71,7 +71,7 @@ export default function VocabularyUnitPage() {
   }, [normalizedLevel, unitKey]);
 
   /* ======================
-     Audio (FIXED)
+     Audio
   ====================== */
   const playAudio = (word) => {
     if (!word) return;
@@ -100,6 +100,10 @@ export default function VocabularyUnitPage() {
 
   const handleNext = () => {
     if (isLast) {
+      // 🔥 FIX: حفظ إن الوحدة خلصت
+      const key = `vocab_${normalizedLevel}_${unitKey}_done`;
+      localStorage.setItem(key, "true");
+
       navigate(`/vocabulary/${level}`);
       return;
     }
@@ -126,7 +130,7 @@ export default function VocabularyUnitPage() {
   return (
     <div className="vocab-page vocab-unit-page">
 
-      {/* 🔥 PROGRESS BAR */}
+      {/* Progress Bar */}
       <div style={{ marginBottom: 20 }}>
         <div
           style={{
@@ -147,7 +151,7 @@ export default function VocabularyUnitPage() {
         </div>
       </div>
 
-      {/* 🔹 WORD LIST (IMPROVED UI) */}
+      {/* Words */}
       <div className="vocab-items">
         {content.items.map((item, i) => (
           <div
@@ -160,24 +164,11 @@ export default function VocabularyUnitPage() {
               marginBottom: 12,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 8,
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
               <div>
-                <div
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "bold",
-                  }}
-                >
+                <div style={{ fontSize: 18, fontWeight: "bold" }}>
                   {item.word}
                 </div>
-
                 <div style={{ opacity: 0.6 }}>
                   {item.phonetic}
                 </div>
@@ -188,23 +179,17 @@ export default function VocabularyUnitPage() {
               </button>
             </div>
 
-            <div style={{ fontSize: 15 }}>
+            <div style={{ marginTop: 8 }}>
               {item.meaning}
             </div>
           </div>
         ))}
       </div>
 
-      {/* 🔹 QUESTION */}
+      {/* Question */}
       {question && (
         <div style={{ marginTop: 30 }}>
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: "bold",
-              marginBottom: 15,
-            }}
-          >
+          <div style={{ fontSize: 18, fontWeight: "bold", marginBottom: 15 }}>
             {question.question}
           </div>
 
@@ -230,7 +215,6 @@ export default function VocabularyUnitPage() {
             ))}
           </div>
 
-          {/* 🔥 BUTTON */}
           {!showResult ? (
             <button
               disabled={!selected}
