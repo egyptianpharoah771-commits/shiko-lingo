@@ -1,5 +1,5 @@
 /* =========================
-   🌤️ LIGHT THEME (SAFE)
+   🌤️ LIGHT THEME (FINAL)
 ========================= */
 
 :root {
@@ -100,8 +100,6 @@
   color: var(--vocab-text);
   font-size: 15px;
   font-weight: 600;
-
-  /* ✨ animation */
   animation: slideUp 0.4s ease;
   transition: all 0.25s ease;
 }
@@ -158,6 +156,22 @@
 .vocab-item-meaning {
   color: var(--vocab-text);
   margin-top: 6px;
+}
+
+/* =========================
+   OPTIONS (🔥 CENTER FIX)
+========================= */
+
+.vocab-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 🔥 centered */
+  gap: 10px;
+}
+
+.vocab-options > * {
+  width: 100%;
+  max-width: 400px; /* 🔥 centered width */
 }
 
 /* =========================
