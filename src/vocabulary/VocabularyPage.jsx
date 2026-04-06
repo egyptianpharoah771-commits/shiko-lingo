@@ -3,41 +3,64 @@ import { useEffect, useState } from "react";
 import { VOCABULARY_DATA } from "./vocabularyIndex";
 import "./vocabulary.css";
 
-/* ===== Unified Keys ===== */
+/* ======================
+   Key System
+====================== */
 function normalizeLevel(level) {
   return String(level || "").toUpperCase().trim();
 }
+
 function buildKey(level, unitNumber) {
   return `vocab_${normalizeLevel(level)}_unit${unitNumber}_done`;
 }
+
 function isUnlocked(level, unitNumber) {
   if (unitNumber === 1) return true;
+
   const key = buildKey(level, unitNumber - 1);
   return localStorage.getItem(key) === "true";
 }
 
-export default function VocabularyPage() {
+/* ======================
+   🔥 AUTO FIX STORAGE
+====================== */
+function fixStorage() {
+  const keys = Object.keys(localStorage);
+
+  keys.forEach((k) => {
+    if (!k.startsWith("vocab_")) return;
+
+    const parts = k.split("_");
+
+    if (parts.length < 4) return;
+
+    const level = parts[1];
+    const unitPart = parts[2]; // unit3
+
+    const unitNumber = Number(unitPart.replace("unit", ""));
+
+    if (!unitNumber) return;
+
+    const correctKey = buildKey(level, unitNumber);
+
+    if (correctKey !== k) {
+      const value = localStorage.getItem(k);
+
+      localStorage.setItem(correctKey, value || "true");
+      localStorage.removeItem(k);
+
+      console.log("🔧 FIXED:", k, "→", correctKey);
+    }
+  });
+}
+
+function VocabularyPage() {
   const levels = Object.keys(VOCABULARY_DATA || {});
   const [view, setView] = useState("main");
 
-  /* ===== One-time migration (fix old keys) ===== */
+  // 🔥 RUN ONCE
   useEffect(() => {
-    const keys = Object.keys(localStorage);
-    keys.forEach((k) => {
-      if (k.startsWith("vocab_") && k.endsWith("_done")) {
-        const parts = k.split("_"); // vocab, level, unitX, done
-        if (parts.length === 4) {
-          const oldLevel = parts[1];
-          const unit = parts[2]; // unit3
-          const normalized = `vocab_${normalizeLevel(oldLevel)}_${unit}_done`;
-          if (normalized !== k) {
-            const val = localStorage.getItem(k);
-            localStorage.setItem(normalized, val || "true");
-            localStorage.removeItem(k);
-          }
-        }
-      }
-    });
+    fixStorage();
   }, []);
 
   return (
@@ -74,7 +97,6 @@ export default function VocabularyPage() {
           {levels.map((level) => {
             const levelData = VOCABULARY_DATA[level] || {};
 
-            // stable order
             const unitKeys = Object.keys(levelData).sort(
               (a, b) =>
                 Number(a.replace("unit", "")) - Number(b.replace("unit", ""))
@@ -90,6 +112,7 @@ export default function VocabularyPage() {
                   {unitKeys.map((unitKey, index) => {
                     const unitNumber = index + 1;
                     const unit = levelData[unitKey];
+
                     const unlocked = isUnlocked(level, unitNumber);
 
                     return unlocked ? (
@@ -117,3 +140,5 @@ export default function VocabularyPage() {
     </div>
   );
 }
+
+export default VocabularyPage;
