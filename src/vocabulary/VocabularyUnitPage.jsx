@@ -16,6 +16,7 @@ function shuffle(array) {
   }
   return copy;
 }
+
 function normalizeWord(word) {
   return word
     ?.toLowerCase()
@@ -23,9 +24,11 @@ function normalizeWord(word) {
     .replace(/\s+/g, "_")
     .replace(/[^\w_]/g, "");
 }
+
 function normalizeLevel(level) {
   return String(level || "").toUpperCase().trim();
 }
+
 function buildKey(level, unitNumber) {
   return `vocab_${normalizeLevel(level)}_unit${unitNumber}_done`;
 }
@@ -75,8 +78,10 @@ export default function VocabularyUnitPage() {
   /* ===== Audio ===== */
   const playAudio = (word) => {
     if (!word) return;
+
     const fileName = normalizeWord(word);
     const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
+
     try {
       const audio = new Audio(src);
       audio.play().catch(() => {});
@@ -96,10 +101,20 @@ export default function VocabularyUnitPage() {
   const handleNext = () => {
     if (isLast) {
       const key = buildKey(normalizedLevel, unitNumber);
+
+      // ✅ save first
       localStorage.setItem(key, "true");
-      navigate(`/vocabulary/${normalizeLevel(level)}`);
+
+      console.log("✅ SAVED:", key);
+
+      // 🔥 CRITICAL FIX: delay navigation
+      setTimeout(() => {
+        navigate(`/vocabulary/${normalizeLevel(level)}`);
+      }, 50);
+
       return;
     }
+
     setCurrent((p) => p + 1);
     setSelected(null);
     setShowResult(false);
@@ -123,6 +138,7 @@ export default function VocabularyUnitPage() {
                   {item.phonetic}
                 </div>
               </div>
+
               <button
                 className="vocab-audio-btn"
                 onClick={() => playAudio(item.word)}
@@ -130,6 +146,7 @@ export default function VocabularyUnitPage() {
                 🔊
               </button>
             </div>
+
             <div className="vocab-item-meaning">
               {item.meaning}
             </div>
