@@ -27,6 +27,15 @@ function normalizeWord(word) {
     .replace(/[^\w_]/g, "");
 }
 
+// 🔥 FIX: توحيد key system
+function normalizeLevel(level) {
+  return String(level || "").toUpperCase().trim();
+}
+
+function buildKey(level, unitNumber) {
+  return `vocab_${normalizeLevel(level)}_unit${unitNumber}_done`;
+}
+
 export default function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
@@ -34,7 +43,8 @@ export default function VocabularyUnitPage() {
   const normalizedLevel =
     typeof level === "string" ? level.trim().toUpperCase() : null;
 
-  const unitKey = `unit${Number(unitId)}`;
+  const unitNumber = Number(unitId);
+  const unitKey = `unit${unitNumber}`;
 
   const [content, setContent] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -100,11 +110,15 @@ export default function VocabularyUnitPage() {
 
   const handleNext = () => {
     if (isLast) {
-      // 🔥 FIX: حفظ إن الوحدة خلصت
-      const key = `vocab_${normalizedLevel}_${unitKey}_done`;
+      // 🔥 FIX الحقيقي هنا
+      const key = buildKey(normalizedLevel, unitNumber);
+
       localStorage.setItem(key, "true");
 
-      navigate(`/vocabulary/${level}`);
+      console.log("✅ SAVED KEY:", key);
+      console.log("📦 STORAGE:", localStorage);
+
+      navigate(`/vocabulary/${normalizeLevel(level)}`);
       return;
     }
 
