@@ -21,52 +21,15 @@ function isUnlocked(level, unitNumber) {
   return localStorage.getItem(key) === "true";
 }
 
-/* ======================
-   🔥 AUTO FIX STORAGE
-====================== */
-function fixStorage() {
-  const keys = Object.keys(localStorage);
-
-  keys.forEach((k) => {
-    if (!k.startsWith("vocab_")) return;
-
-    const parts = k.split("_");
-
-    if (parts.length < 4) return;
-
-    const level = parts[1];
-    const unitPart = parts[2]; // unit3
-
-    const unitNumber = Number(unitPart.replace("unit", ""));
-
-    if (!unitNumber) return;
-
-    const correctKey = buildKey(level, unitNumber);
-
-    if (correctKey !== k) {
-      const value = localStorage.getItem(k);
-
-      localStorage.setItem(correctKey, value || "true");
-      localStorage.removeItem(k);
-
-      console.log("🔧 FIXED:", k, "→", correctKey);
-    }
-  });
-}
-
-function VocabularyPage() {
+export default function VocabularyPage() {
   const levels = Object.keys(VOCABULARY_DATA || {});
   const [view, setView] = useState("main");
-
-  // 🔥 RUN ONCE
-  useEffect(() => {
-    fixStorage();
-  }, []);
 
   return (
     <div className="vocab-page">
       <h1>📘 Vocabulary</h1>
 
+      {/* ===== MAIN ===== */}
       {view === "main" && (
         <div style={{ marginTop: 40, display: "flex", justifyContent: "center" }}>
           <div onClick={() => setView("menu")} className="main-card">
@@ -76,20 +39,24 @@ function VocabularyPage() {
         </div>
       )}
 
+      {/* ===== MENU ===== */}
       {view === "menu" && (
         <div className="vocab-menu-grid">
           <div onClick={() => setView("search")} className="menu-card">
             <h2>🔎 Search</h2>
           </div>
+
           <div onClick={() => setView("saved")} className="menu-card">
             <h2>⭐ Saved</h2>
           </div>
+
           <div onClick={() => setView("units")} className="menu-card">
             <h2>📚 Units</h2>
           </div>
         </div>
       )}
 
+      {/* ===== UNITS ===== */}
       {view === "units" && (
         <>
           <button onClick={() => setView("menu")}>← Back</button>
@@ -109,9 +76,11 @@ function VocabularyPage() {
                 </div>
 
                 <div className="vocab-units">
-                  {unitKeys.map((unitKey, index) => {
-                    const unitNumber = index + 1;
+                  {unitKeys.map((unitKey) => {
                     const unit = levelData[unitKey];
+
+                    // 🔥 FIX الحقيقي هنا
+                    const unitNumber = unit.id;
 
                     const unlocked = isUnlocked(level, unitNumber);
 
@@ -140,5 +109,3 @@ function VocabularyPage() {
     </div>
   );
 }
-
-export default VocabularyPage;
