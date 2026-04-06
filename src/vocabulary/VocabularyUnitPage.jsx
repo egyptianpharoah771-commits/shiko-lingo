@@ -6,9 +6,7 @@ import "./vocabulary.css";
 import { VOCABULARY_DATA } from "./vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
-/* ======================
-   Utils
-====================== */
+/* ===== Utils ===== */
 function shuffle(array) {
   if (!Array.isArray(array)) return [];
   const copy = [...array];
@@ -18,7 +16,6 @@ function shuffle(array) {
   }
   return copy;
 }
-
 function normalizeWord(word) {
   return word
     ?.toLowerCase()
@@ -26,12 +23,9 @@ function normalizeWord(word) {
     .replace(/\s+/g, "_")
     .replace(/[^\w_]/g, "");
 }
-
-// 🔥 FIX: توحيد key system
 function normalizeLevel(level) {
   return String(level || "").toUpperCase().trim();
 }
-
 function buildKey(level, unitNumber) {
   return `vocab_${normalizeLevel(level)}_unit${unitNumber}_done`;
 }
@@ -54,9 +48,7 @@ export default function VocabularyUnitPage() {
 
   const audioRef = useRef(null);
 
-  /* ======================
-     Load Data
-  ====================== */
+  /* ===== Load Data ===== */
   useEffect(() => {
     const unitData =
       VOCABULARY_DATA?.[normalizedLevel]?.[unitKey];
@@ -80,120 +72,65 @@ export default function VocabularyUnitPage() {
     setShowResult(false);
   }, [normalizedLevel, unitKey]);
 
-  /* ======================
-     Audio
-  ====================== */
+  /* ===== Audio ===== */
   const playAudio = (word) => {
     if (!word) return;
-
     const fileName = normalizeWord(word);
     const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
-
     try {
       const audio = new Audio(src);
       audio.play().catch(() => {});
     } catch {}
   };
 
-  /* ======================
-     Question Logic
-  ====================== */
+  /* ===== Logic ===== */
   const question = questions[current];
   const isLast = current === questions.length - 1;
 
   const handleCheck = () => {
     if (selected === question.correctAnswer) playCorrect();
     else playWrong();
-
     setShowResult(true);
   };
 
   const handleNext = () => {
     if (isLast) {
-      // 🔥 FIX الحقيقي هنا
       const key = buildKey(normalizedLevel, unitNumber);
-
       localStorage.setItem(key, "true");
-
-      console.log("✅ SAVED KEY:", key);
-      console.log("📦 STORAGE:", localStorage);
-
       navigate(`/vocabulary/${normalizeLevel(level)}`);
       return;
     }
-
     setCurrent((p) => p + 1);
     setSelected(null);
     setShowResult(false);
   };
 
-  /* ======================
-     Progress
-  ====================== */
-  const progressPercent = questions.length
-    ? Math.round((current / questions.length) * 100)
-    : 0;
-
-  /* ======================
-     UI
-  ====================== */
+  /* ===== UI ===== */
   if (!content || !content.items?.length) {
     return <div style={{ padding: 40 }}>No words available</div>;
   }
 
   return (
     <div className="vocab-page vocab-unit-page">
-
-      {/* Progress Bar */}
-      <div style={{ marginBottom: 20 }}>
-        <div
-          style={{
-            height: 8,
-            background: "#eee",
-            borderRadius: 10,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: `${progressPercent}%`,
-              height: "100%",
-              background: "#4caf50",
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
       {/* Words */}
       <div className="vocab-items">
         {content.items.map((item, i) => (
-          <div
-            key={i}
-            className="vocab-item-card"
-            style={{
-              padding: 16,
-              borderRadius: 14,
-              border: "1px solid #eee",
-              marginBottom: 12,
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div key={i} className="vocab-item-card">
+            <div className="vocab-item-header">
               <div>
-                <div style={{ fontSize: 18, fontWeight: "bold" }}>
-                  {item.word}
-                </div>
-                <div style={{ opacity: 0.6 }}>
+                <div className="vocab-item-word">{item.word}</div>
+                <div className="vocab-item-phonetic">
                   {item.phonetic}
                 </div>
               </div>
-
-              <button onClick={() => playAudio(item.word)}>
+              <button
+                className="vocab-audio-btn"
+                onClick={() => playAudio(item.word)}
+              >
                 🔊
               </button>
             </div>
-
-            <div style={{ marginTop: 8 }}>
+            <div className="vocab-item-meaning">
               {item.meaning}
             </div>
           </div>
@@ -203,11 +140,11 @@ export default function VocabularyUnitPage() {
       {/* Question */}
       {question && (
         <div style={{ marginTop: 30 }}>
-          <div style={{ fontSize: 18, fontWeight: "bold", marginBottom: 15 }}>
+          <div className="vocab-question-text">
             {question.question}
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="vocab-options">
             {question.shuffledOptions.map((opt) => (
               <AnswerOption
                 key={opt}
@@ -231,29 +168,16 @@ export default function VocabularyUnitPage() {
 
           {!showResult ? (
             <button
+              className="vocab-btn primary"
               disabled={!selected}
               onClick={handleCheck}
-              style={{
-                marginTop: 20,
-                width: "100%",
-                padding: 14,
-                borderRadius: 10,
-              }}
             >
               Check
             </button>
           ) : (
             <button
+              className="vocab-btn success"
               onClick={handleNext}
-              style={{
-                marginTop: 20,
-                width: "100%",
-                padding: 14,
-                borderRadius: 10,
-                background: "#007bff",
-                color: "#fff",
-                border: "none",
-              }}
             >
               {isLast ? "Next Unit" : "Next"}
             </button>

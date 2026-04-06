@@ -3,157 +3,42 @@ import { useEffect, useState } from "react";
 import { VOCABULARY_DATA } from "./vocabularyIndex";
 import "./vocabulary.css";
 
-const LEVEL_COLORS = {
-  A1: "#4A90E2",
-  A2: "#43A047",
-  B1: "#F9A825",
-  B2: "#FB8C00",
-  C1: "#D81B60",
-};
-
-// ✅ FIX 1: NORMALIZATION
+/* ===== Unified Keys ===== */
 function normalizeLevel(level) {
   return String(level || "").toUpperCase().trim();
 }
-
 function buildKey(level, unitNumber) {
   return `vocab_${normalizeLevel(level)}_unit${unitNumber}_done`;
 }
-
-// ✅ FIX 2: CONSISTENT UNLOCK
 function isUnlocked(level, unitNumber) {
   if (unitNumber === 1) return true;
-
   const key = buildKey(level, unitNumber - 1);
   return localStorage.getItem(key) === "true";
 }
 
-function VocabularyPage() {
+export default function VocabularyPage() {
   const levels = Object.keys(VOCABULARY_DATA || {});
-
   const [view, setView] = useState("main");
-  const [savedWords, setSavedWords] = useState([]);
-  const [filteredWords, setFilteredWords] = useState([]);
-  const [searchSaved, setSearchSaved] = useState("");
-  const [wordDetails, setWordDetails] = useState({});
-  const [loadingWords, setLoadingWords] = useState(true);
 
-  const [searchWord, setSearchWord] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
-  const [searchLoading, setSearchLoading] = useState(false);
-
-  const speakWord = (word) => {
-    try {
-      if (!word) return;
-      console.warn("TTS disabled.");
-    } catch (err) {
-      console.error("speakWord error:", err);
-    }
-  };
-
-  const removeWord = (word) => {
-    const updated = savedWords.filter((w) => w !== word);
-    localStorage.setItem("VOCAB_SAVED", JSON.stringify(updated));
-    setSavedWords(updated);
-    setFilteredWords(updated);
-
-    const copy = { ...wordDetails };
-    delete copy[word];
-    setWordDetails(copy);
-  };
-
-  const saveWord = (word) => {
-    if (!word || savedWords.includes(word)) return;
-    const updated = [...savedWords, word];
-    localStorage.setItem("VOCAB_SAVED", JSON.stringify(updated));
-    setSavedWords(updated);
-    setFilteredWords(updated);
-  };
-
+  /* ===== One-time migration (fix old keys) ===== */
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("VOCAB_SAVED") || "[]");
-    setSavedWords(saved);
-    setFilteredWords(saved);
-  }, []);
-
-  useEffect(() => {
-    const q = searchSaved.trim().toLowerCase();
-    if (!q) {
-      setFilteredWords(savedWords);
-      return;
-    }
-    const filtered = savedWords.filter((w) => w.toLowerCase().includes(q));
-    setFilteredWords(filtered);
-  }, [searchSaved, savedWords]);
-
-  useEffect(() => {
-    if (!savedWords.length) {
-      setLoadingWords(false);
-      return;
-    }
-
-    const loadDefinitions = async () => {
-      const results = {};
-
-      for (const word of savedWords) {
-        try {
-          const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-
-          let definition = "";
-          let example = "";
-
-          if (dictRes.ok) {
-            const data = await dictRes.json();
-            definition = data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition || "";
-            example = data?.[0]?.meanings?.[0]?.definitions?.[0]?.example || "";
+    const keys = Object.keys(localStorage);
+    keys.forEach((k) => {
+      if (k.startsWith("vocab_") && k.endsWith("_done")) {
+        const parts = k.split("_"); // vocab, level, unitX, done
+        if (parts.length === 4) {
+          const oldLevel = parts[1];
+          const unit = parts[2]; // unit3
+          const normalized = `vocab_${normalizeLevel(oldLevel)}_${unit}_done`;
+          if (normalized !== k) {
+            const val = localStorage.getItem(k);
+            localStorage.setItem(normalized, val || "true");
+            localStorage.removeItem(k);
           }
-
-          results[word] = { definition, example };
-        } catch (err) {
-          results[word] = { definition: "Definition not available", example: "" };
         }
       }
-
-      setWordDetails(results);
-      setLoadingWords(false);
-    };
-
-    loadDefinitions();
-  }, [savedWords]);
-
-  useEffect(() => {
-    const handler = setTimeout(async () => {
-      if (!searchWord || searchWord.length < 2) {
-        setSearchResult(null);
-        return;
-      }
-
-      setSearchLoading(true);
-
-      try {
-        const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${searchWord}`);
-
-        if (!dictRes.ok) {
-          setSearchResult(null);
-          setSearchLoading(false);
-          return;
-        }
-
-        const data = await dictRes.json();
-
-        const definition = data?.[0]?.meanings?.[0]?.definitions?.[0]?.definition || "";
-        const example = data?.[0]?.meanings?.[0]?.definitions?.[0]?.example || "";
-
-        setSearchResult({ word: searchWord, definition, example });
-      } catch (err) {
-        setSearchResult(null);
-      }
-
-      setSearchLoading(false);
-    }, 500);
-
-    return () => clearTimeout(handler);
-  }, [searchWord]);
+    });
+  }, []);
 
   return (
     <div className="vocab-page">
@@ -170,42 +55,16 @@ function VocabularyPage() {
 
       {view === "menu" && (
         <div className="vocab-menu-grid">
-          <div onClick={() => setView("search")} className="menu-card"><h2>🔎 Search</h2></div>
-          <div onClick={() => setView("saved")} className="menu-card"><h2>⭐ Saved</h2></div>
-          <div onClick={() => setView("units")} className="menu-card"><h2>📚 Units</h2></div>
-        </div>
-      )}
-
-      {view === "search" && (
-        <>
-          <button onClick={() => setView("menu")}>← Back</button>
-          <h2>🔎 Search Vocabulary</h2>
-          <input type="text" placeholder="Word..." value={searchWord} onChange={(e) => setSearchWord(e.target.value)} />
-          {searchLoading && <p>Searching...</p>}
-          {searchResult && (
-            <div className="word-result-card">
-              <h3>{searchResult.word}</h3>
-              <p><strong>Def:</strong> {searchResult.definition}</p>
-              <button onClick={() => saveWord(searchResult.word)}>⭐ Save</button>
-            </div>
-          )}
-        </>
-      )}
-
-      {view === "saved" && (
-        <>
-          <button onClick={() => setView("menu")}>← Back</button>
-          <h2>⭐ My Saved Words</h2>
-          <div className="saved-words-grid">
-            {filteredWords.map((word) => (
-              <div key={word} className="word-result-card">
-                <h3>{word}</h3>
-                <p>{wordDetails[word]?.definition}</p>
-                <button onClick={() => removeWord(word)}>❌ Remove</button>
-              </div>
-            ))}
+          <div onClick={() => setView("search")} className="menu-card">
+            <h2>🔎 Search</h2>
           </div>
-        </>
+          <div onClick={() => setView("saved")} className="menu-card">
+            <h2>⭐ Saved</h2>
+          </div>
+          <div onClick={() => setView("units")} className="menu-card">
+            <h2>📚 Units</h2>
+          </div>
+        </div>
       )}
 
       {view === "units" && (
@@ -215,9 +74,10 @@ function VocabularyPage() {
           {levels.map((level) => {
             const levelData = VOCABULARY_DATA[level] || {};
 
-            // ✅ FIX 3: ORDER SAFE
+            // stable order
             const unitKeys = Object.keys(levelData).sort(
-              (a, b) => Number(a.replace("unit", "")) - Number(b.replace("unit", ""))
+              (a, b) =>
+                Number(a.replace("unit", "")) - Number(b.replace("unit", ""))
             );
 
             return (
@@ -230,7 +90,6 @@ function VocabularyPage() {
                   {unitKeys.map((unitKey, index) => {
                     const unitNumber = index + 1;
                     const unit = levelData[unitKey];
-
                     const unlocked = isUnlocked(level, unitNumber);
 
                     return unlocked ? (
@@ -258,5 +117,3 @@ function VocabularyPage() {
     </div>
   );
 }
-
-export default VocabularyPage;

@@ -3,7 +3,7 @@
 ========================= */
 
 .vocab-page {
-  max-width: 680px; /* 🔥 كان 1200 → سبب تكسير الموبايل */
+  max-width: 680px;
   margin: 0 auto;
   padding: 16px 12px 40px;
 }
@@ -12,6 +12,37 @@
   font-size: 22px;
   margin-bottom: 16px;
   color: var(--text-main);
+}
+
+/* =========================
+   🔥 MENU GRID (FIXED FINAL)
+========================= */
+
+.vocab-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 🔥 ثابت علشان الشكل */
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.menu-card {
+  background: linear-gradient(135deg, #1e1e2f, #2c2c3e); /* 🔥 واضح مش باهت */
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  transition: all 0.2s ease;
+}
+
+.menu-card h2 {
+  font-size: 15px;
+  margin: 0;
+  color: #fff;
+}
+
+.menu-card:hover {
+  transform: translateY(-3px) scale(1.03);
 }
 
 /* =========================
@@ -27,18 +58,9 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
-}
-
-.vocab-level-title {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
-}
-
-.vocab-level-subtitle {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
 }
 
 .vocab-progress {
@@ -55,24 +77,22 @@
 }
 
 /* =========================
-   Units Grid (Mobile First)
+   Units Grid
 ========================= */
 
 .vocab-units {
   display: grid;
-  grid-template-columns: 1fr; /* 🔥 موبايل */
+  grid-template-columns: 1fr;
   gap: 12px;
   margin-top: 12px;
 }
 
-/* Tablet */
 @media (min-width: 600px) {
   .vocab-units {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Desktop */
 @media (min-width: 900px) {
   .vocab-units {
     grid-template-columns: repeat(3, 1fr);
@@ -80,17 +100,17 @@
 }
 
 /* =========================
-   Unit Card
+   Unit Card (FIXED SIZE)
 ========================= */
 
 .vocab-card {
   background: var(--bg-card);
-  border-radius: var(--radius-md);
-  padding: 14px;
+  border-radius: 12px;
+  padding: 12px;
   box-shadow: var(--shadow-soft);
-  transition: transform 0.15s var(--ease),
-    box-shadow 0.15s var(--ease);
+  transition: 0.2s ease;
   cursor: pointer;
+  font-size: 13px;
 }
 
 .vocab-card:hover {
@@ -99,26 +119,17 @@
 }
 
 .vocab-card.locked {
-  opacity: 0.55;
-  cursor: not-allowed;
+  opacity: 0.45;
   pointer-events: none;
 }
 
-.vocab-card-icon {
-  font-size: 20px;
-  margin-bottom: 6px;
-  color: var(--primary);
-}
-
 .vocab-card-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text-main);
 }
 
 .vocab-card-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
@@ -132,88 +143,51 @@
 
 .vocab-unit-header h1 {
   font-size: 20px;
-  margin-bottom: 4px;
 }
 
 .vocab-unit-header h2 {
   font-size: 16px;
-  margin-top: 0;
-  margin-bottom: 6px;
   color: var(--primary);
 }
 
 .vocab-unit-desc {
   font-size: 13px;
   color: var(--text-muted);
-  margin-bottom: 16px;
 }
 
 /* =========================
-   Question Box
+   Question
 ========================= */
-
-.vocab-question-box {
-  background: var(--bg-card);
-  padding: 16px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
-}
-
-.vocab-question-header {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
 
 .vocab-question-text {
   font-size: 15px;
   margin-bottom: 14px;
-  color: var(--text-main);
 }
 
 /* =========================
-   Options
+   Buttons
 ========================= */
-
-.vocab-options {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* =========================
-   Actions
-========================= */
-
-.vocab-actions {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column; /* 🔥 مهم للموبايل */
-  gap: 10px;
-}
 
 .vocab-btn {
-  width: 100%; /* 🔥 full width */
+  width: 100%;
   padding: 12px;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   border: none;
-  cursor: pointer;
-  font-size: 14px;
   font-weight: 600;
 }
 
 .vocab-btn.primary {
   background: var(--primary);
-  color: #fff;
+  color: white;
 }
 
 .vocab-btn.success {
-  background: var(--success);
-  color: #fff;
+  background: #28a745;
+  color: white;
 }
 
 /* =========================
-   Vocabulary Items (🔥 أهم جزء)
+   Vocabulary Items
 ========================= */
 
 .vocab-items {
@@ -244,38 +218,18 @@
 .vocab-item-phonetic {
   font-size: 13px;
   color: var(--text-muted);
-  margin-top: 4px;
 }
-
-/* 🔊 زر الصوت (مهم جداً للموبايل) */
 
 .vocab-audio-btn {
   border: none;
   background: var(--bg-soft);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 18px;
-  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
 }
-
-.vocab-audio-btn:active {
-  transform: scale(0.95);
-}
-
-/* =========================
-   Text
-========================= */
 
 .vocab-item-meaning {
   font-size: 14px;
   margin-top: 6px;
-  color: var(--text-main);
-}
-
-.vocab-item-example {
-  font-size: 13px;
-  margin-top: 6px;
-  color: var(--text-muted);
-  font-style: italic;
 }
