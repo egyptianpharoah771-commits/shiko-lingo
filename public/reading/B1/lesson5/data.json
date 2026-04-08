@@ -1,0 +1,48 @@
+{
+  "id": "B1-lesson5",
+  "lesson": 5,
+  "level": "B1",
+  "title": "Helping Others",
+  "description": "A text about volunteering and the personal benefits of helping others.",
+  "text": [
+    "Helping others can make a big difference, not only for them but also for ourselves.",
+    "Ali learned this when he started volunteering in his community.",
+    "Every weekend, Ali helps organize activities for children.",
+    "At first, he thought it would be tiring, but he soon realized how rewarding it was.",
+    "Seeing smiles on people’s faces made him feel useful and proud.",
+    "Ali believes that small actions can have a strong impact.",
+    "Helping others taught him empathy, responsibility, and the value of teamwork."
+  ],
+  "questions": [
+    {
+      "question": "What did Ali start doing in his community?",
+      "options": [
+        "Working full-time",
+        "Volunteering",
+        "Teaching at school",
+        "Starting a business"
+      ],
+      "correctAnswer": "Volunteering"
+    },
+    {
+      "question": "How did Ali feel after helping others?",
+      "options": [
+        "Bored",
+        "Angry",
+        "Proud and useful",
+        "Confused"
+      ],
+      "correctAnswer": "Proud and useful"
+    },
+    {
+      "question": "What did helping others teach Ali?",
+      "options": [
+        "Competition",
+        "Independence only",
+        "Empathy and teamwork",
+        "How to earn money"
+      ],
+      "correctAnswer": "Empathy and teamwork"
+    }
+  ]
+}

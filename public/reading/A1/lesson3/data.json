@@ -1,0 +1,38 @@
+{
+  "id": "A1-lesson3",
+  "level": "A1",
+  "title": "My Hobbies",
+  "text": [
+    "My name is Ali. In my free time, I like doing different hobbies.",
+    "I enjoy playing football with my friends.",
+    "I also like reading books and listening to music.",
+    "On weekends, I sometimes watch movies at home.",
+    "Hobbies make me happy and relaxed."
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "question": "What sport does Ali like?",
+      "options": ["Basketball", "Football", "Tennis"],
+      "correctAnswer": "Football"
+    },
+    {
+      "id": 2,
+      "question": "What does Ali like to read?",
+      "options": ["Newspapers", "Books", "Magazines"],
+      "correctAnswer": "Books"
+    },
+    {
+      "id": 3,
+      "question": "When does Ali watch movies?",
+      "options": ["Every day", "On weekends", "In the morning"],
+      "correctAnswer": "On weekends"
+    },
+    {
+      "id": 4,
+      "question": "How do hobbies make Ali feel?",
+      "options": ["Tired", "Happy and relaxed", "Angry"],
+      "correctAnswer": "Happy and relaxed"
+    }
+  ]
+}

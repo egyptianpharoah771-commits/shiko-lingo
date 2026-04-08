@@ -1,0 +1,60 @@
+{
+  "lesson": 2,
+  "level": "B1",
+  "title": "Work and Life Balance",
+  "description": "A text about managing work responsibilities and maintaining a healthy personal life.",
+  "text": [
+    "Many people today struggle to find a balance between work and personal life.",
+    "Nour works as a graphic designer, and she loves her job, but sometimes it takes too much of her time.",
+    "She often stays late at work to finish projects and meet deadlines.",
+    "At first, Nour felt proud of being productive, but after some time, she noticed that she was always tired and had less time for her family and friends.",
+    "She stopped exercising and felt stressed most of the time.",
+    "One day, Nour decided to change her routine.",
+    "She started planning her work better and setting clear limits.",
+    "She left work on time and used her evenings to relax or spend time with people she loves.",
+    "Although she still works hard, she now feels healthier and happier.",
+    "Nour learned that success is not only about working more hours, but also about taking care of yourself."
+  ],
+  "questions": [
+    {
+      "question": "What problem did Nour face?",
+      "options": [
+        "She did not like her job",
+        "She had too much free time",
+        "She struggled to balance work and personal life",
+        "She wanted to change her career"
+      ],
+      "correctAnswer": "She struggled to balance work and personal life"
+    },
+    {
+      "question": "How did Nour feel after working long hours?",
+      "options": [
+        "Energetic",
+        "Tired and stressed",
+        "Excited",
+        "Confident"
+      ],
+      "correctAnswer": "Tired and stressed"
+    },
+    {
+      "question": "What change did Nour make?",
+      "options": [
+        "She quit her job",
+        "She worked more hours",
+        "She planned her work better and set limits",
+        "She moved to another city"
+      ],
+      "correctAnswer": "She planned her work better and set limits"
+    },
+    {
+      "question": "What lesson did Nour learn?",
+      "options": [
+        "Success means working all the time",
+        "Taking care of yourself is important",
+        "Deadlines are not important",
+        "Family is less important than work"
+      ],
+      "correctAnswer": "Taking care of yourself is important"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "A2-lesson1",
+  "level": "A2",
+  "title": "A Busy Workday",
+  "text": [
+    "Ahmed works in a small company in Cairo. He wakes up early every day and leaves his house at 7:30 a.m. Because the traffic is heavy, it takes him almost one hour to arrive at work.",
+    "When Ahmed arrives at the office, he first checks his emails and makes a plan for the day. He works with his team on different projects and sometimes joins online meetings. Although his job is busy, he enjoys learning new skills and solving problems.",
+    "During his lunch break, Ahmed eats with his colleagues and talks about work and daily life. After he finishes work at 5:00 p.m., he goes home feeling tired but satisfied. In the evening, he usually watches a movie or reads a book to relax."
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "question": "Where does Ahmed work?",
+      "answer": "In a small company in Cairo"
+    },
+    {
+      "id": 2,
+      "question": "Why does it take Ahmed almost one hour to get to work?",
+      "answer": "Because the traffic is heavy"
+    },
+    {
+      "id": 3,
+      "question": "What is the first thing Ahmed does at the office?",
+      "answer": "He checks his emails"
+    },
+    {
+      "id": 4,
+      "question": "Does Ahmed enjoy his job?",
+      "answer": "Yes, he enjoys learning new skills and solving problems"
+    },
+    {
+      "id": 5,
+      "question": "What does Ahmed do during his lunch break?",
+      "answer": "He eats with his colleagues and talks with them"
+    },
+    {
+      "id": 6,
+      "question": "How does Ahmed relax in the evening?",
+      "answer": "He watches a movie or reads a book"
+    },
+    {
+      "id": 7,
+      "question": "Why do you think Ahmed feels satisfied at the end of the day?",
+      "answer": "Because he finishes his work and enjoys learning and solving problems"
+    }
+  ]
+}

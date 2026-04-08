@@ -1,0 +1,90 @@
+{
+  "lesson": 3,
+  "level": "A2",
+  "title": "A Weekend Trip",
+  "description": "Daniel talks about a short trip he took last weekend.",
+  "speaker": "Daniel",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, I’m Daniel.",
+    "Last weekend, I took a short trip to a small town near my city.",
+    "I went there by train on Friday evening.",
+    "On Saturday, I visited a local market and tried some traditional food.",
+    "The weather was sunny, so I walked around the town and took many photos.",
+    "On Sunday, I felt tired but happy.",
+    "I returned home in the afternoon and rested for the rest of the day.",
+    "It was a simple but enjoyable trip."
+  ],
+  "questions": [
+    {
+      "question": "Where did Daniel go last weekend?",
+      "options": [
+        "To another country",
+        "To a small town near his city",
+        "To the beach",
+        "To his parents’ house"
+      ],
+      "correctAnswer": "To a small town near his city"
+    },
+    {
+      "question": "How did Daniel travel to the town?",
+      "options": [
+        "By car",
+        "By bus",
+        "By train",
+        "By plane"
+      ],
+      "correctAnswer": "By train"
+    },
+    {
+      "question": "What did Daniel do on Saturday?",
+      "options": [
+        "He stayed at home",
+        "He worked all day",
+        "He visited a market and tried food",
+        "He rested all day"
+      ],
+      "correctAnswer": "He visited a market and tried food"
+    },
+    {
+      "question": "Why did Daniel walk around the town?",
+      "options": [
+        "Because he was lost",
+        "Because the weather was sunny",
+        "Because he was late",
+        "Because he wanted to shop"
+      ],
+      "correctAnswer": "Because the weather was sunny"
+    },
+    {
+      "question": "How did Daniel feel on Sunday?",
+      "options": [
+        "Angry",
+        "Bored",
+        "Tired but happy",
+        "Nervous"
+      ],
+      "correctAnswer": "Tired but happy"
+    },
+    {
+      "question": "When did Daniel return home?",
+      "options": [
+        "Friday evening",
+        "Saturday night",
+        "Sunday afternoon",
+        "Monday morning"
+      ],
+      "correctAnswer": "Sunday afternoon"
+    },
+    {
+      "question": "How does Daniel describe the trip?",
+      "options": [
+        "Long and stressful",
+        "Expensive",
+        "Simple but enjoyable",
+        "Boring"
+      ],
+      "correctAnswer": "Simple but enjoyable"
+    }
+  ]
+}

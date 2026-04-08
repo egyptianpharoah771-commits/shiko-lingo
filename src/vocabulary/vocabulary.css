@@ -1,0 +1,217 @@
+/* =========================
+   🌤️ LIGHT THEME (FINAL)
+========================= */
+
+:root {
+  --vocab-bg: #f9fafb;
+  --vocab-card: #ffffff;
+  --vocab-card-soft: #f3f4f6;
+  --vocab-border: #e5e7eb;
+
+  --vocab-text: #111827;
+  --vocab-muted: #6b7280;
+
+  --vocab-accent: #6366f1;
+}
+
+/* =========================
+   PAGE
+========================= */
+
+.vocab-page {
+  background: var(--vocab-bg);
+  min-height: 100vh;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 14px 50px;
+  animation: fadeIn 0.5s ease;
+}
+
+.vocab-page h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--vocab-text);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   MENU
+========================= */
+
+.vocab-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.menu-card {
+  background: var(--vocab-card);
+  border-radius: 18px;
+  padding: 18px;
+  text-align: center;
+  border: 1px solid var(--vocab-border);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  transition: all 0.25s ease;
+}
+
+.menu-card h2 {
+  color: var(--vocab-text);
+  font-size: 15px;
+  margin: 0;
+}
+
+.menu-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+}
+
+/* =========================
+   LEVEL
+========================= */
+
+.vocab-level-header {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--vocab-text);
+  margin-bottom: 12px;
+}
+
+/* =========================
+   UNITS
+========================= */
+
+.vocab-units {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.vocab-card {
+  background: var(--vocab-card);
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--vocab-border);
+  color: var(--vocab-text);
+  font-size: 15px;
+  font-weight: 600;
+  animation: slideUp 0.4s ease;
+  transition: all 0.25s ease;
+}
+
+.vocab-card:hover {
+  transform: translateY(-3px);
+  background: var(--vocab-card-soft);
+  border-color: var(--vocab-accent);
+}
+
+/* =========================
+   LOCKED
+========================= */
+
+.vocab-card.locked {
+  background: #e5e7eb;
+  color: var(--vocab-muted);
+  opacity: 0.8;
+}
+
+/* =========================
+   PROGRESS
+========================= */
+
+.vocab-progress {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 10px;
+  margin: 10px 0 18px;
+}
+
+.vocab-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+}
+
+/* =========================
+   ITEMS
+========================= */
+
+.vocab-item-card {
+  background: var(--vocab-card);
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid var(--vocab-border);
+}
+
+.vocab-item-word {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--vocab-accent);
+}
+
+.vocab-item-meaning {
+  color: var(--vocab-text);
+  margin-top: 6px;
+}
+
+/* =========================
+   OPTIONS (🔥 CENTER FIX)
+========================= */
+
+.vocab-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 🔥 centered */
+  gap: 10px;
+}
+
+.vocab-options > * {
+  width: 100%;
+  max-width: 400px; /* 🔥 centered width */
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.vocab-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 600;
+}
+
+.vocab-btn.primary {
+  background: var(--vocab-accent);
+  color: white;
+}
+
+.vocab-btn.success {
+  background: #22c55e;
+  color: white;
+}
+
+/* =========================
+   ✨ ANIMATIONS
+========================= */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

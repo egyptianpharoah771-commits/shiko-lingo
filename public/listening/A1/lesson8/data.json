@@ -1,0 +1,40 @@
+{
+  "lesson": 8,
+  "level": "A1",
+  "title": "At the Market",
+  "description": "Nina talks about buying food at the market.",
+  "speaker": "Nina",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Nina.",
+    "Today, I want to talk about the market.",
+    "I go to the market in the morning.",
+    "I buy fruits and vegetables.",
+    "I buy apples, bananas, and tomatoes.",
+    "The food is fresh and good.",
+    "At the market, there are many people.",
+    "The sellers are friendly.",
+    "I ask for the price.",
+    "I pay and take my food.",
+    "I like going to the market.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "When does Nina go to the market?",
+      "options": ["In the morning", "In the evening", "At night"],
+      "answer": "In the morning"
+    },
+    {
+      "q": "What does Nina buy?",
+      "options": ["Clothes", "Fruits and vegetables", "Books"],
+      "answer": "Fruits and vegetables"
+    },
+    {
+      "q": "How are the sellers?",
+      "options": ["Angry", "Friendly", "Quiet"],
+      "answer": "Friendly"
+    }
+  ]
+}

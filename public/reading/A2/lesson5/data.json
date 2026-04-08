@@ -1,0 +1,47 @@
+{
+  "id": "A2-lesson5",
+  "level": "A2",
+  "title": "Learning New Skills",
+  "text": [
+    "Most people like learning new skills to improve their lives. Karim is one of them. He enjoys learning because it helps him feel more confident and successful.",
+    "Karim learns new skills online. He watches videos and reads articles to understand new topics. Sometimes learning is difficult, but he does not give up because he wants to reach his goals.",
+    "Learning new skills takes time and effort, but Karim believes it is worth it in the end."
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "question": "Why do people like learning new skills?",
+      "answer": "To improve their lives"
+    },
+    {
+      "id": 2,
+      "question": "How does Karim feel when he learns new skills?",
+      "answer": "More confident and successful"
+    },
+    {
+      "id": 3,
+      "question": "How does Karim learn new skills?",
+      "answer": "By watching videos and reading articles"
+    },
+    {
+      "id": 4,
+      "question": "Is learning always easy for Karim?",
+      "answer": "No, sometimes it is difficult"
+    },
+    {
+      "id": 5,
+      "question": "Why does Karim continue learning?",
+      "answer": "Because he wants to reach his goals"
+    },
+    {
+      "id": 6,
+      "question": "What does Karim think about learning new skills?",
+      "answer": "He thinks it is worth it"
+    },
+    {
+      "id": 7,
+      "question": "Why do you think Karim does not give up when learning becomes difficult?",
+      "answer": "Because he wants to achieve his goals and believes learning is important"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "A1-lesson2",
+  "level": "A1",
+  "title": "My Family",
+  "text": [
+    "My name is Sara. I live with my family.",
+    "There are four people in my family: my father, my mother, my brother, and me.",
+    "My father works as a teacher.",
+    "My mother is a doctor.",
+    "My brother is a student.",
+    "We have dinner together every evening."
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "question": "How many people are there in Sara’s family?",
+      "options": ["Three", "Four", "Five"],
+      "correctAnswer": "Four"
+    },
+    {
+      "id": 2,
+      "question": "What is Sara’s father’s job?",
+      "options": ["Doctor", "Teacher", "Engineer"],
+      "correctAnswer": "Teacher"
+    },
+    {
+      "id": 3,
+      "question": "Who is a student?",
+      "options": ["Sara’s father", "Sara’s mother", "Sara’s brother"],
+      "correctAnswer": "Sara’s brother"
+    },
+    {
+      "id": 4,
+      "question": "When does the family have dinner?",
+      "options": ["In the morning", "In the evening", "At night"],
+      "correctAnswer": "In the evening"
+    }
+  ]
+}

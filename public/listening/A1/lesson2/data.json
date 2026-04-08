@@ -1,0 +1,47 @@
+{
+  "lesson": 2,
+  "level": "A1",
+  "title": "My Weekend",
+  "description": "Adam talks about his weekend activities.",
+  "speaker": "Adam",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hello.",
+    "My name is Adam.",
+    "Today, I want to talk about my weekend.",
+    "On Friday, I finish work in the afternoon.",
+    "I feel happy and relaxed.",
+    "On Saturday, I wake up late.",
+    "I have breakfast with my family.",
+    "In the afternoon, I go out with my friends.",
+    "We drink coffee and talk together.",
+    "On Sunday, I stay at home.",
+    "I watch TV and rest.",
+    "In the evening, I prepare for the new week.",
+    "I enjoy my weekend very much.",
+    "Thank you for listening."
+  ],
+  "questions": [
+    {
+      "q": "When does Adam finish work on Friday?",
+      "options": ["In the morning", "In the afternoon", "At night"],
+      "answer": "In the afternoon"
+    },
+    {
+      "q": "Who does Adam have breakfast with?",
+      "options": ["His friends", "His family", "Alone"],
+      "answer": "His family"
+    },
+    {
+      "q": "What does Adam do on Sunday?",
+      "options": ["He goes to work", "He goes out", "He stays at home"],
+      "answer": "He stays at home"
+    },
+    {
+      "q": "How does Adam feel about his weekend?",
+      "options": ["He is tired", "He is bored", "He enjoys it"],
+      "answer": "He enjoys it"
+    }
+  ]
+}
+

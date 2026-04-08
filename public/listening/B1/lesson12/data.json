@@ -1,0 +1,91 @@
+{
+  "lesson": 12,
+  "level": "B1",
+  "title": "Rethinking My Goals",
+  "description": "Emma talks about rethinking her goals and finding a healthier definition of success.",
+  "speaker": "Emma",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Emma.",
+    "For many years, I followed a clear plan for my future without questioning it.",
+    "I believed that success meant achieving specific goals as quickly as possible.",
+    "Last year, however, I experienced a period of stress and dissatisfaction.",
+    "I realized that my goals no longer matched my interests or values.",
+    "After taking some time to reflect, I decided to adjust my plans.",
+    "I focused more on learning, personal growth, and maintaining a healthy balance.",
+    "This change did not bring immediate results, but it made me feel more motivated and calm.",
+    "Now, I believe that success is not only about reaching goals, but also about enjoying the journey."
+  ],
+  "questions": [
+    {
+      "question": "How did Emma view success in the past?",
+      "options": [
+        "As enjoying life",
+        "As achieving goals quickly",
+        "As helping others",
+        "As taking risks"
+      ],
+      "correctAnswer": "As achieving goals quickly"
+    },
+    {
+      "question": "What problem did Emma experience last year?",
+      "options": [
+        "Financial difficulties",
+        "Stress and dissatisfaction",
+        "Health issues",
+        "Lack of motivation"
+      ],
+      "correctAnswer": "Stress and dissatisfaction"
+    },
+    {
+      "question": "What realization did Emma have?",
+      "options": [
+        "Her goals were too easy",
+        "Her goals did not match her values",
+        "She needed a new job",
+        "She wanted to travel"
+      ],
+      "correctAnswer": "Her goals did not match her values"
+    },
+    {
+      "question": "What decision did Emma make?",
+      "options": [
+        "To give up on goals",
+        "To change her plans",
+        "To work harder",
+        "To ignore stress"
+      ],
+      "correctAnswer": "To change her plans"
+    },
+    {
+      "question": "What did Emma focus on after changing her goals?",
+      "options": [
+        "Making more money",
+        "Learning and personal growth",
+        "Working longer hours",
+        "Competing with others"
+      ],
+      "correctAnswer": "Learning and personal growth"
+    },
+    {
+      "question": "How did Emma feel after the change?",
+      "options": [
+        "More stressed",
+        "More motivated and calm",
+        "Confused",
+        "Unhappy"
+      ],
+      "correctAnswer": "More motivated and calm"
+    },
+    {
+      "question": "What lesson did Emma learn about success?",
+      "options": [
+        "Success is only about results",
+        "Goals should never change",
+        "Enjoying the journey matters",
+        "Balance is unimportant"
+      ],
+      "correctAnswer": "Enjoying the journey matters"
+    }
+  ]
+}

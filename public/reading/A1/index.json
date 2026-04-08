@@ -1,0 +1,30 @@
+{
+  "level": "A1",
+  "lessons": [
+    {
+      "id": "lesson1",
+      "lesson": 1,
+      "title": "My Daily Routine"
+    },
+    {
+      "id": "lesson2",
+      "lesson": 2,
+      "title": "My Family"
+    },
+    {
+      "id": "lesson3",
+      "lesson": 3,
+      "title": "My Hobbies"
+    },
+    {
+      "id": "lesson4",
+      "lesson": 4,
+      "title": "My Favorite Food"
+    },
+    {
+      "id": "lesson5",
+      "lesson": 5,
+      "title": "My Weekend"
+    }
+  ]
+}

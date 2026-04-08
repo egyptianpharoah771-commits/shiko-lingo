@@ -1,0 +1,107 @@
+/* ======================
+   Global Design Tokens
+====================== */
+@import "./styles/tokens.css";
+
+/* ======================
+   Base Reset
+====================== */
+* {
+  box-sizing: border-box;
+}
+
+/* ======================
+   Body
+====================== */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background: var(--bg-app);
+  color: var(--text-main);
+}
+
+/* ======================
+   Code Blocks
+====================== */
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas,
+    "Courier New", monospace;
+}
+
+/* ======================
+   Buttons (Global polish)
+====================== */
+button {
+  font-family: inherit;
+  outline: none;
+}
+
+/* ======================
+   Smooth UX
+====================== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ======================
+   Navbar
+====================== */
+
+.navbar {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 16px;
+
+  border-radius: 999px;
+  border: 1px solid #e2d7ee;
+
+  background: #faf7fc;
+
+  font-weight: 600;
+  font-size: 14px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* Hover Animation */
+
+.nav-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  background: #f1eaff;
+}
+
+/* Active Tab */
+
+.nav-btn.active {
+  background: #ede7f6;
+  border-color: #c9b6ff;
+}
+
+/* Icon Animation */
+
+.nav-btn span {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.nav-btn:hover span {
+  transform: scale(1.2);
+}

@@ -1,0 +1,92 @@
+{
+  "lesson": 10,
+  "level": "B1",
+  "title": "Adapting to a New Environment",
+  "description": "Julia talks about starting a new job and learning how to adapt.",
+  "speaker": "Julia",
+  "audio": "speaker.mp3",
+  "text": [
+    "Hi, my name is Julia.",
+    "Earlier this year, I started a new job in a company with a very different culture.",
+    "The team worked faster than I was used to, and communication was more direct.",
+    "At first, I felt overwhelmed and worried about making mistakes.",
+    "I noticed that simple tasks took me longer, and I often asked many questions.",
+    "Instead of giving up, I decided to observe carefully and learn from my colleagues.",
+    "I took notes, asked for feedback, and practiced new tools every day.",
+    "After a few weeks, I began to feel more comfortable and confident.",
+    "I could contribute more to the team and even share my own ideas.",
+    "This experience taught me that adapting takes time, patience, and effort."
+  ],
+  "questions": [
+    {
+      "question": "What was different about Julia’s new job?",
+      "options": [
+        "The salary",
+        "The company culture and work pace",
+        "The location",
+        "The working hours"
+      ],
+      "correctAnswer": "The company culture and work pace"
+    },
+    {
+      "question": "How did Julia feel at the beginning?",
+      "options": [
+        "Relaxed",
+        "Overwhelmed and worried",
+        "Excited and confident",
+        "Bored"
+      ],
+      "correctAnswer": "Overwhelmed and worried"
+    },
+    {
+      "question": "What problem did Julia notice?",
+      "options": [
+        "She disliked her colleagues",
+        "Tasks took longer than usual",
+        "She had no work to do",
+        "She missed meetings"
+      ],
+      "correctAnswer": "Tasks took longer than usual"
+    },
+    {
+      "question": "What decision did Julia make?",
+      "options": [
+        "She quit the job",
+        "She complained to her manager",
+        "She decided to learn and observe",
+        "She avoided asking questions"
+      ],
+      "correctAnswer": "She decided to learn and observe"
+    },
+    {
+      "question": "How did Julia improve?",
+      "options": [
+        "By working longer hours",
+        "By taking notes and practicing",
+        "By working alone",
+        "By ignoring feedback"
+      ],
+      "correctAnswer": "By taking notes and practicing"
+    },
+    {
+      "question": "How did Julia feel after a few weeks?",
+      "options": [
+        "More confident",
+        "More confused",
+        "More stressed",
+        "Unhappy"
+      ],
+      "correctAnswer": "More confident"
+    },
+    {
+      "question": "What lesson did Julia learn?",
+      "options": [
+        "Change should be avoided",
+        "Adapting requires time and effort",
+        "Work is always stressful",
+        "Only experience matters"
+      ],
+      "correctAnswer": "Adapting requires time and effort"
+    }
+  ]
+}

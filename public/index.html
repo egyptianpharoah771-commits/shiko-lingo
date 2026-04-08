@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <title>Shiko Lingo – Learn English with AI</title>
+
+    <meta
+      name="description"
+      content="Shiko Lingo is an AI-powered English learning app with listening, speaking, reading, writing, and smart AI tutor feedback."
+    />
+    <meta
+      name="keywords"
+      content="Shiko Lingo, Learn English, AI English, Language Learning App"
+    />
+    <meta name="author" content="Shiko Lingo" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#6C4EFF" />
+
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Pi Network SDK (Loaded only outside localhost) -->
+    <script>
+      (function () {
+        const isLocal =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1";
+
+        if (!isLocal) {
+          const script = document.createElement("script");
+          script.src = "https://sdk.minepi.com/pi-sdk.js";
+          script.async = true;
+
+          script.onload = function () {
+            if (window.Pi) {
+              window.Pi.init({
+                version: "2.0",
+                sandbox: false, // 🔴 Production Mode
+              });
+
+              console.log("✅ Pi SDK initialized (production domain)");
+            }
+          };
+
+          document.head.appendChild(script);
+        } else {
+          console.log("🟡 Pi SDK disabled on localhost (Hybrid Dev Mode)");
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run Shiko Lingo.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

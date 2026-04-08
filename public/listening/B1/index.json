@@ -1,0 +1,65 @@
+{
+  "level": "B1",
+  "lessons": [
+    {
+      "id": "lesson1",
+      "lesson": 1,
+      "title": "An Unexpected Opportunity",
+      "description": "Michael talks about an unexpected project and how it changed his career."
+    },
+    {
+      "id": "lesson2",
+      "lesson": 2,
+      "title": "A Difficult Decision",
+      "description": "Laura talks about a difficult decision to move for a new job and its impact on her life."
+    },
+    {
+      "id": "lesson3",
+      "lesson": 3,
+      "title": "Learning from a Mistake",
+      "description": "Daniel talks about a mistake at work and what he learned from it."
+    },
+    {
+      "id": "lesson4",
+      "lesson": 4,
+      "title": "Changing Old Habits",
+      "description": "Sarah talks about changing a bad habit and how it affected her daily life."
+    },
+    {
+      "id": "lesson5",
+      "lesson": 5,
+      "title": "Speaking in Front of Others",
+      "description": "Ahmed talks about overcoming his fear of public speaking and gaining confidence."
+    },
+    {
+      "id": "lesson6",
+      "lesson": 6,
+      "title": "Finding a Better Balance",
+      "description": "Thomas talks about learning how to balance work and personal life."
+    },
+    {
+      "id": "lesson7",
+      "lesson": 7,
+      "title": "A Lesson from Traveling",
+      "description": "Lina shares a travel experience and what she learned from it."
+    },
+    {
+      "id": "lesson8",
+      "lesson": 8,
+      "title": "Sharing an Honest Opinion",
+      "description": "Kevin talks about sharing his opinion at work and the impact it had."
+    },
+    {
+      "id": "lesson9",
+      "lesson": 9,
+      "title": "Turning Failure into Motivation",
+      "description": "Omar talks about failing an exam and how he turned it into motivation."
+    },
+    {
+      "id": "lesson10",
+      "lesson": 10,
+      "title": "Adapting to a New Environment",
+      "description": "Julia talks about starting a new job and learning how to adapt."
+    }
+  ]
+}

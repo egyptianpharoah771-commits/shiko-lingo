@@ -1,0 +1,105 @@
+.lt-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.lt-title {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: #4a1cd1;
+}
+
+.lt-desc {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.lt-start-btn,
+.lt-restart-btn {
+  padding: 12px 20px;
+  background: #6b2cff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.lt-start-btn:hover,
+.lt-restart-btn:hover {
+  background: #4b14d1;
+  transform: translateY(-2px);
+}
+
+/* Progress Bar */
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.progress {
+  height: 100%;
+  background: linear-gradient(90deg, #6b2cff, #b08bff);
+  transition: width 0.3s ease;
+}
+
+.lt-question {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.lt-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lt-choice {
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.lt-choice:hover {
+  background: #f2f2ff;
+}
+
+.correct {
+  background: #2ecc71 !important;
+  color: white;
+  border-color: #27ae60;
+}
+
+.wrong {
+  background: #e74c3c !important;
+  color: white;
+  border-color: #c0392b;
+}
+
+.lt-result-box {
+  padding: 20px;
+  background: #f7f4ff;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.lt-result-score {
+  font-size: 30px;
+  color: #6b2cff;
+}
+
+.lt-result-level {
+  font-size: 20px;
+  font-weight: bold;
+}
