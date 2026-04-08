@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function CoachPage() {
+  const navigate = useNavigate();
+
   const [coach, setCoach] = useState({
     accuracy: 0,
     weakCount: 0,
     message: "",
-    action: ""
+    action: "",
+    mode: "review"
   });
 
   useEffect(() => {
@@ -30,47 +34,64 @@ export default function CoachPage() {
     const total = totalCorrect + totalWrong;
     const accuracy = total ? (totalCorrect / total) : 0;
 
-    // 🔥 AI COACH LOGIC
     let message = "";
     let action = "";
+    let mode = "review";
+
+    // 🔥 Coach Logic (Upgraded)
 
     if (total < 10) {
-      message = "🚀 Start practicing to build your memory";
-      action = "Start Review";
+      message = "🚀 Start learning first before using Coach";
+      action = "Go to Vocabulary";
+      mode = "vocab";
     }
 
     else if (accuracy < 0.5) {
-      message = "🔴 You're struggling — focus on typing questions";
-      action = "Practice Basics";
+      message = "🔴 You need strong basics — focus on Review";
+      action = "Start Review";
+      mode = "review";
     }
 
     else if (weakCount > 5) {
-      message = "⚠️ You have many weak words — review them now";
-      action = "Review Weak Words";
+      message = "⚠️ You have weak words — let's train them in context";
+      action = "Start Coach Training";
+      mode = "coach";
     }
 
     else if (accuracy > 0.8) {
-      message = "🔥 You're doing great — increase difficulty";
-      action = "Challenge Yourself";
+      message = "🔥 You're ready for advanced training";
+      action = "Challenge Yourself (Coach)";
+      mode = "coach";
     }
 
     else {
-      message = "👍 Keep going — you're improving steadily";
-      action = "Continue Practice";
+      message = "👍 Keep improving with Review";
+      action = "Continue Review";
+      mode = "review";
     }
 
     setCoach({
       accuracy: Math.round(accuracy * 100),
       weakCount,
       message,
-      action
+      action,
+      mode
     });
 
   }, []);
 
+  function handleAction() {
+    if (coach.mode === "coach") {
+      navigate("/coach/session");
+    } else if (coach.mode === "vocab") {
+      navigate("/vocabulary");
+    } else {
+      navigate("/review");
+    }
+  }
+
   return (
     <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
-
       <h2>🧠 Your AI Coach</h2>
 
       <h3>{coach.message}</h3>
@@ -88,13 +109,10 @@ export default function CoachPage() {
           borderRadius: "8px",
           cursor: "pointer"
         }}
-        onClick={() => window.location.href = "/review"}
+        onClick={handleAction}
       >
         {coach.action}
       </button>
-
     </div>
   );
 }
-
-
