@@ -24,6 +24,10 @@ import Login from "./pages/Login";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 
+/* 🔥 Coach */
+import CoachPage from "./pages/CoachPage";
+import CoachSessionPage from "./pages/CoachSessionPage";
+
 /* Listening */
 import ListeningHome from "./pages/ListeningHome";
 import ListeningLevel from "./pages/ListeningLevel";
@@ -72,11 +76,8 @@ function GrammarUnitWrapper() {
   const { level, unit } = useParams();
   const location = useLocation();
 
-  // 👇 أهم سطر في المشروع كله
   return (
-    <GrammarUnitPage
-      key={`${level}-${unit}-${location.key}`}
-    />
+    <GrammarUnitPage key={`${level}-${unit}-${location.key}`} />
   );
 }
 
@@ -157,10 +158,12 @@ function SubscriptionGuard() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/learn" element={<LearnPage />} />
 
+        {/* 🔥 Coach Routes */}
+        <Route path="/coach" element={<CoachPage />} />
+        <Route path="/coach/session" element={<CoachSessionPage />} />
+
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
-
-        {/* 🔥 FINAL FIX */}
         <Route
           path="/grammar/:level/:unit"
           element={<GrammarUnitWrapper />}
@@ -246,6 +249,7 @@ function AppLayout({ children }) {
             <NavButton to="/dashboard" label="🏠 Home" />
             <NavButton to="/learn" label="📚 Learn" />
             <NavButton to="/review" label="🔁 Review" />
+            <NavButton to="/coach" label="🧠 Coach" />
             <NavButton to="/listening" label="🎧 Practice" />
             <NavButton to="/speaking" label="👤 Profile" />
           </nav>
