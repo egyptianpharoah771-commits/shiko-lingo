@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { generateCoachSession, updateWordStats } from "../coach/coachEngine";
-
-// ⚠️ عدل المسار حسب مكان الداتا عندك
-import wordsData from "../data/words.json";
+import { useWords } from "../hooks/useWords";
 
 export default function CoachSessionPage() {
   const navigate = useNavigate();
+  const { words } = useWords();
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,9 +15,11 @@ export default function CoachSessionPage() {
   const [finished, setFinished] = useState(false);
 
   useEffect(() => {
-    const session = generateCoachSession(wordsData);
+    if (!words || !words.length) return;
+
+    const session = generateCoachSession(words);
     setQuestions(session);
-  }, []);
+  }, [words]);
 
   const current = questions[currentIndex];
 
@@ -49,7 +50,9 @@ export default function CoachSessionPage() {
   }
 
   function handleRestart() {
-    const session = generateCoachSession(wordsData);
+    if (!words || !words.length) return;
+
+    const session = generateCoachSession(words);
     setQuestions(session);
     setCurrentIndex(0);
     setScore(0);
