@@ -24,7 +24,7 @@ const content = {
       example_easy: "I read a book.",
       example_medium: "She bought a new book.",
 
-      audio: "/sounds/vocabulary/A1/unit1/book.mp3"
+      audio: "vocabulary/A1/unit1/book.mp3"
     },
     {
       word: "chair",
@@ -38,7 +38,7 @@ const content = {
       example_easy: "I sit on a chair.",
       example_medium: "The chair is next to the table.",
 
-      audio: "/sounds/vocabulary/A1/unit1/chair.mp3"
+      audio: "vocabulary/A1/unit1/chair.mp3"
     },
     {
       word: "table",
@@ -52,7 +52,7 @@ const content = {
       example_easy: "The book is on the table.",
       example_medium: "Put the book on the table.",
 
-      audio: "/sounds/vocabulary/A1/unit1/table.mp3"
+      audio: "vocabulary/A1/unit1/table.mp3"
     },
     {
       word: "phone",
@@ -66,7 +66,7 @@ const content = {
       example_easy: "I use my phone.",
       example_medium: "My phone is new.",
 
-      audio: "/sounds/vocabulary/A1/unit1/phone.mp3"
+      audio: "vocabulary/A1/unit1/phone.mp3"
     },
     {
       word: "bag",
@@ -80,7 +80,7 @@ const content = {
       example_easy: "My bag is heavy.",
       example_medium: "The bag is on the chair.",
 
-      audio: "/sounds/vocabulary/A1/unit1/bag.mp3"
+      audio: "vocabulary/A1/unit1/bag.mp3"
     }
   ]
 };

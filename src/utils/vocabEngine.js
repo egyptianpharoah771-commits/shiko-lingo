@@ -111,7 +111,7 @@ export function playWordAudio(word) {
         return;
       }
 
-      src = `/sounds/vocabulary/${level}/${unit}/${fileName}.mp3`;
+      src = `vocabulary/${level}/${unit}/${fileName}.mp3`;
     }
 
     const audio = new Audio(src);

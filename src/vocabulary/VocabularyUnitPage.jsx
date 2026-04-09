@@ -80,7 +80,7 @@ export default function VocabularyUnitPage() {
     if (!word) return;
 
     const fileName = normalizeWord(word);
-    const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
+    const src = `vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
     try {
       const audio = new Audio(src);
