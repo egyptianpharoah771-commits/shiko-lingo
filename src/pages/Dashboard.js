@@ -187,20 +187,14 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 🧠 COACH (FINAL CLEAN FIX) */}
+      {/* 🧠 COACH (FIXED) */}
       <div
         onClick={handleCoachClick}
         style={{
           ...card,
           cursor: "pointer",
-          transition: "transform 0.2s",
+          zIndex: 2, // 👈 أعلى من الكارد اللي فوق
         }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.transform = "scale(1.02)")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.transform = "scale(1)")
-        }
       >
         <h3 style={{ pointerEvents: "none" }}>🧠 Coach</h3>
         <p style={{ pointerEvents: "none" }}>{coach}</p>
@@ -262,6 +256,8 @@ const card = {
   borderRadius: 14,
   marginBottom: 20,
   boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+  position: "relative", // 👈 مهم جدًا
+  zIndex: 1,
 };
 
 const bar = {
