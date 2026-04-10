@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { generateCoachSession, updateWordStats } from "../coach/coachEngine";
 import { useWords } from "../hooks/useWords";
 
 export default function CoachSessionPage() {
   const navigate = useNavigate();
-  const { level } = useParams(); // ✅ جلب level من URL
+  const { level } = useParams();
+  const [searchParams] = useSearchParams();
 
-  const { words, loading } = useWords(level); // ✅ ربط بالـ level
+  const type = searchParams.get("type") || "mixed"; // ✅ Session Type
+
+  const { words, loading } = useWords(level);
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,19 +19,25 @@ export default function CoachSessionPage() {
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
 
-  // ✅ توليد السيشن بناءً على level
+  // ✅ Generate Session
   useEffect(() => {
     if (loading) return;
     if (!words || !words.length) return;
 
-    const session = generateCoachSession(words);
+    const session = generateCoachSession(words, { type });
+
     setQuestions(session);
-  }, [words, loading]);
+    setCurrentIndex(0);
+    setScore(0);
+    setFinished(false);
+    setSelected(null);
+    setShowAnswer(false);
+  }, [words, loading, type]);
 
   const current = questions[currentIndex];
 
   function handleSelect(option) {
-    if (showAnswer) return;
+    if (showAnswer || !current) return;
 
     setSelected(option);
     setShowAnswer(true);
@@ -43,6 +52,8 @@ export default function CoachSessionPage() {
   }
 
   function handleNext() {
+    if (!current) return;
+
     setSelected(null);
     setShowAnswer(false);
 
@@ -56,7 +67,7 @@ export default function CoachSessionPage() {
   function handleRestart() {
     if (!words || !words.length) return;
 
-    const session = generateCoachSession(words);
+    const session = generateCoachSession(words, { type });
 
     setQuestions(session);
     setCurrentIndex(0);
@@ -76,6 +87,7 @@ export default function CoachSessionPage() {
     return (
       <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
         <h2>🎯 Session Complete</h2>
+
         <p>
           Score: {score} / {questions.length}
         </p>
@@ -95,7 +107,7 @@ export default function CoachSessionPage() {
         </button>
 
         <button
-          onClick={() => navigate(`/coach/${level}`)} // ✅ رجوع لنفس level
+          onClick={() => navigate(`/coach/${level}`)}
           style={{
             padding: "10px 16px",
             margin: "10px",
