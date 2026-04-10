@@ -156,20 +156,12 @@ function Dashboard() {
     navigate("/coach");
   }
 
-  const skills = {
-    grammar: progress.skills?.grammar || [],
-    vocabulary: progress.skills?.vocabulary || [],
-    listening: progress.skills?.listening || [],
-    reading: progress.skills?.reading || [],
-    speaking: progress.skills?.speaking || [],
-  };
-
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <h2>🏠 Home</h2>
 
       {/* 🔥 STREAK */}
-      <div style={card}>
+      <div style={{ ...card, zIndex: 1 }}>
         <h3>🔥 Streak: {daily.streak} days</h3>
 
         <p>
@@ -187,13 +179,14 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 🧠 COACH (FIXED) */}
+      {/* 🧠 COACH (FIX FINAL) */}
       <div
         onClick={handleCoachClick}
         style={{
           ...card,
           cursor: "pointer",
-          zIndex: 2, // 👈 أعلى من الكارد اللي فوق
+          zIndex: 999, // 🔥 أعلى حاجة في الصفحة
+          position: "relative",
         }}
       >
         <h3 style={{ pointerEvents: "none" }}>🧠 Coach</h3>
@@ -205,16 +198,6 @@ function Dashboard() {
       {/* 🔁 Review */}
       <div style={card}>
         <h3>🔁 Daily Review</h3>
-
-        <p>
-          {reviewCount > 0 ? (
-            <>
-              You have <strong>{reviewCount}</strong> reviews.
-            </>
-          ) : (
-            "You're all caught up 🎉"
-          )}
-        </p>
 
         <Link to="/review">
           <button style={primaryBtn}>Start Review</button>
@@ -230,19 +213,6 @@ function Dashboard() {
         </Link>
       </div>
 
-      {/* 📚 Skills */}
-      <div style={card}>
-        <h3>📚 Skills</h3>
-
-        <div style={grid}>
-          <MiniProgress value={skills.grammar.length} total={5} />
-          <MiniProgress value={skills.vocabulary.length} total={20} />
-          <MiniProgress value={skills.listening.length} total={42} />
-          <MiniProgress value={skills.reading.length} total={17} />
-          <MiniProgress value={skills.speaking.length} total={17} />
-        </div>
-      </div>
-
       <FeedbackBox />
     </div>
   );
@@ -256,8 +226,7 @@ const card = {
   borderRadius: 14,
   marginBottom: 20,
   boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
-  position: "relative", // 👈 مهم جدًا
-  zIndex: 1,
+  position: "relative",
 };
 
 const bar = {
@@ -265,12 +234,6 @@ const bar = {
   background: "#eee",
   borderRadius: 5,
   overflow: "hidden",
-};
-
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
-  gap: 16,
 };
 
 const primaryBtn = {
