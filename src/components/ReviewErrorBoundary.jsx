@@ -21,7 +21,23 @@ class ReviewErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    console.error("🔥 Review crash:", error, info);
+    console.error("🔥 Review crash:", {
+      message: error?.message,
+      stack: error?.stack,
+      componentStack: info?.componentStack,
+    });
+  }
+
+  componentDidUpdate(prevProps) {
+    // ✅ Reset لو الصفحة أو children اتغيروا
+    if (prevProps.children !== this.props.children) {
+      if (this.state.hasError) {
+        this.setState({
+          hasError: false,
+          error: null,
+        });
+      }
+    }
   }
 
   handleRetry() {
@@ -34,8 +50,6 @@ class ReviewErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      console.error("FULL ERROR:", this.state.error);
-
       return (
         <div
           style={{
@@ -48,7 +62,7 @@ class ReviewErrorBoundary extends React.Component {
           <h2>⚠️ Review Crash</h2>
 
           <p style={{ marginBottom: 20 }}>
-            {this.state.error?.message || "Unknown error"}
+            {this.state.error?.message || "Something went wrong"}
           </p>
 
           <button
