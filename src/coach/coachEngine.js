@@ -1,5 +1,5 @@
 // ===============================
-// 🧠 COACH ENGINE (PRO VERSION)
+// 🧠 COACH ENGINE (ADVANCED)
 // ===============================
 
 const SESSION_SIZE = 10;
@@ -44,7 +44,7 @@ export function updateWordStats(wordId, isCorrect) {
 }
 
 // ===============================
-// 🧠 CALCULATE WORD STRENGTH
+// 🧠 STRENGTH SCORE
 // ===============================
 function getWordStrength(data) {
   const correct = data.correct || 0;
@@ -57,70 +57,78 @@ function getWordStrength(data) {
 }
 
 // ===============================
-// 📊 CLASSIFY WORDS
+// ⏱️ RECENCY SCORE (NEW)
 // ===============================
-function classifyWords(words) {
-  const profile = getProfile();
+function getRecencyScore(lastSeen) {
+  if (!lastSeen) return 1;
 
-  const weak = [];
-  const medium = [];
-  const strong = [];
-  const unseen = [];
+  const hours = (Date.now() - lastSeen) / (1000 * 60 * 60);
 
-  words.forEach((word) => {
-    const data = profile[word.id];
-
-    if (!data) {
-      unseen.push(word);
-      return;
-    }
-
-    const strength = getWordStrength(data);
-
-    if (strength < 0.4) weak.push(word);
-    else if (strength < 0.75) medium.push(word);
-    else strong.push(word);
-  });
-
-  return { weak, medium, strong, unseen };
+  // كل ما الوقت يزيد → الأولوية تزيد
+  return Math.min(hours / 24, 1); // normalize (max = 1)
 }
 
 // ===============================
-// 🎯 PICK WORDS SMARTLY
+// 🎯 FINAL PRIORITY SCORE (NEW)
 // ===============================
-function pickWords({ weak, medium, strong, unseen }) {
-  let selected = [];
+function getPriorityScore(word, profile) {
+  const data = profile[word.id];
 
-  // Priority system
-  selected = [
-    ...weak.slice(0, 5),
-    ...medium.slice(0, 3),
-    ...unseen.slice(0, 2),
-  ];
+  if (!data) return 1; // unseen أعلى أولوية
 
-  // fallback
-  if (selected.length < SESSION_SIZE) {
-    selected = [
-      ...selected,
-      ...strong.slice(0, SESSION_SIZE - selected.length),
-    ];
+  const strength = getWordStrength(data);
+  const recency = getRecencyScore(data.lastSeen);
+
+  // Weak + Old = أعلى أولوية
+  return (1 - strength) * 0.7 + recency * 0.3;
+}
+
+// ===============================
+// 📊 SORT WORDS BY PRIORITY
+// ===============================
+function sortByPriority(words) {
+  const profile = getProfile();
+
+  return [...words].sort(
+    (a, b) =>
+      getPriorityScore(b, profile) - getPriorityScore(a, profile)
+  );
+}
+
+// ===============================
+// 🎯 PICK BEST WORDS (SMART)
+// ===============================
+function pickWordsSmart(words) {
+  const sorted = sortByPriority(words);
+
+  // mix عشان التنوع
+  const selected = [];
+
+  for (let i = 0; i < sorted.length && selected.length < SESSION_SIZE; i++) {
+    const w = sorted[i];
+
+    // avoid duplicates
+    if (!selected.find((s) => s.id === w.id)) {
+      selected.push(w);
+    }
   }
 
-  return selected.slice(0, SESSION_SIZE);
+  return selected;
 }
 
 // ===============================
 // 🧩 GENERATE OPTIONS
 // ===============================
 function generateOptions(correctWord, allWords) {
-  const options = [correctWord.meaning];
+  const options = [correctWord.definition];
 
   const shuffled = [...allWords].sort(() => 0.5 - Math.random());
 
   for (let w of shuffled) {
     if (options.length >= 4) break;
-    if (w.meaning !== correctWord.meaning) {
-      options.push(w.meaning);
+
+    if (w.definition !== correctWord.definition) {
+      options.push(w.definition);
     }
   }
 
@@ -134,7 +142,7 @@ function generateQuestions(words, allWords) {
   return words.map((word) => ({
     wordId: word.id,
     question: `What is the meaning of "${word.word}"?`,
-    correctAnswer: word.meaning,
+    correctAnswer: word.definition,
     options: generateOptions(word, allWords),
   }));
 }
@@ -143,14 +151,9 @@ function generateQuestions(words, allWords) {
 // 🚀 MAIN FUNCTION
 // ===============================
 export function generateCoachSession(allWords) {
-  const { weak, medium, strong, unseen } = classifyWords(allWords);
+  if (!allWords || !allWords.length) return [];
 
-  const selectedWords = pickWords({
-    weak,
-    medium,
-    strong,
-    unseen,
-  });
+  const selectedWords = pickWordsSmart(allWords);
 
   const questions = generateQuestions(selectedWords, allWords);
 
