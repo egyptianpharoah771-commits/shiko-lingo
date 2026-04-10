@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMemo, useEffect, useState } from "react";
 
 import FeedbackBox from "../components/FeedbackBox";
@@ -14,11 +14,13 @@ function MiniProgress({ value = 0, total = 0 }) {
   return (
     <div>
       <div style={{ height: 6, background: "#eee", borderRadius: 4 }}>
-        <div style={{
-          width: `${percent}%`,
-          height: "100%",
-          background: "#7B61FF"
-        }} />
+        <div
+          style={{
+            width: `${percent}%`,
+            height: "100%",
+            background: "#7B61FF",
+          }}
+        />
       </div>
       <small style={{ color: "#666" }}>{percent}%</small>
     </div>
@@ -71,7 +73,7 @@ function calculateDailyData() {
     streak,
     todayProgress,
     lastDate: today.toISOString(),
-    goal: 20
+    goal: 20,
   };
 
   localStorage.setItem("daily_progress", JSON.stringify(updated));
@@ -83,7 +85,7 @@ function getCoachInsight(profile) {
   let wrong = 0;
   let weak = 0;
 
-  Object.values(profile).forEach(p => {
+  Object.values(profile).forEach((p) => {
     correct += p.correct || 0;
     wrong += p.wrong || 0;
 
@@ -104,6 +106,7 @@ function getCoachInsight(profile) {
 /* ===== Dashboard ===== */
 
 function Dashboard() {
+  const navigate = useNavigate();
 
   const progress = useMemo(() => getUserProgress(), []);
   const continueLink = useMemo(() => getContinueLink(), []);
@@ -112,21 +115,16 @@ function Dashboard() {
   const [daily, setDaily] = useState({
     streak: 0,
     todayProgress: 0,
-    goal: 20
+    goal: 20,
   });
   const [coach, setCoach] = useState("");
 
   useEffect(() => {
-
     async function init() {
-
       try {
-
-        // 🔥 DAILY (fix ESLint + make reactive)
         const dailyData = calculateDailyData();
         setDaily(dailyData);
 
-        // 🔥 REVIEW COUNT
         const userId = resolveUserId();
         if (userId) {
           const now = new Date().toISOString();
@@ -140,22 +138,22 @@ function Dashboard() {
           setReviewCount(data?.length || 0);
         }
 
-        // 🔥 COACH
         const profile =
           JSON.parse(localStorage.getItem("learning_profile") || "{}");
 
         setCoach(getCoachInsight(profile));
-
       } catch (e) {
         console.error(e);
         setReviewCount(0);
       }
-
     }
 
     init();
-
   }, []);
+
+  function handleCoachClick() {
+    navigate("/coach"); // 👈 يفتح صفحة الكوتش
+  }
 
   const skills = {
     grammar: progress.skills?.grammar || [],
@@ -167,26 +165,32 @@ function Dashboard() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-
       <h2>🏠 Home</h2>
 
       {/* 🔥 STREAK + GOAL */}
       <div style={card}>
         <h3>🔥 Streak: {daily.streak} days</h3>
 
-        <p>{daily.todayProgress} / {daily.goal}</p>
+        <p>
+          {daily.todayProgress} / {daily.goal}
+        </p>
 
         <div style={bar}>
-          <div style={{
-            width: `${(daily.todayProgress / daily.goal) * 100}%`,
-            height: "100%",
-            background: "#4A90E2"
-          }} />
+          <div
+            style={{
+              width: `${(daily.todayProgress / daily.goal) * 100}%`,
+              height: "100%",
+              background: "#4A90E2",
+            }}
+          />
         </div>
       </div>
 
-      {/* 🧠 COACH */}
-      <div style={card}>
+      {/* 🧠 COACH (FIXED) */}
+      <div
+        style={{ ...card, cursor: "pointer" }}
+        onClick={handleCoachClick}
+      >
         <h3>🧠 Coach</h3>
         <p>{coach}</p>
       </div>
@@ -198,9 +202,13 @@ function Dashboard() {
         <h3>🔁 Daily Review</h3>
 
         <p>
-          {reviewCount > 0
-            ? <>You have <strong>{reviewCount}</strong> reviews.</>
-            : "You're all caught up 🎉"}
+          {reviewCount > 0 ? (
+            <>
+              You have <strong>{reviewCount}</strong> reviews.
+            </>
+          ) : (
+            "You're all caught up 🎉"
+          )}
         </p>
 
         <Link to="/review">
@@ -231,7 +239,6 @@ function Dashboard() {
       </div>
 
       <FeedbackBox />
-
     </div>
   );
 }
@@ -250,7 +257,7 @@ const bar = {
   height: 10,
   background: "#eee",
   borderRadius: 5,
-  overflow: "hidden"
+  overflow: "hidden",
 };
 
 const grid = {
@@ -270,5 +277,3 @@ const primaryBtn = {
 };
 
 export default Dashboard;
-
-
