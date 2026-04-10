@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
-// ✅ FIX الحقيقي
-import { VOCABULARY_DATA } from "../vocabularyIndex";
+// ✅ FIX الصحيح بناءً على structure
+import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 
 function normalizeWord(raw) {
   if (!raw) return null;
@@ -34,7 +34,7 @@ export function useWords(level) {
       setLoading(true);
 
       try {
-        // 🥇 أولاً: حاول من DB
+        // 🥇 DB أولاً
         const { data, error } = await supabase
           .from("words")
           .select("id, word, simple_definition, definition, audio_url, level")
@@ -51,7 +51,7 @@ export function useWords(level) {
           }
         }
 
-        // 🥇 fallback: local vocabulary
+        // 🥇 fallback: local
         const levelData = VOCABULARY_DATA?.[level];
 
         if (levelData) {
