@@ -36,10 +36,9 @@ function today() {
 export default function DailyLearning() {
   const [state, setState] = useState(() => loadState());
 
-  // 💣 USE EFFECT واحد فقط
+  // ✅ single effect (unchanged logic)
   useEffect(() => {
     const t = today();
-
     const prev = loadState();
 
     if (prev.lastDate === t) return;
@@ -63,7 +62,6 @@ export default function DailyLearning() {
 
     saveState(updated);
     setState(updated);
-
   }, []);
 
   const progress = Math.min(
@@ -74,6 +72,9 @@ export default function DailyLearning() {
   return (
     <div
       style={{
+        position: "relative",          // 🔥 يمنع أي overlay behavior
+        zIndex: 1,                      // 🔥 يدخل في stacking طبيعي
+        overflow: "hidden",             // 🔥 يمنع التمدد خارج الكارد
         border: "1px solid #eee",
         borderRadius: 12,
         padding: 20,
@@ -114,5 +115,3 @@ export default function DailyLearning() {
     </div>
   );
 }
-
-
