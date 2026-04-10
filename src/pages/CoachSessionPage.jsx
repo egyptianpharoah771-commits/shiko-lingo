@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { generateCoachSession, updateWordStats } from "../coach/coachEngine";
 import { useWords } from "../hooks/useWords";
 
 export default function CoachSessionPage() {
   const navigate = useNavigate();
-  const { words } = useWords();
+  const { level } = useParams(); // ✅ جلب level من URL
+
+  const { words, loading } = useWords(level); // ✅ ربط بالـ level
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -14,12 +16,14 @@ export default function CoachSessionPage() {
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
 
+  // ✅ توليد السيشن بناءً على level
   useEffect(() => {
+    if (loading) return;
     if (!words || !words.length) return;
 
     const session = generateCoachSession(words);
     setQuestions(session);
-  }, [words]);
+  }, [words, loading]);
 
   const current = questions[currentIndex];
 
@@ -32,7 +36,7 @@ export default function CoachSessionPage() {
     const isCorrect = option === current.correctAnswer;
 
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
     }
 
     updateWordStats(current.wordId, isCorrect);
@@ -45,7 +49,7 @@ export default function CoachSessionPage() {
     if (currentIndex + 1 >= questions.length) {
       setFinished(true);
     } else {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
     }
   }
 
@@ -53,21 +57,28 @@ export default function CoachSessionPage() {
     if (!words || !words.length) return;
 
     const session = generateCoachSession(words);
+
     setQuestions(session);
     setCurrentIndex(0);
     setScore(0);
     setFinished(false);
+    setSelected(null);
+    setShowAnswer(false);
   }
 
-  if (!questions.length) {
+  // ✅ Loading State
+  if (loading || !questions.length) {
     return <p style={{ textAlign: "center" }}>Loading session...</p>;
   }
 
+  // ✅ Finished State
   if (finished) {
     return (
       <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
         <h2>🎯 Session Complete</h2>
-        <p>Score: {score} / {questions.length}</p>
+        <p>
+          Score: {score} / {questions.length}
+        </p>
 
         <button
           onClick={handleRestart}
@@ -77,21 +88,21 @@ export default function CoachSessionPage() {
             background: "#4A90E2",
             color: "#fff",
             border: "none",
-            borderRadius: "8px"
+            borderRadius: "8px",
           }}
         >
           🔁 Try Again
         </button>
 
         <button
-          onClick={() => navigate("/coach")}
+          onClick={() => navigate(`/coach/${level}`)} // ✅ رجوع لنفس level
           style={{
             padding: "10px 16px",
             margin: "10px",
             background: "#333",
             color: "#fff",
             border: "none",
-            borderRadius: "8px"
+            borderRadius: "8px",
           }}
         >
           🧠 Back to Coach
@@ -128,7 +139,7 @@ export default function CoachSessionPage() {
                 border: "none",
                 borderRadius: "8px",
                 cursor: "pointer",
-                background: bg
+                background: bg,
               }}
             >
               {opt}
@@ -146,7 +157,7 @@ export default function CoachSessionPage() {
             background: "#4A90E2",
             color: "#fff",
             border: "none",
-            borderRadius: "8px"
+            borderRadius: "8px",
           }}
         >
           Next →
