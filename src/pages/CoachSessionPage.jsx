@@ -8,7 +8,7 @@ export default function CoachSessionPage() {
   const { level } = useParams();
   const [searchParams] = useSearchParams();
 
-  const type = searchParams.get("type") || "mixed"; // ✅ Session Type
+  const type = searchParams.get("type") || "mixed";
 
   const { words, loading } = useWords(level);
 
@@ -18,25 +18,41 @@ export default function CoachSessionPage() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
-  // ✅ Generate Session
+  // ✅ Generate Session (ASYNC SAFE)
   useEffect(() => {
+    let isMounted = true;
+
     if (loading) return;
     if (!words || !words.length) return;
 
-    const session = generateCoachSession(words, { type });
+    async function buildSession() {
+      setSessionLoading(true);
 
-    setQuestions(session);
-    setCurrentIndex(0);
-    setScore(0);
-    setFinished(false);
-    setSelected(null);
-    setShowAnswer(false);
+      const session = await generateCoachSession(words, { type });
+
+      if (!isMounted) return;
+
+      setQuestions(session);
+      setCurrentIndex(0);
+      setScore(0);
+      setFinished(false);
+      setSelected(null);
+      setShowAnswer(false);
+      setSessionLoading(false);
+    }
+
+    buildSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, [words, loading, type]);
 
   const current = questions[currentIndex];
 
-  function handleSelect(option) {
+  async function handleSelect(option) {
     if (showAnswer || !current) return;
 
     setSelected(option);
@@ -48,6 +64,7 @@ export default function CoachSessionPage() {
       setScore((prev) => prev + 1);
     }
 
+    // async but non-blocking
     updateWordStats(current.wordId, isCorrect);
   }
 
@@ -64,10 +81,12 @@ export default function CoachSessionPage() {
     }
   }
 
-  function handleRestart() {
+  async function handleRestart() {
     if (!words || !words.length) return;
 
-    const session = generateCoachSession(words, { type });
+    setSessionLoading(true);
+
+    const session = await generateCoachSession(words, { type });
 
     setQuestions(session);
     setCurrentIndex(0);
@@ -75,11 +94,16 @@ export default function CoachSessionPage() {
     setFinished(false);
     setSelected(null);
     setShowAnswer(false);
+    setSessionLoading(false);
   }
 
   // ✅ Loading State
-  if (loading || !questions.length) {
+  if (loading || sessionLoading) {
     return <p style={{ textAlign: "center" }}>Loading session...</p>;
+  }
+
+  if (!questions.length) {
+    return <p style={{ textAlign: "center" }}>No questions available.</p>;
   }
 
   // ✅ Finished State
