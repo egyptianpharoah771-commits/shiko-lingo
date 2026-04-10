@@ -151,10 +151,6 @@ function Dashboard() {
     init();
   }, []);
 
-  function handleCoachClick() {
-    navigate("/coach"); // 👈 يفتح صفحة الكوتش
-  }
-
   const skills = {
     grammar: progress.skills?.grammar || [],
     vocabulary: progress.skills?.vocabulary || [],
@@ -186,13 +182,27 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 🧠 COACH (FIXED) */}
-      <div
-        style={{ ...card, cursor: "pointer" }}
-        onClick={handleCoachClick}
-      >
-        <h3>🧠 Coach</h3>
-        <p>{coach}</p>
+      {/* 🧠 COACH (FINAL FIX) */}
+      <div style={{ position: "relative" }}>
+        <button
+          onClick={() => navigate("/coach")}
+          style={{
+            width: "100%",
+            textAlign: "left",
+            background: "#fff",
+            padding: 20,
+            borderRadius: 14,
+            marginBottom: 20,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+            border: "none",
+            cursor: "pointer",
+            position: "relative",
+            zIndex: 10,
+          }}
+        >
+          <h3>🧠 Coach</h3>
+          <p>{coach}</p>
+        </button>
       </div>
 
       <DailyLearning />
