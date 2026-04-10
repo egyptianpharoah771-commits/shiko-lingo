@@ -152,7 +152,7 @@ function Dashboard() {
   }, []);
 
   function handleCoachClick() {
-    console.log("COACH CLICKED"); // 🔥 debug
+    console.log("COACH CLICKED");
     navigate("/coach");
   }
 
@@ -168,7 +168,7 @@ function Dashboard() {
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <h2>🏠 Home</h2>
 
-      {/* 🔥 STREAK + GOAL */}
+      {/* 🔥 STREAK */}
       <div style={card}>
         <h3>🔥 Streak: {daily.streak} days</h3>
 
@@ -187,21 +187,23 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 🧠 COACH (FIX MINIMAL) */}
-      <div style={{ ...card, position: "relative" }}>
-        <h3>🧠 Coach</h3>
-        <p>{coach}</p>
-
-        <div
-          onClick={handleCoachClick}
-          style={{
-            position: "absolute",
-            inset: 0,
-            cursor: "pointer",
-            zIndex: 5,
-            background: "transparent",
-          }}
-        />
+      {/* 🧠 COACH (FINAL CLEAN FIX) */}
+      <div
+        onClick={handleCoachClick}
+        style={{
+          ...card,
+          cursor: "pointer",
+          transition: "transform 0.2s",
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.transform = "scale(1.02)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.transform = "scale(1)")
+        }
+      >
+        <h3 style={{ pointerEvents: "none" }}>🧠 Coach</h3>
+        <p style={{ pointerEvents: "none" }}>{coach}</p>
       </div>
 
       <DailyLearning />
