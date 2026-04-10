@@ -1,140 +1,158 @@
-// src/coach/coachEngine.js
+// ===============================
+// 🧠 COACH ENGINE (PRO VERSION)
+// ===============================
 
-const SESSION_SIZE = 20;
-const MAX_REPEATS = 2;
+const SESSION_SIZE = 10;
 
-/**
- * Load progress
- */
-export function getCoachProgress() {
-  try {
-    return JSON.parse(localStorage.getItem("coach_progress") || "{}");
-  } catch {
-    return {};
-  }
+// ===============================
+// 📊 LOAD PROFILE
+// ===============================
+function getProfile() {
+  return JSON.parse(localStorage.getItem("learning_profile") || "{}");
 }
 
-/**
- * Save progress
- */
-export function saveCoachProgress(progress) {
-  localStorage.setItem("coach_progress", JSON.stringify(progress));
+// ===============================
+// 💾 SAVE PROFILE
+// ===============================
+function saveProfile(profile) {
+  localStorage.setItem("learning_profile", JSON.stringify(profile));
 }
 
-/**
- * Update stats after each answer
- */
+// ===============================
+// 📈 UPDATE WORD STATS
+// ===============================
 export function updateWordStats(wordId, isCorrect) {
-  const progress = getCoachProgress();
+  const profile = getProfile();
 
-  if (!progress[wordId]) {
-    progress[wordId] = {
+  if (!profile[wordId]) {
+    profile[wordId] = {
       correct: 0,
       wrong: 0,
-      lastSeen: 0,
+      lastSeen: Date.now(),
     };
   }
 
   if (isCorrect) {
-    progress[wordId].correct += 1;
+    profile[wordId].correct += 1;
   } else {
-    progress[wordId].wrong += 1;
+    profile[wordId].wrong += 1;
   }
 
-  progress[wordId].lastSeen = Date.now();
+  profile[wordId].lastSeen = Date.now();
 
-  saveCoachProgress(progress);
+  saveProfile(profile);
 }
 
-/**
- * Weakness score (higher = needs review)
- */
-function getWeaknessScore(wordId, progress) {
-  const data = progress[wordId];
+// ===============================
+// 🧠 CALCULATE WORD STRENGTH
+// ===============================
+function getWordStrength(data) {
+  const correct = data.correct || 0;
+  const wrong = data.wrong || 0;
 
-  if (!data) return 1; // unseen words
+  const total = correct + wrong;
+  if (total === 0) return 0;
 
-  const { correct, wrong, lastSeen } = data;
-
-  const accuracy = correct / (correct + wrong || 1);
-
-  const daysSinceSeen =
-    (Date.now() - lastSeen) / (1000 * 60 * 60 * 24);
-
-  return (1 - accuracy) + daysSinceSeen * 0.1;
+  return correct / total;
 }
 
-/**
- * Shuffle helper
- */
-function shuffle(array) {
-  return [...array].sort(() => Math.random() - 0.5);
+// ===============================
+// 📊 CLASSIFY WORDS
+// ===============================
+function classifyWords(words) {
+  const profile = getProfile();
+
+  const weak = [];
+  const medium = [];
+  const strong = [];
+  const unseen = [];
+
+  words.forEach((word) => {
+    const data = profile[word.id];
+
+    if (!data) {
+      unseen.push(word);
+      return;
+    }
+
+    const strength = getWordStrength(data);
+
+    if (strength < 0.4) weak.push(word);
+    else if (strength < 0.75) medium.push(word);
+    else strong.push(word);
+  });
+
+  return { weak, medium, strong, unseen };
 }
 
-/**
- * Generate context question (C1-style)
- */
-function generateContextQuestion(word, allWords) {
-  const sentence =
-    word.example ||
-    `This is a sentence using "${word.word}".`;
+// ===============================
+// 🎯 PICK WORDS SMARTLY
+// ===============================
+function pickWords({ weak, medium, strong, unseen }) {
+  let selected = [];
 
-  const correctAnswer = word.meaning;
+  // Priority system
+  selected = [
+    ...weak.slice(0, 5),
+    ...medium.slice(0, 3),
+    ...unseen.slice(0, 2),
+  ];
 
-  const distractors = shuffle(
-    allWords
-      .filter(w => w.id !== word.id)
-      .map(w => w.meaning)
-  ).slice(0, 3);
+  // fallback
+  if (selected.length < SESSION_SIZE) {
+    selected = [
+      ...selected,
+      ...strong.slice(0, SESSION_SIZE - selected.length),
+    ];
+  }
 
-  const options = shuffle([correctAnswer, ...distractors]);
+  return selected.slice(0, SESSION_SIZE);
+}
 
-  return {
-    type: "context_mcq",
+// ===============================
+// 🧩 GENERATE OPTIONS
+// ===============================
+function generateOptions(correctWord, allWords) {
+  const options = [correctWord.meaning];
+
+  const shuffled = [...allWords].sort(() => 0.5 - Math.random());
+
+  for (let w of shuffled) {
+    if (options.length >= 4) break;
+    if (w.meaning !== correctWord.meaning) {
+      options.push(w.meaning);
+    }
+  }
+
+  return options.sort(() => 0.5 - Math.random());
+}
+
+// ===============================
+// 🎯 GENERATE QUESTIONS
+// ===============================
+function generateQuestions(words, allWords) {
+  return words.map((word) => ({
     wordId: word.id,
-    question: sentence,
-    correctAnswer,
-    options,
-  };
+    question: `What is the meaning of "${word.word}"?`,
+    correctAnswer: word.meaning,
+    options: generateOptions(word, allWords),
+  }));
 }
 
-/**
- * Prevent same word repeating too much
- */
-function limitRepeats(questions) {
-  const seen = {};
+// ===============================
+// 🚀 MAIN FUNCTION
+// ===============================
+export function generateCoachSession(allWords) {
+  const { weak, medium, strong, unseen } = classifyWords(allWords);
 
-  return questions.filter(q => {
-    if (!seen[q.wordId]) seen[q.wordId] = 0;
-
-    if (seen[q.wordId] >= MAX_REPEATS) return false;
-
-    seen[q.wordId]++;
-    return true;
-  });
-}
-
-/**
- * MAIN FUNCTION
- */
-export function generateCoachSession(words) {
-  const progress = getCoachProgress();
-
-  // rank by weakness
-  const ranked = [...words].sort((a, b) => {
-    return (
-      getWeaknessScore(b.id, progress) -
-      getWeaknessScore(a.id, progress)
-    );
+  const selectedWords = pickWords({
+    weak,
+    medium,
+    strong,
+    unseen,
   });
 
-  const selected = ranked.slice(0, SESSION_SIZE);
-
-  let questions = selected.map(word =>
-    generateContextQuestion(word, words)
-  );
-
-  questions = limitRepeats(questions);
+  const questions = generateQuestions(selectedWords, allWords);
 
   return questions;
 }
