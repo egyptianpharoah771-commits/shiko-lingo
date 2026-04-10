@@ -1,5 +1,5 @@
 // ===============================
-// 🧠 COACH ENGINE (ADVANCED)
+// 🧠 COACH ENGINE (ADVANCED V2)
 // ===============================
 
 const SESSION_SIZE = 10;
@@ -44,7 +44,7 @@ export function updateWordStats(wordId, isCorrect) {
 }
 
 // ===============================
-// 🧠 STRENGTH SCORE
+// 📊 STRENGTH SCORE
 // ===============================
 function getWordStrength(data) {
   const correct = data.correct || 0;
@@ -57,19 +57,17 @@ function getWordStrength(data) {
 }
 
 // ===============================
-// ⏱️ RECENCY SCORE (NEW)
+// ⏱️ RECENCY SCORE
 // ===============================
 function getRecencyScore(lastSeen) {
   if (!lastSeen) return 1;
 
   const hours = (Date.now() - lastSeen) / (1000 * 60 * 60);
-
-  // كل ما الوقت يزيد → الأولوية تزيد
-  return Math.min(hours / 24, 1); // normalize (max = 1)
+  return Math.min(hours / 24, 1);
 }
 
 // ===============================
-// 🎯 FINAL PRIORITY SCORE (NEW)
+// 🎯 PRIORITY SCORE
 // ===============================
 function getPriorityScore(word, profile) {
   const data = profile[word.id];
@@ -79,12 +77,11 @@ function getPriorityScore(word, profile) {
   const strength = getWordStrength(data);
   const recency = getRecencyScore(data.lastSeen);
 
-  // Weak + Old = أعلى أولوية
   return (1 - strength) * 0.7 + recency * 0.3;
 }
 
 // ===============================
-// 📊 SORT WORDS BY PRIORITY
+// 📊 SORT BY PRIORITY
 // ===============================
 function sortByPriority(words) {
   const profile = getProfile();
@@ -96,18 +93,43 @@ function sortByPriority(words) {
 }
 
 // ===============================
-// 🎯 PICK BEST WORDS (SMART)
+// 🧠 PICK: WEAK WORDS
 // ===============================
-function pickWordsSmart(words) {
+function pickWeakWords(words) {
+  const profile = getProfile();
+
+  return words
+    .filter((w) => {
+      const data = profile[w.id];
+      if (!data) return false;
+      return getWordStrength(data) < 0.6;
+    })
+    .sort((a, b) => getPriorityScore(b, profile) - getPriorityScore(a, profile))
+    .slice(0, SESSION_SIZE);
+}
+
+// ===============================
+// 🆕 PICK: NEW WORDS
+// ===============================
+function pickNewWords(words) {
+  const profile = getProfile();
+
+  return words
+    .filter((w) => !profile[w.id])
+    .slice(0, SESSION_SIZE);
+}
+
+// ===============================
+// 🎯 PICK: MIXED (DEFAULT)
+// ===============================
+function pickMixedWords(words) {
   const sorted = sortByPriority(words);
 
-  // mix عشان التنوع
   const selected = [];
 
   for (let i = 0; i < sorted.length && selected.length < SESSION_SIZE; i++) {
     const w = sorted[i];
 
-    // avoid duplicates
     if (!selected.find((s) => s.id === w.id)) {
       selected.push(w);
     }
@@ -148,14 +170,40 @@ function generateQuestions(words, allWords) {
 }
 
 // ===============================
-// 🚀 MAIN FUNCTION
+// 🚀 MAIN FUNCTION (UPGRADED)
 // ===============================
-export function generateCoachSession(allWords) {
+export function generateCoachSession(allWords, config = {}) {
   if (!allWords || !allWords.length) return [];
 
-  const selectedWords = pickWordsSmart(allWords);
+  const { type = "mixed" } = config;
 
-  const questions = generateQuestions(selectedWords, allWords);
+  let selectedWords = [];
 
-  return questions;
+  if (type === "weak") {
+    selectedWords = pickWeakWords(allWords);
+
+    // fallback لو مفيش كلمات weak كفاية
+    if (selectedWords.length < SESSION_SIZE) {
+      const fallback = pickMixedWords(allWords);
+      selectedWords = [...new Set([...selectedWords, ...fallback])].slice(
+        0,
+        SESSION_SIZE
+      );
+    }
+  } else if (type === "new") {
+    selectedWords = pickNewWords(allWords);
+
+    // fallback
+    if (selectedWords.length < SESSION_SIZE) {
+      const fallback = pickMixedWords(allWords);
+      selectedWords = [...new Set([...selectedWords, ...fallback])].slice(
+        0,
+        SESSION_SIZE
+      );
+    }
+  } else {
+    selectedWords = pickMixedWords(allWords);
+  }
+
+  return generateQuestions(selectedWords, allWords);
 }
