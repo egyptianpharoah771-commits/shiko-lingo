@@ -151,6 +151,11 @@ function Dashboard() {
     init();
   }, []);
 
+  function handleCoachClick() {
+    console.log("COACH CLICKED"); // 🔥 debug
+    navigate("/coach");
+  }
+
   const skills = {
     grammar: progress.skills?.grammar || [],
     vocabulary: progress.skills?.vocabulary || [],
@@ -182,27 +187,21 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 🧠 COACH (FINAL FIX) */}
-      <div style={{ position: "relative" }}>
-        <button
-          onClick={() => navigate("/coach")}
+      {/* 🧠 COACH (FIX MINIMAL) */}
+      <div style={{ ...card, position: "relative" }}>
+        <h3>🧠 Coach</h3>
+        <p>{coach}</p>
+
+        <div
+          onClick={handleCoachClick}
           style={{
-            width: "100%",
-            textAlign: "left",
-            background: "#fff",
-            padding: 20,
-            borderRadius: 14,
-            marginBottom: 20,
-            boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
-            border: "none",
+            position: "absolute",
+            inset: 0,
             cursor: "pointer",
-            position: "relative",
-            zIndex: 10,
+            zIndex: 5,
+            background: "transparent",
           }}
-        >
-          <h3>🧠 Coach</h3>
-          <p>{coach}</p>
-        </button>
+        />
       </div>
 
       <DailyLearning />
