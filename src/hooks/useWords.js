@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
-// ✅ استيراد local data (FIX REAL)
-import { VOCABULARY_DATA } from "../vocabulary";
+// ✅ FIX الحقيقي
+import { VOCABULARY_DATA } from "../vocabularyIndex";
 
 function normalizeWord(raw) {
   if (!raw) return null;
@@ -51,7 +51,7 @@ export function useWords(level) {
           }
         }
 
-        // 🥇 fallback: local vocabulary (SAFE)
+        // 🥇 fallback: local vocabulary
         const levelData = VOCABULARY_DATA?.[level];
 
         if (levelData) {
