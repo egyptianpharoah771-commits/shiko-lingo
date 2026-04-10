@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
-// ✅ استيراد local data
-import { VOCABULARY_DATA } from "../vocabulary";
+// ✅ استيراد local data (FIX)
+import { VOCABULARY_DATA } from "../vocabulary/index";
 
 function normalizeWord(raw) {
   if (!raw) return null;
@@ -51,12 +51,12 @@ export function useWords(level) {
           }
         }
 
-        // 🥇 fallback: local vocabulary (الأهم)
-        const levelData = VOCABULARY_DATA[level];
+        // 🥇 fallback: local vocabulary (FIXED SAFE ACCESS)
+        const levelData = VOCABULARY_DATA?.[level];
 
         if (levelData) {
           const localWords = Object.values(levelData).flatMap((unit) =>
-            (unit.content?.items || []).map((item) => ({
+            (unit?.content?.items || []).map((item) => ({
               id: item.word,
               word: item.word,
               definition: item.meaning,
