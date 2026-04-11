@@ -31,11 +31,14 @@ function FeedbackBox() {
   return (
     <div
       style={{
+        position: "relative",       // 🔥 يمنع أي خروج من السياق
+        zIndex: 1,                   // 🔥 أقل من الكوتش
         marginTop: "30px",
         padding: "20px",
         borderRadius: "12px",
         background: "#f9f9ff",
         border: "1px solid #ddd",
+        pointerEvents: "auto",      // 🔥 يضمن إنه ما يعطلش غيره
       }}
     >
       <h3>💡 Have a suggestion?</h3>
@@ -43,7 +46,6 @@ function FeedbackBox() {
         Help us improve Shiko Lingo 💙
       </p>
 
-      {/* Section selector */}
       <select
         value={section}
         onChange={(e) => setSection(e.target.value)}
@@ -62,7 +64,6 @@ function FeedbackBox() {
         <option value="Grammar">Grammar</option>
       </select>
 
-      {/* Message */}
       <textarea
         rows={4}
         placeholder="Write your suggestion or issue here..."
@@ -102,5 +103,3 @@ function FeedbackBox() {
 }
 
 export default FeedbackBox;
-
-
