@@ -256,8 +256,16 @@ function AppLayout({ children }) {
         </>
       )}
 
-      <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-        <div style={{ width: "100%", maxWidth: 1100, padding: "24px 20px" }}>
+      {/* 🔥 FIX FINAL */}
+      <div style={{ flex: 1, display: "block" }}>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 1100,
+            margin: "0 auto",
+            padding: "24px 20px",
+          }}
+        >
           {children}
         </div>
       </div>
