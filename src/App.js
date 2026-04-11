@@ -256,12 +256,18 @@ function AppLayout({ children }) {
         </>
       )}
 
-      <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-        <div style={{ width: "100%", maxWidth: 1100, padding: "24px 20px" }}>
-          {children}
-        </div>
-      </div>
-
+      <main style={{ flex: 1 }}>
+  <div
+    style={{
+      width: "100%",
+      maxWidth: 1100,
+      margin: "0 auto",
+      padding: "24px 20px",
+    }}
+  >
+    {children}
+  </div>
+</main>
       {!hideLayout && (
         <footer style={footerStyle}>
           <Link to="/privacy" style={footerLink}>
