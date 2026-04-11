@@ -122,11 +122,9 @@ function Dashboard() {
 
       try {
 
-        // 🔥 DAILY (fix ESLint + make reactive)
         const dailyData = calculateDailyData();
         setDaily(dailyData);
 
-        // 🔥 REVIEW COUNT
         const userId = resolveUserId();
         if (userId) {
           const now = new Date().toISOString();
@@ -140,7 +138,6 @@ function Dashboard() {
           setReviewCount(data?.length || 0);
         }
 
-        // 🔥 COACH
         const profile =
           JSON.parse(localStorage.getItem("learning_profile") || "{}");
 
@@ -170,8 +167,8 @@ function Dashboard() {
 
       <h2>🏠 Home</h2>
 
-      {/* 🔥 STREAK + GOAL */}
-      <div style={card}>
+      {/* 🔥 STREAK */}
+      <div style={{ ...card, position: "relative", zIndex: 1 }}>
         <h3>🔥 Streak: {daily.streak} days</h3>
 
         <p>{daily.todayProgress} / {daily.goal}</p>
@@ -185,16 +182,26 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 🧠 COACH */}
-      <div style={card}>
-        <h3>🧠 Coach</h3>
-        <p>{coach}</p>
+      {/* 🧠 COACH (🔥 FIX) */}
+      <Link to="/coach/session" style={{ textDecoration: "none" }}>
+        <div style={{
+          ...card,
+          position: "relative",
+          zIndex: 10,
+          cursor: "pointer"
+        }}>
+          <h3 style={{ pointerEvents: "none" }}>🧠 Coach</h3>
+          <p style={{ pointerEvents: "none" }}>{coach}</p>
+        </div>
+      </Link>
+
+      {/* 🔥 isolate component */}
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <DailyLearning />
       </div>
 
-      <DailyLearning />
-
       {/* 🔁 Review */}
-      <div style={card}>
+      <div style={{ ...card, position: "relative", zIndex: 1 }}>
         <h3>🔁 Daily Review</h3>
 
         <p>
@@ -209,7 +216,7 @@ function Dashboard() {
       </div>
 
       {/* ▶ Continue */}
-      <div style={card}>
+      <div style={{ ...card, position: "relative", zIndex: 1 }}>
         <h3>▶ Continue Learning</h3>
 
         <Link to={continueLink}>
@@ -218,7 +225,7 @@ function Dashboard() {
       </div>
 
       {/* 📚 Skills */}
-      <div style={card}>
+      <div style={{ ...card, position: "relative", zIndex: 1 }}>
         <h3>📚 Skills</h3>
 
         <div style={grid}>
@@ -270,5 +277,3 @@ const primaryBtn = {
 };
 
 export default Dashboard;
-
-
