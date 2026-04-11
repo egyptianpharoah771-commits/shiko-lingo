@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
-// ✅ استيراد local data
-import { VOCABULARY_DATA } from "../vocabulary";
+// ✅ FIX: explicit path (Vercel safe)
+import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 
 function normalizeWord(raw) {
   if (!raw) return null;
@@ -34,7 +34,7 @@ export function useWords(level) {
       setLoading(true);
 
       try {
-        // 🥇 أولاً: حاول من DB
+        // 🥇 Supabase first
         const { data, error } = await supabase
           .from("words")
           .select("id, word, simple_definition, definition, audio_url, level")
@@ -51,7 +51,7 @@ export function useWords(level) {
           }
         }
 
-        // 🥇 fallback: local vocabulary (الأهم)
+        // 🥈 Local fallback
         const levelData = VOCABULARY_DATA[level];
 
         if (levelData) {
