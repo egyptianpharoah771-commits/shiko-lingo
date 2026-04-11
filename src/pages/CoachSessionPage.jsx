@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { generateCoachSession, updateWordStats } from "../coach/coachEngine";
-
-// ⚠️ عدل المسار حسب مكان الداتا عندك
-import wordsData from "../data/words.json";
+import { useWords } from "../hooks/useWords";
 
 export default function CoachSessionPage() {
   const navigate = useNavigate();
+  const { level } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const type = searchParams.get("type") || "mixed";
+
+  const { words, loading } = useWords(level || "A1");
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,14 +20,23 @@ export default function CoachSessionPage() {
   const [finished, setFinished] = useState(false);
 
   useEffect(() => {
-    const session = generateCoachSession(wordsData);
+    if (loading) return;
+    if (!words || !words.length) return;
+
+    const session = generateCoachSession(words, { type });
+
     setQuestions(session);
-  }, []);
+    setCurrentIndex(0);
+    setScore(0);
+    setFinished(false);
+    setSelected(null);
+    setShowAnswer(false);
+  }, [words, loading, type]);
 
   const current = questions[currentIndex];
 
   function handleSelect(option) {
-    if (showAnswer) return;
+    if (showAnswer || !current) return;
 
     setSelected(option);
     setShowAnswer(true);
@@ -31,32 +44,39 @@ export default function CoachSessionPage() {
     const isCorrect = option === current.correctAnswer;
 
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
     }
 
     updateWordStats(current.wordId, isCorrect);
   }
 
   function handleNext() {
+    if (!current) return;
+
     setSelected(null);
     setShowAnswer(false);
 
     if (currentIndex + 1 >= questions.length) {
       setFinished(true);
     } else {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
     }
   }
 
   function handleRestart() {
-    const session = generateCoachSession(wordsData);
+    if (!words || !words.length) return;
+
+    const session = generateCoachSession(words, { type });
+
     setQuestions(session);
     setCurrentIndex(0);
     setScore(0);
     setFinished(false);
+    setSelected(null);
+    setShowAnswer(false);
   }
 
-  if (!questions.length) {
+  if (loading || !questions.length) {
     return <p style={{ textAlign: "center" }}>Loading session...</p>;
   }
 
@@ -64,7 +84,10 @@ export default function CoachSessionPage() {
     return (
       <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
         <h2>🎯 Session Complete</h2>
-        <p>Score: {score} / {questions.length}</p>
+
+        <p>
+          Score: {score} / {questions.length}
+        </p>
 
         <button
           onClick={handleRestart}
@@ -74,21 +97,21 @@ export default function CoachSessionPage() {
             background: "#4A90E2",
             color: "#fff",
             border: "none",
-            borderRadius: "8px"
+            borderRadius: "8px",
           }}
         >
           🔁 Try Again
         </button>
 
         <button
-          onClick={() => navigate("/coach")}
+          onClick={() => navigate(`/coach/${level || "A1"}`)}
           style={{
             padding: "10px 16px",
             margin: "10px",
             background: "#333",
             color: "#fff",
             border: "none",
-            borderRadius: "8px"
+            borderRadius: "8px",
           }}
         >
           🧠 Back to Coach
@@ -125,7 +148,7 @@ export default function CoachSessionPage() {
                 border: "none",
                 borderRadius: "8px",
                 cursor: "pointer",
-                background: bg
+                background: bg,
               }}
             >
               {opt}
@@ -143,7 +166,7 @@ export default function CoachSessionPage() {
             background: "#4A90E2",
             color: "#fff",
             border: "none",
-            borderRadius: "8px"
+            borderRadius: "8px",
           }}
         >
           Next →
