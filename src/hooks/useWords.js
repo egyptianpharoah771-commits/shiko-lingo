@@ -34,11 +34,11 @@ export function useWords(level) {
       setLoading(true);
 
       try {
-        // 🥇 Supabase first
+        // 🥇 Supabase first (🔥 FIX هنا)
         const { data, error } = await supabase
           .from("words")
           .select("id, word, simple_definition, definition, audio_url, level")
-          .ilike("level", level)
+          .ilike("level", `%${level}%`) // ✅ FIX
           .limit(50);
 
         if (!error && data && data.length) {
