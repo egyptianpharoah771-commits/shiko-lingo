@@ -28,17 +28,22 @@ export function useWords(level) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!level) return;
+    // 🔥 FIX 1: guard حقيقي
+    if (!level || level === "session") {
+      setWords([]);
+      setLoading(false);
+      return;
+    }
 
     async function fetchWords() {
       setLoading(true);
 
       try {
-        // 🥇 Supabase first (🔥 FIX هنا)
+        // 🔥 FIX 2: eq بدل ilike
         const { data, error } = await supabase
           .from("words")
           .select("id, word, simple_definition, definition, audio_url, level")
-          .ilike("level", `%${level}%`) // ✅ FIX
+          .eq("level", level)
           .limit(50);
 
         if (!error && data && data.length) {
