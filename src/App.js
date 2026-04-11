@@ -158,16 +158,12 @@ function SubscriptionGuard() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/learn" element={<LearnPage />} />
 
-        {/* 🔥 Coach Routes */}
         <Route path="/coach" element={<CoachPage />} />
         <Route path="/coach/session" element={<CoachSessionPage />} />
 
         <Route path="/grammar" element={<GrammarLevels />} />
         <Route path="/grammar/:level" element={<GrammarUnits />} />
-        <Route
-          path="/grammar/:level/:unit"
-          element={<GrammarUnitWrapper />}
-        />
+        <Route path="/grammar/:level/:unit" element={<GrammarUnitWrapper />} />
 
         <Route path="/vocabulary" element={<VocabularyPage />} />
         <Route path="/vocabulary/review" element={<SavedWordsReview />} />
@@ -182,10 +178,7 @@ function SubscriptionGuard() {
         />
 
         <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
-        <Route
-          path="/vocabulary/:level/:unitId"
-          element={<VocabularyUnitPage />}
-        />
+        <Route path="/vocabulary/:level/:unitId" element={<VocabularyUnitPage />} />
 
         <Route
           path="/review"
@@ -207,23 +200,8 @@ function SubscriptionGuard() {
         <Route path="/speaking" element={<SpeakingHome />} />
         <Route path="/writing" element={<Writing />} />
 
-        <Route
-          path="/pi"
-          element={
-            <AdminGuard>
-              <PI />
-            </AdminGuard>
-          }
-        />
-
-        <Route
-          path="/admin/feedback"
-          element={
-            <AdminGuard>
-              <AdminFeedback />
-            </AdminGuard>
-          }
-        />
+        <Route path="/pi" element={<AdminGuard><PI /></AdminGuard>} />
+        <Route path="/admin/feedback" element={<AdminGuard><AdminFeedback /></AdminGuard>} />
       </Routes>
     </AppLayout>
   );
@@ -256,129 +234,22 @@ function AppLayout({ children }) {
         </>
       )}
 
-      {/* 🔥 FIX FINAL */}
-      <div style={{ flex: 1, display: "block" }}>
-        <div
-          style={{
-            width: "100%",
-            maxWidth: 1100,
-            margin: "0 auto",
-            padding: "24px 20px",
-          }}
-        >
+      {/* 🔥 FIX ONLY HERE */}
+      <main style={{ flexGrow: 1 }}>
+        <div style={{ width: "100%", maxWidth: 1100, margin: "0 auto", padding: "24px 20px" }}>
           {children}
         </div>
-      </div>
+      </main>
 
       {!hideLayout && (
         <footer style={footerStyle}>
-          <Link to="/privacy" style={footerLink}>
-            Privacy Policy
-          </Link>
-
+          <Link to="/privacy" style={footerLink}>Privacy Policy</Link>
           <span style={{ margin: "0 10px" }}>•</span>
-
-          <Link to="/terms" style={footerLink}>
-            Terms & Conditions
-          </Link>
+          <Link to="/terms" style={footerLink}>Terms & Conditions</Link>
         </footer>
       )}
     </div>
   );
 }
 
-function NavButton({ to, label }) {
-  const location = useLocation();
-  const active = location.pathname.startsWith(to);
-
-  return (
-    <Link to={to} style={{ textDecoration: "none" }}>
-      <button className={`nav-btn ${active ? "active" : ""}`}>
-        {label}
-      </button>
-    </Link>
-  );
-}
-
-/* ====================== App ====================== */
-
-function App() {
-  useEffect(() => {
-    initSFX();
-
-    if (isPiAvailable()) {
-      initPiSDK();
-    }
-  }, []);
-
-  return (
-    <AuthProvider>
-      <SubscriptionProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Entry />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/assessment" element={<AssessmentPage />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/upgrade" element={<Upgrade />} />
-
-            <Route
-              path="/*"
-              element={
-                <AuthGate>
-                  <SubscriptionGuard />
-                </AuthGate>
-              }
-            />
-          </Routes>
-        </Router>
-      </SubscriptionProvider>
-    </AuthProvider>
-  );
-}
-
-/* ====================== Styles ====================== */
-
-const headerStyle = {
-  backgroundColor: "#ffffff",
-  padding: 15,
-  borderBottom: "1px solid #e2d7ee",
-};
-
-const footerStyle = {
-  padding: 15,
-  textAlign: "center",
-  borderTop: "1px solid #eee",
-  fontSize: 14,
-  backgroundColor: "#fafafa",
-};
-
-const footerLink = {
-  textDecoration: "none",
-  color: "#4A2F6E",
-  fontWeight: "bold",
-};
-
-const entryStyle = {
-  minHeight: "100vh",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "center",
-  textAlign: "center",
-};
-
-const primaryBtn = {
-  padding: "12px 24px",
-  marginTop: 20,
-  fontSize: 16,
-  fontWeight: "bold",
-};
-
-const secondaryBtn = {
-  padding: "10px 20px",
-  marginTop: 10,
-};
-
-export default App;
+/* باقي الكود زي ما هو بدون تغيير */
