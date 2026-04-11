@@ -36,7 +36,6 @@ function today() {
 export default function DailyLearning() {
   const [state, setState] = useState(() => loadState());
 
-  // ✅ single effect (unchanged logic)
   useEffect(() => {
     const t = today();
     const prev = loadState();
@@ -72,9 +71,10 @@ export default function DailyLearning() {
   return (
     <div
       style={{
-        position: "relative",          // 🔥 يمنع أي overlay behavior
-        zIndex: 1,                      // 🔥 يدخل في stacking طبيعي
-        overflow: "hidden",             // 🔥 يمنع التمدد خارج الكارد
+        position: "relative",
+        zIndex: 0,                 // 👈 مهم: يمنع إنه يطلع فوق أي حاجة
+        overflow: "hidden",
+        pointerEvents: "auto",     // 👈 يسمح بالكليك الطبيعي جوه الكارد بس
         border: "1px solid #eee",
         borderRadius: 12,
         padding: 20,
@@ -82,17 +82,17 @@ export default function DailyLearning() {
         background: "#fafafa",
       }}
     >
-      <h3>🔥 Daily Learning</h3>
+      <h3 style={{ pointerEvents: "none" }}>🔥 Daily Learning</h3>
 
-      <p>
+      <p style={{ pointerEvents: "none" }}>
         <strong>Streak:</strong> {state.streak} days
       </p>
 
-      <p>
+      <p style={{ pointerEvents: "none" }}>
         <strong>Total XP:</strong> {state.xp}
       </p>
 
-      <p>
+      <p style={{ pointerEvents: "none" }}>
         <strong>Today's XP:</strong> {state.todayXP} / {state.goal}
       </p>
 
@@ -102,6 +102,7 @@ export default function DailyLearning() {
           background: "#eee",
           borderRadius: 10,
           overflow: "hidden",
+          pointerEvents: "none",
         }}
       >
         <div
