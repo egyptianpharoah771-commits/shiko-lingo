@@ -152,7 +152,6 @@ function Dashboard() {
   }, []);
 
   function handleCoachClick() {
-    console.log("COACH CLICKED");
     navigate("/coach");
   }
 
@@ -160,8 +159,20 @@ function Dashboard() {
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <h2>🏠 Home</h2>
 
+      {/* 🧠 COACH FIRST (🔥 الحل النهائي) */}
+      <div
+        onClick={handleCoachClick}
+        style={{
+          ...card,
+          cursor: "pointer",
+        }}
+      >
+        <h3>🧠 Coach</h3>
+        <p>{coach}</p>
+      </div>
+
       {/* 🔥 STREAK */}
-      <div style={{ ...card, zIndex: 1 }}>
+      <div style={card}>
         <h3>🔥 Streak: {daily.streak} days</h3>
 
         <p>
@@ -179,35 +190,17 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 🧠 COACH (FIX FINAL) */}
-      <div
-        onClick={handleCoachClick}
-        style={{
-          ...card,
-          cursor: "pointer",
-          zIndex: 999, // 🔥 أعلى حاجة في الصفحة
-          position: "relative",
-        }}
-      >
-        <h3 style={{ pointerEvents: "none" }}>🧠 Coach</h3>
-        <p style={{ pointerEvents: "none" }}>{coach}</p>
-      </div>
-
       <DailyLearning />
 
-      {/* 🔁 Review */}
       <div style={card}>
         <h3>🔁 Daily Review</h3>
-
         <Link to="/review">
           <button style={primaryBtn}>Start Review</button>
         </Link>
       </div>
 
-      {/* ▶ Continue */}
       <div style={card}>
         <h3>▶ Continue Learning</h3>
-
         <Link to={continueLink}>
           <button style={primaryBtn}>Continue</button>
         </Link>
@@ -226,7 +219,6 @@ const card = {
   borderRadius: 14,
   marginBottom: 20,
   boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
-  position: "relative",
 };
 
 const bar = {
