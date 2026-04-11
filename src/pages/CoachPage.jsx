@@ -12,6 +12,9 @@ export default function CoachPage() {
     mode: "review"
   });
 
+  const [selectedType, setSelectedType] = useState("mixed");
+  const [selectedLevel, setSelectedLevel] = useState("A1");
+
   useEffect(() => {
     const profile = JSON.parse(localStorage.getItem("learning_profile") || "{}");
 
@@ -38,36 +41,32 @@ export default function CoachPage() {
     let action = "";
     let mode = "review";
 
-    // 🔥 Coach Logic (Upgraded)
+    // 🧠 Coach Logic
 
     if (total < 10) {
       message = "🚀 Start learning first before using Coach";
       action = "Go to Vocabulary";
       mode = "vocab";
-    }
-
-    else if (accuracy < 0.5) {
+    } else if (accuracy < 0.5) {
       message = "🔴 You need strong basics — focus on Review";
       action = "Start Review";
       mode = "review";
-    }
-
-    else if (weakCount > 5) {
-      message = "⚠️ You have weak words — let's train them in context";
-      action = "Start Coach Training";
+      setSelectedType("weak");
+    } else if (weakCount > 5) {
+      message = "⚠️ You have weak words — train them now";
+      action = "Start Weak Training";
       mode = "coach";
-    }
-
-    else if (accuracy > 0.8) {
+      setSelectedType("weak");
+    } else if (accuracy > 0.8) {
       message = "🔥 You're ready for advanced training";
-      action = "Challenge Yourself (Coach)";
+      action = "Challenge Yourself";
       mode = "coach";
-    }
-
-    else {
-      message = "👍 Keep improving with Review";
-      action = "Continue Review";
-      mode = "review";
+      setSelectedType("mixed");
+    } else {
+      message = "👍 Keep improving";
+      action = "Continue Training";
+      mode = "coach";
+      setSelectedType("mixed");
     }
 
     setCoach({
@@ -80,9 +79,13 @@ export default function CoachPage() {
 
   }, []);
 
+  function handleStartSession() {
+    navigate(`/coach/session/${selectedLevel}?type=${selectedType}`);
+  }
+
   function handleAction() {
     if (coach.mode === "coach") {
-      navigate("/coach/session");
+      handleStartSession();
     } else if (coach.mode === "vocab") {
       navigate("/vocabulary");
     } else {
@@ -98,6 +101,45 @@ export default function CoachPage() {
 
       <p>Accuracy: {coach.accuracy}%</p>
       <p>Weak Words: {coach.weakCount}</p>
+
+      {/* 🎯 Session Controls */}
+      {coach.mode === "coach" && (
+        <div style={{ marginTop: "20px" }}>
+          <h4>Session Settings</h4>
+
+          {/* Level */}
+          <select
+            value={selectedLevel}
+            onChange={(e) => setSelectedLevel(e.target.value)}
+            style={{
+              padding: "10px",
+              margin: "5px",
+              borderRadius: "8px"
+            }}
+          >
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="C1">C1</option>
+          </select>
+
+          {/* Type */}
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            style={{
+              padding: "10px",
+              margin: "5px",
+              borderRadius: "8px"
+            }}
+          >
+            <option value="mixed">Mixed</option>
+            <option value="weak">Weak</option>
+            <option value="new">New</option>
+          </select>
+        </div>
+      )}
 
       <button
         style={{

@@ -1,46 +1,104 @@
 // ===============================
-// 🧠 COACH ENGINE (ADVANCED V2)
+// 🧠 COACH ENGINE (SUPABASE V3)
 // ===============================
+
+import { supabase } from "../lib/supabaseClient";
 
 const SESSION_SIZE = 10;
 
 // ===============================
-// 📊 LOAD PROFILE
+// 🧠 LOCAL CACHE (PER SESSION)
 // ===============================
-function getProfile() {
-  return JSON.parse(localStorage.getItem("learning_profile") || "{}");
-}
+let profileCache = null;
 
 // ===============================
-// 💾 SAVE PROFILE
+// 📊 LOAD PROFILE (SUPABASE)
 // ===============================
-function saveProfile(profile) {
-  localStorage.setItem("learning_profile", JSON.stringify(profile));
-}
+async function loadProfile() {
+  if (profileCache) return profileCache;
 
-// ===============================
-// 📈 UPDATE WORD STATS
-// ===============================
-export function updateWordStats(wordId, isCorrect) {
-  const profile = getProfile();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!profile[wordId]) {
-    profile[wordId] = {
-      correct: 0,
-      wrong: 0,
-      lastSeen: Date.now(),
+  if (!user) return {};
+
+  const { data, error } = await supabase
+    .from("learning_progress")
+    .select("*")
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Load profile error:", error);
+    return {};
+  }
+
+  const profile = {};
+
+  data.forEach((row) => {
+    profile[row.word_id] = {
+      correct: row.correct,
+      wrong: row.wrong,
+      lastSeen: row.last_seen
+        ? new Date(row.last_seen).getTime()
+        : null,
     };
+  });
+
+  profileCache = profile;
+
+  return profile;
+}
+
+// ===============================
+// 💾 UPSERT WORD STATS (SUPABASE)
+// ===============================
+export async function updateWordStats(wordId, isCorrect) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return;
+
+  const profile = await loadProfile();
+
+  let current = profile[wordId] || {
+    correct: 0,
+    wrong: 0,
+    lastSeen: null,
+  };
+
+  if (isCorrect) current.correct += 1;
+  else current.wrong += 1;
+
+  current.lastSeen = Date.now();
+
+  const strength =
+    current.correct + current.wrong === 0
+      ? 0
+      : current.correct / (current.correct + current.wrong);
+
+  // ✅ Update cache immediately (optimistic)
+  profileCache[wordId] = current;
+
+  const { error } = await supabase.from("learning_progress").upsert(
+    {
+      user_id: user.id,
+      word_id: wordId,
+      correct: current.correct,
+      wrong: current.wrong,
+      last_seen: new Date(current.lastSeen).toISOString(),
+      strength,
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: "user_id,word_id",
+    }
+  );
+
+  if (error) {
+    console.error("Update stats error:", error);
   }
-
-  if (isCorrect) {
-    profile[wordId].correct += 1;
-  } else {
-    profile[wordId].wrong += 1;
-  }
-
-  profile[wordId].lastSeen = Date.now();
-
-  saveProfile(profile);
 }
 
 // ===============================
@@ -72,7 +130,7 @@ function getRecencyScore(lastSeen) {
 function getPriorityScore(word, profile) {
   const data = profile[word.id];
 
-  if (!data) return 1; // unseen أعلى أولوية
+  if (!data) return 1;
 
   const strength = getWordStrength(data);
   const recency = getRecencyScore(data.lastSeen);
@@ -83,9 +141,7 @@ function getPriorityScore(word, profile) {
 // ===============================
 // 📊 SORT BY PRIORITY
 // ===============================
-function sortByPriority(words) {
-  const profile = getProfile();
-
+function sortByPriority(words, profile) {
   return [...words].sort(
     (a, b) =>
       getPriorityScore(b, profile) - getPriorityScore(a, profile)
@@ -93,11 +149,9 @@ function sortByPriority(words) {
 }
 
 // ===============================
-// 🧠 PICK: WEAK WORDS
+// 🧠 PICK: WEAK
 // ===============================
-function pickWeakWords(words) {
-  const profile = getProfile();
-
+function pickWeakWords(words, profile) {
   return words
     .filter((w) => {
       const data = profile[w.id];
@@ -109,21 +163,19 @@ function pickWeakWords(words) {
 }
 
 // ===============================
-// 🆕 PICK: NEW WORDS
+// 🆕 PICK: NEW
 // ===============================
-function pickNewWords(words) {
-  const profile = getProfile();
-
+function pickNewWords(words, profile) {
   return words
     .filter((w) => !profile[w.id])
     .slice(0, SESSION_SIZE);
 }
 
 // ===============================
-// 🎯 PICK: MIXED (DEFAULT)
+// 🎯 PICK: MIXED
 // ===============================
-function pickMixedWords(words) {
-  const sorted = sortByPriority(words);
+function pickMixedWords(words, profile) {
+  const sorted = sortByPriority(words, profile);
 
   const selected = [];
 
@@ -139,7 +191,7 @@ function pickMixedWords(words) {
 }
 
 // ===============================
-// 🧩 GENERATE OPTIONS
+// 🧩 OPTIONS
 // ===============================
 function generateOptions(correctWord, allWords) {
   const options = [correctWord.definition];
@@ -158,7 +210,7 @@ function generateOptions(correctWord, allWords) {
 }
 
 // ===============================
-// 🎯 GENERATE QUESTIONS
+// 🎯 QUESTIONS
 // ===============================
 function generateQuestions(words, allWords) {
   return words.map((word) => ({
@@ -170,39 +222,39 @@ function generateQuestions(words, allWords) {
 }
 
 // ===============================
-// 🚀 MAIN FUNCTION (UPGRADED)
+// 🚀 MAIN (ASYNC)
 // ===============================
-export function generateCoachSession(allWords, config = {}) {
+export async function generateCoachSession(allWords, config = {}) {
   if (!allWords || !allWords.length) return [];
+
+  const profile = await loadProfile();
 
   const { type = "mixed" } = config;
 
   let selectedWords = [];
 
   if (type === "weak") {
-    selectedWords = pickWeakWords(allWords);
+    selectedWords = pickWeakWords(allWords, profile);
 
-    // fallback لو مفيش كلمات weak كفاية
     if (selectedWords.length < SESSION_SIZE) {
-      const fallback = pickMixedWords(allWords);
+      const fallback = pickMixedWords(allWords, profile);
       selectedWords = [...new Set([...selectedWords, ...fallback])].slice(
         0,
         SESSION_SIZE
       );
     }
   } else if (type === "new") {
-    selectedWords = pickNewWords(allWords);
+    selectedWords = pickNewWords(allWords, profile);
 
-    // fallback
     if (selectedWords.length < SESSION_SIZE) {
-      const fallback = pickMixedWords(allWords);
+      const fallback = pickMixedWords(allWords, profile);
       selectedWords = [...new Set([...selectedWords, ...fallback])].slice(
         0,
         SESSION_SIZE
       );
     }
   } else {
-    selectedWords = pickMixedWords(allWords);
+    selectedWords = pickMixedWords(allWords, profile);
   }
 
   return generateQuestions(selectedWords, allWords);
