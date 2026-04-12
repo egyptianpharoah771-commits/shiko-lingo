@@ -25,7 +25,7 @@ export default function CoachSessionPage() {
 
     const session = generateCoachSession(words, { type });
 
-    setQuestions(session);
+    setQuestions(session || []);
     setCurrentIndex(0);
     setScore(0);
     setFinished(false);
@@ -68,7 +68,7 @@ export default function CoachSessionPage() {
 
     const session = generateCoachSession(words, { type });
 
-    setQuestions(session);
+    setQuestions(session || []);
     setCurrentIndex(0);
     setScore(0);
     setFinished(false);
@@ -76,8 +76,27 @@ export default function CoachSessionPage() {
     setShowAnswer(false);
   }
 
-  if (loading || !questions.length) {
+  /* =========================
+     🔥 HARD GUARD (FIX)
+  ========================= */
+  if (loading) {
     return <p style={{ textAlign: "center" }}>Loading session...</p>;
+  }
+
+  if (!questions.length) {
+    return (
+      <p style={{ textAlign: "center" }}>
+        ⚠️ No questions generated (check coachEngine)
+      </p>
+    );
+  }
+
+  if (!current || !current.options || !current.options.length) {
+    return (
+      <p style={{ textAlign: "center" }}>
+        ⚠️ Question data invalid (no options)
+      </p>
+    );
   }
 
   if (finished) {
@@ -131,7 +150,7 @@ export default function CoachSessionPage() {
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {current.options.map((opt, i) => {
+        {(current.options || []).map((opt, i) => {
           let bg = "#f3f3f3";
 
           if (showAnswer) {
