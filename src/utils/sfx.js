@@ -1,14 +1,27 @@
-// src/utils/sfx.js
-
 let correctAudio = null;
 let wrongAudio = null;
+let selectAudio = null;
 
+/**
+ * Init once (must be triggered after user interaction)
+ */
 export function initSFX() {
   try {
     correctAudio = new Audio("/sounds/correct.mp3");
     wrongAudio = new Audio("/sounds/wrong.mp3");
+    selectAudio = new Audio("/sounds/select.mp3");
   } catch (e) {
     console.error("SFX init error:", e);
+  }
+}
+
+export function playSelect() {
+  try {
+    if (!selectAudio) return;
+    selectAudio.currentTime = 0;
+    selectAudio.play().catch(() => {});
+  } catch (e) {
+    console.error("playSelect error:", e);
   }
 }
 
