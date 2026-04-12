@@ -22,32 +22,40 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-    <!-- Pi Network SDK (Loaded only outside localhost) -->
+    <!--
+      Pi Network SDK: load and Pi.init() ONLY in Pi Browser on a deployed host.
+      Loading this in Chrome/Safari causes postMessage timeouts and breaks the web app.
+      Pi apps are intended to run inside Pi Browser; this matches Pi’s integration model.
+    -->
     <script>
       (function () {
-        const isLocal =
+        var isLocal =
           window.location.hostname === "localhost" ||
           window.location.hostname === "127.0.0.1";
+        var ua =
+          (typeof navigator !== "undefined" && navigator.userAgent) || "";
+        var isPiBrowser = /PiBrowser/i.test(ua);
 
-        if (!isLocal) {
-          const script = document.createElement("script");
+        if (!isLocal && isPiBrowser) {
+          var script = document.createElement("script");
           script.src = "https://sdk.minepi.com/pi-sdk.js";
           script.async = true;
-
           script.onload = function () {
-            if (window.Pi) {
-              window.Pi.init({
-                version: "2.0",
-                sandbox: false, // 🔴 Production Mode
-              });
-
-              console.log("✅ Pi SDK initialized (production domain)");
+            try {
+              if (window.Pi) {
+                window.Pi.init({
+                  version: "2.0",
+                  sandbox: false,
+                });
+              }
+            } catch (e) {
+              console.warn("Pi.init error:", e);
             }
           };
-
+          script.onerror = function () {
+            console.warn("Failed to load Pi SDK script");
+          };
           document.head.appendChild(script);
-        } else {
-          console.log("🟡 Pi SDK disabled on localhost (Hybrid Dev Mode)");
         }
       })();
     </script>
@@ -55,6 +63,20 @@
 
   <body>
     <noscript>You need to enable JavaScript to run Shiko Lingo.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <p
+        style="
+          margin: 0;
+          padding: 24px 16px;
+          font-family: system-ui, sans-serif;
+          color: #212529;
+          background: #f8f9fb;
+          min-height: 100vh;
+          box-sizing: border-box;
+        "
+      >
+        Loading Shiko Lingo…
+      </p>
+    </div>
   </body>
 </html>

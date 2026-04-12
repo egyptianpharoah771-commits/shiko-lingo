@@ -1,28 +1,103 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
-
-function isPiBrowser() {
-  return typeof window !== "undefined" && !!window.Pi;
-}
+import { isPiBrowserEnvironment } from "../lib/initPi";
 
 export default function Login() {
-  const { user, logout, loading } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout, loading, loginWithPi } = useAuth();
 
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState("EMAIL");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [piBusy, setPiBusy] = useState(false);
 
-  // 🔒 Prevent Login UI inside Pi Browser completely
-  if (isPiBrowser()) {
-    return null;
+  if (loading) {
+    return <div style={{ padding: 40, color: "#212529" }}>Loading...</div>;
   }
 
-  /* =========================
-     EMAIL OTP FLOW
-  ========================= */
+  /* Pi Browser: email OTP is not used; Pi Network authentication instead. */
+  if (isPiBrowserEnvironment()) {
+    return (
+      <div
+        style={{
+          maxWidth: 420,
+          margin: "50px auto",
+          textAlign: "center",
+          color: "#212529",
+          padding: "0 16px",
+        }}
+      >
+        <h2>Pi Network</h2>
+        <p style={{ color: "#495057", fontSize: 15 }}>
+          Sign in with your Pi account to use Shiko Lingo in Pi Browser.
+        </p>
+
+        {user ? (
+          <>
+            <p style={{ marginTop: 16 }}>
+              Signed in as <strong>{user.username || user.id}</strong>
+            </p>
+            <button
+              type="button"
+              style={{ marginTop: 16, padding: "10px 20px" }}
+              onClick={() => navigate("/dashboard", { replace: true })}
+            >
+              Continue to app
+            </button>
+            <br />
+            <button
+              type="button"
+              style={{ marginTop: 12, padding: "8px 16px" }}
+              onClick={() => logout()}
+            >
+              Sign out
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled={piBusy}
+              style={{
+                marginTop: 20,
+                padding: "12px 24px",
+                fontWeight: 600,
+                cursor: piBusy ? "wait" : "pointer",
+                background: "#4A90E2",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+              }}
+              onClick={async () => {
+                setMessage("");
+                setPiBusy(true);
+                try {
+                  await loginWithPi();
+                  navigate("/dashboard", { replace: true });
+                } catch (e) {
+                  setMessage(
+                    e?.message ||
+                      "Pi sign-in failed. Ensure the Pi SDK loaded and try again."
+                  );
+                } finally {
+                  setPiBusy(false);
+                }
+              }}
+            >
+              {piBusy ? "Connecting…" : "Sign in with Pi"}
+            </button>
+            {message && (
+              <p style={{ marginTop: 16, color: "#c92a2a" }}>{message}</p>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
 
   const handleSendCode = async () => {
     if (!email) {
@@ -72,28 +147,33 @@ export default function Login() {
     }
 
     setMessage("✅ Login successful.");
+    navigate("/dashboard", { replace: true });
   };
 
-  if (loading) {
-    return <div style={{ padding: 40 }}>Loading...</div>;
-  }
-
   return (
-    <div style={{ maxWidth: 400, margin: "50px auto", textAlign: "center" }}>
+    <div
+      style={{
+        maxWidth: 400,
+        margin: "50px auto",
+        textAlign: "center",
+        color: "#212529",
+      }}
+    >
       <h2>🔐 Login</h2>
 
       {user ? (
         <>
           <p>Logged in as:</p>
           <strong>{user.email || user.id}</strong>
-          <br /><br />
-          <button onClick={logout}>Logout</button>
+          <br />
+          <br />
+          <button type="button" onClick={() => logout()}>
+            Logout
+          </button>
         </>
       ) : (
         <>
-          <p style={{ fontSize: 14, color: "#666" }}>
-            Login with email
-          </p>
+          <p style={{ fontSize: 14, color: "#666" }}>Login with email</p>
 
           {step === "EMAIL" && (
             <>
@@ -104,7 +184,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 style={{ padding: 10, width: "100%", marginBottom: 10 }}
               />
-              <button onClick={handleSendCode} disabled={sending}>
+              <button type="button" onClick={handleSendCode} disabled={sending}>
                 {sending ? "Sending..." : "Send Verification Code"}
               </button>
             </>
@@ -124,7 +204,7 @@ export default function Login() {
                   textAlign: "center",
                 }}
               />
-              <button onClick={handleVerifyCode} disabled={sending}>
+              <button type="button" onClick={handleVerifyCode} disabled={sending}>
                 {sending ? "Verifying..." : "Verify & Login"}
               </button>
             </>
@@ -136,5 +216,3 @@ export default function Login() {
     </div>
   );
 }
-
-

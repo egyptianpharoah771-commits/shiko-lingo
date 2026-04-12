@@ -1,67 +1,63 @@
 /**
- * Pi SDK Initialization (Stabilization Version)
- * ----------------------------------------------
- * Passive initialization only.
- *
- * - No authenticate
- * - No payment logic
- * - No incomplete handlers
- * - No backend calls
- *
- * Safe for:
- * - Pi Browser
- * - Chrome
- * - SSR environments
+ * Pi Network helpers
+ * ------------------
+ * Never treat "script loaded" as "inside Pi Browser".
+ * Loading pi-sdk.js in Chrome causes postMessage timeouts and breaks auth flow.
  */
 
 let initialized = false;
 
-/**
- * Initializes Pi SDK safely (Passive Mode)
- * Returns:
- *  - true  => Pi SDK available and marked initialized
- *  - false => Not in Pi environment
- */
-export function initPiSDK() {
-  /* ==============================
-     1️⃣ SSR Safety
-  ============================== */
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  /* ==============================
-     2️⃣ Ensure Pi SDK exists
-  ============================== */
-  if (!window.Pi) {
-    return false;
-  }
-
-  /* ==============================
-     3️⃣ Prevent double initialization
-  ============================== */
-  if (initialized) {
-    return true;
-  }
-
-  /* ==============================
-     4️⃣ Passive detection only
-  ============================== */
-  console.log("✅ Pi SDK detected (passive init)");
-
-  initialized = true;
-
-  return true;
-}
-
-/**
- * Helper: Check if Pi SDK is available
- */
-export function isPiAvailable() {
+/** True when running in Pi Browser (user agent). */
+export function isPiBrowserEnvironment() {
   return (
-    typeof window !== "undefined" &&
-    typeof window.Pi !== "undefined"
+    typeof navigator !== "undefined" &&
+    typeof navigator.userAgent === "string" &&
+    /PiBrowser/i.test(navigator.userAgent)
   );
 }
 
+/** True when the Pi JS API object exists (script executed). */
+export function isPiSDKLoaded() {
+  return typeof window !== "undefined" && typeof window.Pi !== "undefined";
+}
 
+/**
+ * Pi Browser with SDK ready — use for Pi.authenticate, Pi.init, payments.
+ */
+export function isPiAppContext() {
+  return isPiBrowserEnvironment() && isPiSDKLoaded();
+}
+
+/**
+ * Skip email/Supabase gate (Pi product or saved Pi session markers).
+ * Do NOT use window.Pi alone — that is true in Chrome if the script was injected.
+ */
+export function isInsidePiProductFlow() {
+  if (typeof window === "undefined") return false;
+  if (isPiBrowserEnvironment()) return true;
+  try {
+    if (localStorage.getItem("pi_uid")) return true;
+    if (localStorage.getItem("shiko_pi_user")) return true;
+  } catch {
+    /* private mode / blocked storage */
+  }
+  return false;
+}
+
+/**
+ * @deprecated Use isPiAppContext() for Pi APIs, isInsidePiProductFlow() for auth bypass.
+ */
+export function isPiAvailable() {
+  return isPiAppContext();
+}
+
+/**
+ * Pi.init() runs once in public/index.html (Pi Browser only).
+ * Do not call Pi.init again here — double init breaks messaging in Pi Browser.
+ */
+export function initPiSDK() {
+  if (typeof window === "undefined") return false;
+  if (!isPiBrowserEnvironment() || !window.Pi) return false;
+  initialized = true;
+  return true;
+}

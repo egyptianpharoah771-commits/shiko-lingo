@@ -14,12 +14,16 @@ function normalizeWord(raw) {
 
   if (!definition) return null;
 
+  const audioSrc = raw.audio || raw.audio_url || null;
+
   return {
     id: raw.id || raw.word,
     word: raw.word,
     definition,
-    level: raw.level,
-    audio: raw.audio || raw.audio_url || null,
+    level: raw.level || raw.cefr_level,
+    audio: audioSrc,
+    audio_url: audioSrc,
+    simple_definition: raw.simple_definition,
   };
 }
 
@@ -39,12 +43,23 @@ export function useWords(level) {
       setLoading(true);
 
       try {
-        // 🔥 FIX 2: eq بدل ilike
-        const { data, error } = await supabase
+        // select("*") avoids PostgREST 400 when optional columns (e.g. definition) are missing.
+        // Try common CEFR column names used in different schemas.
+        let { data, error } = await supabase
           .from("words")
-          .select("id, word, simple_definition, definition, audio_url, level")
+          .select("*")
           .eq("level", level)
           .limit(50);
+
+        if (error) {
+          const second = await supabase
+            .from("words")
+            .select("*")
+            .eq("cefr_level", level)
+            .limit(50);
+          data = second.data;
+          error = second.error;
+        }
 
         if (!error && data && data.length) {
           const cleaned = data.map(normalizeWord).filter(Boolean);

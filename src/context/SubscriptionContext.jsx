@@ -17,7 +17,8 @@ export const SubscriptionProvider = ({ children }) => {
   ========================= */
   const isPiBrowser =
     typeof navigator !== "undefined" &&
-    navigator.userAgent.includes("PiBrowser");
+    typeof navigator.userAgent === "string" &&
+    /PiBrowser/i.test(navigator.userAgent);
 
   useEffect(() => {
     let mounted = true;
@@ -59,7 +60,7 @@ export const SubscriptionProvider = ({ children }) => {
       try {
         if (mounted) setLoading(true);
 
-        const { data, error } = await supabase
+        const query = supabase
           .from("subscriptions")
           .select("*")
           .eq("uid", user.id)
@@ -67,13 +68,23 @@ export const SubscriptionProvider = ({ children }) => {
           .limit(1)
           .maybeSingle();
 
+        const timeoutMs = 15000;
+        const { data, error } = await Promise.race([
+          query,
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error("Subscription request timed out")),
+              timeoutMs
+            )
+          ),
+        ]);
+
         if (!mounted) return;
 
         if (error) {
           console.error("Subscription fetch error:", error);
           setSubscription(null);
           setIsActive(false);
-          setLoading(false);
           return;
         }
 
@@ -87,15 +98,14 @@ export const SubscriptionProvider = ({ children }) => {
           setSubscription(null);
           setIsActive(false);
         }
-
-        setLoading(false);
       } catch (err) {
         console.error("Unexpected subscription error:", err);
         if (mounted) {
           setSubscription(null);
           setIsActive(false);
-          setLoading(false);
         }
+      } finally {
+        if (mounted) setLoading(false);
       }
     };
 

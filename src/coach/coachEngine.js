@@ -54,7 +54,7 @@ function getWeaknessScore(wordId, progress) {
 
   const { correct, wrong, lastSeen } = data;
 
-  const accuracy = correct / (correct + wrong || 1);
+  const accuracy = correct / ((correct + wrong) || 1);
 
   const daysSinceSeen =
     (Date.now() - lastSeen) / (1000 * 60 * 60 * 24);
@@ -70,43 +70,22 @@ function shuffle(array) {
 }
 
 /**
- * 🔥 SAFE MEANING RESOLVER (FIX)
- */
-function getMeaning(word) {
-  return (
-    word.meaning ||
-    word.definition ||
-    word.simple_definition ||
-    ""
-  );
-}
-
-/**
- * Generate question (FIXED)
+ * Stable question generator (uses word.definition — matches useWords output)
  */
 function generateContextQuestion(word, allWords) {
-  const sentence =
-    word.example ||
-    `This is a sentence using "${word.word}".`;
+  const correctAnswer = word.definition;
+  if (!correctAnswer || !String(correctAnswer).trim()) return null;
 
-  const correctAnswer = getMeaning(word);
-
-  if (!correctAnswer) return null;
+  const sentence = `This is a sentence using "${word.word}".`;
 
   const distractors = shuffle(
     allWords
-      .filter(w => w.id !== word.id)
-      .map(w => getMeaning(w))
+      .filter((w) => w.id !== word.id)
+      .map((w) => w.definition)
       .filter(Boolean)
   ).slice(0, 3);
 
-  // 🔥 ضمان وجود 4 اختيارات
-  const options = shuffle([
-    correctAnswer,
-    ...distractors,
-  ]).slice(0, 4);
-
-  if (options.length < 2) return null;
+  const options = shuffle([correctAnswer, ...distractors]).filter(Boolean);
 
   return {
     type: "context_mcq",
@@ -123,9 +102,7 @@ function generateContextQuestion(word, allWords) {
 function limitRepeats(questions) {
   const seen = {};
 
-  return questions.filter(q => {
-    if (!q) return false;
-
+  return questions.filter((q) => {
     if (!seen[q.wordId]) seen[q.wordId] = 0;
 
     if (seen[q.wordId] >= MAX_REPEATS) return false;
@@ -136,9 +113,10 @@ function limitRepeats(questions) {
 }
 
 /**
- * MAIN FUNCTION (FIXED)
+ * Build coach session from word list.
+ * Second argument ignored (kept for call sites that pass { type }).
  */
-export function generateCoachSession(words) {
+export function generateCoachSession(words, _options) {
   if (!words || !words.length) return [];
 
   const progress = getCoachProgress();
@@ -153,7 +131,7 @@ export function generateCoachSession(words) {
   const selected = ranked.slice(0, SESSION_SIZE);
 
   let questions = selected
-    .map(word => generateContextQuestion(word, words))
+    .map((word) => generateContextQuestion(word, words))
     .filter(Boolean);
 
   questions = limitRepeats(questions);

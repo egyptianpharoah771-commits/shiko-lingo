@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { generateCoachSession, updateWordStats } from "../coach/coachEngine";
 import { useWords } from "../hooks/useWords";
 
@@ -9,9 +9,6 @@ import { initSFX, playSelect, playCorrect, playWrong } from "../utils/sfx";
 export default function CoachSessionPage() {
   const navigate = useNavigate();
   const { level } = useParams();
-  const [searchParams] = useSearchParams();
-
-  const type = searchParams.get("type") || "mixed";
 
   const { words, loading } = useWords(level || "A1");
 
@@ -31,7 +28,7 @@ export default function CoachSessionPage() {
     if (loading) return;
     if (!words || !words.length) return;
 
-    const session = generateCoachSession(words, { type });
+    const session = generateCoachSession(words);
 
     setQuestions(session || []);
     setCurrentIndex(0);
@@ -39,7 +36,7 @@ export default function CoachSessionPage() {
     setFinished(false);
     setSelected(null);
     setShowAnswer(false);
-  }, [words, loading, type]);
+  }, [words, loading]);
 
   const current = questions[currentIndex];
 
@@ -80,7 +77,7 @@ export default function CoachSessionPage() {
   function handleRestart() {
     if (!words || !words.length) return;
 
-    const session = generateCoachSession(words, { type });
+    const session = generateCoachSession(words);
 
     setQuestions(session || []);
     setCurrentIndex(0);
@@ -93,13 +90,15 @@ export default function CoachSessionPage() {
   /* =========================
      🔥 GUARDS
   ========================= */
+  const muted = { textAlign: "center", color: "#212529", padding: "24px 16px" };
+
   if (loading) {
-    return <p style={{ textAlign: "center" }}>Loading session...</p>;
+    return <p style={muted}>Loading session...</p>;
   }
 
   if (!questions.length) {
     return (
-      <p style={{ textAlign: "center" }}>
+      <p style={muted}>
         ⚠️ No questions generated (check coachEngine)
       </p>
     );
@@ -107,7 +106,7 @@ export default function CoachSessionPage() {
 
   if (!current || !current.options || !current.options.length) {
     return (
-      <p style={{ textAlign: "center" }}>
+      <p style={muted}>
         ⚠️ Question data invalid (no options)
       </p>
     );
@@ -137,7 +136,7 @@ export default function CoachSessionPage() {
         </button>
 
         <button
-          onClick={() => navigate(`/coach/${level || "A1"}`)}
+          onClick={() => navigate("/coach")}
           style={{
             padding: "10px 16px",
             margin: "10px",
@@ -154,7 +153,14 @@ export default function CoachSessionPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
+    <div
+      style={{
+        maxWidth: 600,
+        margin: "0 auto",
+        textAlign: "center",
+        color: "#212529",
+      }}
+    >
       <h3>
         Question {currentIndex + 1} / {questions.length}
       </h3>

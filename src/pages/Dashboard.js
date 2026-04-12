@@ -5,7 +5,6 @@ import FeedbackBox from "../components/FeedbackBox";
 import DailyLearning from "../components/DailyLearning";
 import { getUserProgress } from "../adapters/progressAdapter";
 import { supabase } from "../lib/supabaseClient";
-import { isPiAvailable } from "../lib/initPi";
 
 /* ===== Mini Progress ===== */
 function MiniProgress({ value = 0, total = 0 }) {
@@ -30,8 +29,16 @@ function MiniProgress({ value = 0, total = 0 }) {
 /* ===== Helpers ===== */
 
 function resolveUserId() {
-  if (isPiAvailable()) {
-    return localStorage.getItem("pi_uid");
+  const piUid = localStorage.getItem("pi_uid");
+  if (piUid) return piUid;
+  try {
+    const raw = localStorage.getItem("shiko_pi_user");
+    if (raw) {
+      const u = JSON.parse(raw);
+      if (u?.id) return u.id;
+    }
+  } catch {
+    /* ignore */
   }
   return "dev-user";
 }

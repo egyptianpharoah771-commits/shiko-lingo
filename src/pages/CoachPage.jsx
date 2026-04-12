@@ -13,10 +13,14 @@ export default function CoachPage() {
   });
 
   useEffect(() => {
-    // 🔥 FIX: استخدم coach_progress بدل learning_profile
-    const progress = JSON.parse(
-      localStorage.getItem("coach_progress") || "{}"
-    );
+    let progress = {};
+    try {
+      progress = JSON.parse(
+        localStorage.getItem("coach_progress") || "{}"
+      );
+    } catch {
+      progress = {};
+    }
 
     let totalCorrect = 0;
     let totalWrong = 0;
@@ -105,7 +109,15 @@ export default function CoachPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
+    <div
+      style={{
+        maxWidth: 600,
+        margin: "0 auto",
+        textAlign: "center",
+        color: "#212529",
+        minHeight: 200,
+      }}
+    >
       <h2>🧠 Your AI Coach</h2>
 
       <h3>{coach.message}</h3>
@@ -127,6 +139,26 @@ export default function CoachPage() {
       >
         {coach.action}
       </button>
+
+      {coach.mode === "vocab" && (
+        <p style={{ marginTop: 20, fontSize: 14, color: "#6c757d" }}>
+          <button
+            type="button"
+            onClick={() => navigate("/coach/session/A1")}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#4A90E2",
+              cursor: "pointer",
+              textDecoration: "underline",
+              fontSize: "inherit",
+              padding: 0,
+            }}
+          >
+            Try a Coach session anyway (A1)
+          </button>
+        </p>
+      )}
     </div>
   );
 }

@@ -1,5 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import {
+  isPiAppContext,
+  isPiBrowserEnvironment,
+} from "../lib/initPi";
 
 const AuthContext = createContext();
 
@@ -9,9 +13,11 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const isPiBrowser = () => {
-    return typeof window !== "undefined" && !!window.Pi;
-  };
+  /** Pi Browser UA — session restore uses Pi storage, not “window.Pi exists in Chrome”. */
+  const isPiBrowser = () => isPiBrowserEnvironment();
+
+  /** Pi.authenticate / payments — SDK must be ready (Pi Browser + script). */
+  const isPiReady = () => isPiAppContext();
 
   /* =========================
      Initialize Session
@@ -30,12 +36,16 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // 🔥 1️⃣ Restore Pi user from localStorage
-        if (isPiBrowser()) {
+        // 1️⃣ Pi Browser: restore Pi session from storage (SDK may still be loading)
+        if (isPiBrowserEnvironment()) {
           const stored = localStorage.getItem("shiko_pi_user");
 
           if (stored) {
-            setUser(JSON.parse(stored));
+            try {
+              setUser(JSON.parse(stored));
+            } catch {
+              setUser(null);
+            }
           } else {
             setUser(null);
           }
@@ -82,8 +92,8 @@ export function AuthProvider({ children }) {
       return devUser;
     }
 
-    if (!isPiBrowser()) {
-      throw new Error("Not inside Pi Browser");
+    if (!isPiAppContext()) {
+      throw new Error("Pi SDK not ready — open this app in Pi Browser.");
     }
 
     try {
@@ -120,7 +130,7 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    if (isPiBrowser()) {
+    if (isPiBrowserEnvironment()) {
       localStorage.removeItem("shiko_pi_user");
       setUser(null);
       return;

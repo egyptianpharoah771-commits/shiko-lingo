@@ -63,7 +63,7 @@ import {
 } from "./context/SubscriptionContext";
 
 /* Utils */
-import { initPiSDK, isPiAvailable } from "./lib/initPi";
+import { isInsidePiProductFlow } from "./lib/initPi";
 
 /* Components */
 import FeedbackButton from "./components/FeedbackButton";
@@ -86,8 +86,7 @@ function GrammarUnitWrapper() {
 function Entry() {
   const navigate = useNavigate();
 
-  const insidePi =
-    isPiAvailable() || !!localStorage.getItem("pi_uid");
+  const insidePi = isInsidePiProductFlow();
 
   return (
     <div style={entryStyle}>
@@ -119,114 +118,39 @@ function Entry() {
   );
 }
 
-/* ====================== Auth Gate ====================== */
+/* ====================== Auth + subscription + layout (flat routes — reliable in RR7) ====================== */
 
-function AuthGate({ children }) {
+function Guard({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const { isActive, loading: subLoading } = useSubscriptionContext();
 
-  const insidePi =
-    isPiAvailable() || !!localStorage.getItem("pi_uid");
+  const insidePi = isInsidePiProductFlow();
 
-  if (loading) {
-    return <div style={{ padding: 40 }}>Initializing session...</div>;
+  if (loading || subLoading) {
+    return (
+      <div
+        style={{
+          padding: 40,
+          color: "#212529",
+          background: "#f8f9fb",
+          minHeight: "40vh",
+        }}
+      >
+        {loading ? "Initializing session..." : "Checking subscription..."}
+      </div>
+    );
   }
 
   if (!insidePi && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return children;
-}
-
-/* ====================== Subscription Guard ====================== */
-
-function SubscriptionGuard() {
-  const { isActive, loading } = useSubscriptionContext();
-
-  if (loading) {
-    return <div style={{ padding: 40 }}>Checking subscription...</div>;
-  }
-
   if (!isActive) {
     return <Navigate to="/upgrade" replace />;
   }
 
-  return (
-    <AppLayout>
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/learn" element={<LearnPage />} />
-
-        {/* 🔥 Coach Routes */}
-        <Route path="/coach" element={<CoachPage />} />
-        <Route path="/coach/session" element={<CoachSessionPage />} />
-
-        <Route path="/grammar" element={<GrammarLevels />} />
-        <Route path="/grammar/:level" element={<GrammarUnits />} />
-        <Route
-          path="/grammar/:level/:unit"
-          element={<GrammarUnitWrapper />}
-        />
-
-        <Route path="/vocabulary" element={<VocabularyPage />} />
-        <Route path="/vocabulary/review" element={<SavedWordsReview />} />
-
-        <Route
-          path="/vocabulary/quiz"
-          element={
-            <ReviewErrorBoundary>
-              <ReviewWordsPage />
-            </ReviewErrorBoundary>
-          }
-        />
-
-        <Route path="/vocabulary/:level" element={<VocabularyLevelPage />} />
-        <Route
-          path="/vocabulary/:level/:unitId"
-          element={<VocabularyUnitPage />}
-        />
-
-        <Route
-          path="/review"
-          element={
-            <ReviewErrorBoundary>
-              <ReviewWordsPage />
-            </ReviewErrorBoundary>
-          }
-        />
-
-        <Route path="/listening" element={<ListeningHome />} />
-        <Route path="/listening/:level" element={<ListeningLevel />} />
-        <Route path="/listening/:level/:lessonId" element={<Listening />} />
-
-        <Route path="/reading" element={<ReadingHome />} />
-        <Route path="/reading/:level" element={<ReadingLevel />} />
-        <Route path="/reading/:level/:lessonId" element={<ReadingLesson />} />
-
-        <Route path="/speaking" element={<SpeakingHome />} />
-        <Route path="/writing" element={<Writing />} />
-
-        <Route
-          path="/pi"
-          element={
-            <AdminGuard>
-              <PI />
-            </AdminGuard>
-          }
-        />
-
-        <Route
-          path="/admin/feedback"
-          element={
-            <AdminGuard>
-              <AdminFeedback />
-            </AdminGuard>
-          }
-        />
-      </Routes>
-    </AppLayout>
-  );
+  return <AppLayout>{children}</AppLayout>;
 }
 
 /* ====================== Layout ====================== */
@@ -303,10 +227,6 @@ function NavButton({ to, label }) {
 function App() {
   useEffect(() => {
     initSFX();
-
-    if (isPiAvailable()) {
-      initPiSDK();
-    }
   }, []);
 
   return (
@@ -322,13 +242,215 @@ function App() {
             <Route path="/upgrade" element={<Upgrade />} />
 
             <Route
-              path="/*"
+              path="/dashboard"
               element={
-                <AuthGate>
-                  <SubscriptionGuard />
-                </AuthGate>
+                <Guard>
+                  <Dashboard />
+                </Guard>
               }
             />
+            <Route
+              path="/learn"
+              element={
+                <Guard>
+                  <LearnPage />
+                </Guard>
+              }
+            />
+
+            <Route
+              path="/coach"
+              element={
+                <Guard>
+                  <CoachPage />
+                </Guard>
+              }
+            />
+            <Route
+              path="/coach/session"
+              element={
+                <Guard>
+                  <Navigate to="/coach/session/A1" replace />
+                </Guard>
+              }
+            />
+            <Route
+              path="/coach/session/:level"
+              element={
+                <Guard>
+                  <CoachSessionPage />
+                </Guard>
+              }
+            />
+
+            <Route
+              path="/grammar"
+              element={
+                <Guard>
+                  <GrammarLevels />
+                </Guard>
+              }
+            />
+            <Route
+              path="/grammar/:level"
+              element={
+                <Guard>
+                  <GrammarUnits />
+                </Guard>
+              }
+            />
+            <Route
+              path="/grammar/:level/:unit"
+              element={
+                <Guard>
+                  <GrammarUnitWrapper />
+                </Guard>
+              }
+            />
+
+            <Route
+              path="/vocabulary"
+              element={
+                <Guard>
+                  <VocabularyPage />
+                </Guard>
+              }
+            />
+            <Route
+              path="/vocabulary/review"
+              element={
+                <Guard>
+                  <SavedWordsReview />
+                </Guard>
+              }
+            />
+            <Route
+              path="/vocabulary/quiz"
+              element={
+                <Guard>
+                  <ReviewErrorBoundary>
+                    <ReviewWordsPage />
+                  </ReviewErrorBoundary>
+                </Guard>
+              }
+            />
+            <Route
+              path="/vocabulary/:level"
+              element={
+                <Guard>
+                  <VocabularyLevelPage />
+                </Guard>
+              }
+            />
+            <Route
+              path="/vocabulary/:level/:unitId"
+              element={
+                <Guard>
+                  <VocabularyUnitPage />
+                </Guard>
+              }
+            />
+
+            <Route
+              path="/review"
+              element={
+                <Guard>
+                  <ReviewErrorBoundary>
+                    <ReviewWordsPage />
+                  </ReviewErrorBoundary>
+                </Guard>
+              }
+            />
+
+            <Route
+              path="/listening"
+              element={
+                <Guard>
+                  <ListeningHome />
+                </Guard>
+              }
+            />
+            <Route
+              path="/listening/:level"
+              element={
+                <Guard>
+                  <ListeningLevel />
+                </Guard>
+              }
+            />
+            <Route
+              path="/listening/:level/:lessonId"
+              element={
+                <Guard>
+                  <Listening />
+                </Guard>
+              }
+            />
+
+            <Route
+              path="/reading"
+              element={
+                <Guard>
+                  <ReadingHome />
+                </Guard>
+              }
+            />
+            <Route
+              path="/reading/:level"
+              element={
+                <Guard>
+                  <ReadingLevel />
+                </Guard>
+              }
+            />
+            <Route
+              path="/reading/:level/:lessonId"
+              element={
+                <Guard>
+                  <ReadingLesson />
+                </Guard>
+              }
+            />
+
+            <Route
+              path="/speaking"
+              element={
+                <Guard>
+                  <SpeakingHome />
+                </Guard>
+              }
+            />
+            <Route
+              path="/writing"
+              element={
+                <Guard>
+                  <Writing />
+                </Guard>
+              }
+            />
+
+            <Route
+              path="/pi"
+              element={
+                <Guard>
+                  <AdminGuard>
+                    <PI />
+                  </AdminGuard>
+                </Guard>
+              }
+            />
+            <Route
+              path="/admin/feedback"
+              element={
+                <Guard>
+                  <AdminGuard>
+                    <AdminFeedback />
+                  </AdminGuard>
+                </Guard>
+              }
+            />
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Router>
       </SubscriptionProvider>
@@ -365,6 +487,8 @@ const entryStyle = {
   justifyContent: "center",
   alignItems: "center",
   textAlign: "center",
+  color: "#212529",
+  background: "#f8f9fb",
 };
 
 const primaryBtn = {
