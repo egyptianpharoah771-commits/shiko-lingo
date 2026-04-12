@@ -75,17 +75,25 @@ export default function VocabularyUnitPage() {
     setShowResult(false);
   }, [normalizedLevel, unitKey]);
 
-  /* ===== Audio ===== */
+  /* ===== Audio (FIXED SAFE VERSION) ===== */
   const playAudio = (word) => {
-    if (!word) return;
+    if (!word || !normalizedLevel || !unitKey) return;
 
     const fileName = normalizeWord(word);
     const src = `/sounds/vocabulary/${normalizedLevel}/${unitKey}/${fileName}.mp3`;
 
     try {
       const audio = new Audio(src);
+
+      // 🔥 يمنع crash لو الملف مش موجود
+      audio.onerror = () => {
+        console.warn("Audio not found:", src);
+      };
+
       audio.play().catch(() => {});
-    } catch {}
+    } catch (e) {
+      console.warn("Audio play failed:", src);
+    }
   };
 
   /* ===== Logic ===== */
@@ -102,12 +110,10 @@ export default function VocabularyUnitPage() {
     if (isLast) {
       const key = buildKey(normalizedLevel, unitNumber);
 
-      // ✅ save first
       localStorage.setItem(key, "true");
 
       console.log("✅ SAVED:", key);
 
-      // 🔥 CRITICAL FIX: delay navigation
       setTimeout(() => {
         navigate(`/vocabulary/${normalizeLevel(level)}`);
       }, 50);
