@@ -14,11 +14,13 @@ function MiniProgress({ value = 0, total = 0 }) {
   return (
     <div>
       <div style={{ height: 6, background: "#eee", borderRadius: 4 }}>
-        <div style={{
-          width: `${percent}%`,
-          height: "100%",
-          background: "#7B61FF"
-        }} />
+        <div
+          style={{
+            width: `${percent}%`,
+            height: "100%",
+            background: "#7B61FF",
+          }}
+        />
       </div>
       <small style={{ color: "#666" }}>{percent}%</small>
     </div>
@@ -71,7 +73,7 @@ function calculateDailyData() {
     streak,
     todayProgress,
     lastDate: today.toISOString(),
-    goal: 20
+    goal: 20,
   };
 
   localStorage.setItem("daily_progress", JSON.stringify(updated));
@@ -83,7 +85,7 @@ function getCoachInsight(profile) {
   let wrong = 0;
   let weak = 0;
 
-  Object.values(profile).forEach(p => {
+  Object.values(profile).forEach((p) => {
     correct += p.correct || 0;
     wrong += p.wrong || 0;
 
@@ -104,7 +106,6 @@ function getCoachInsight(profile) {
 /* ===== Dashboard ===== */
 
 function Dashboard() {
-
   const progress = useMemo(() => getUserProgress(), []);
   const continueLink = useMemo(() => getContinueLink(), []);
 
@@ -112,16 +113,13 @@ function Dashboard() {
   const [daily, setDaily] = useState({
     streak: 0,
     todayProgress: 0,
-    goal: 20
+    goal: 20,
   });
   const [coach, setCoach] = useState("");
 
   useEffect(() => {
-
     async function init() {
-
       try {
-
         const dailyData = calculateDailyData();
         setDaily(dailyData);
 
@@ -142,16 +140,13 @@ function Dashboard() {
           JSON.parse(localStorage.getItem("learning_profile") || "{}");
 
         setCoach(getCoachInsight(profile));
-
       } catch (e) {
         console.error(e);
         setReviewCount(0);
       }
-
     }
 
     init();
-
   }, []);
 
   const skills = {
@@ -164,32 +159,37 @@ function Dashboard() {
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-
       <h2>🏠 Home</h2>
 
       {/* 🔥 STREAK */}
       <div style={{ ...card, position: "relative", zIndex: 1 }}>
         <h3>🔥 Streak: {daily.streak} days</h3>
 
-        <p>{daily.todayProgress} / {daily.goal}</p>
+        <p>
+          {daily.todayProgress} / {daily.goal}
+        </p>
 
         <div style={bar}>
-          <div style={{
-            width: `${(daily.todayProgress / daily.goal) * 100}%`,
-            height: "100%",
-            background: "#4A90E2"
-          }} />
+          <div
+            style={{
+              width: `${(daily.todayProgress / daily.goal) * 100}%`,
+              height: "100%",
+              background: "#4A90E2",
+            }}
+          />
         </div>
       </div>
 
-      {/* 🧠 COACH (🔥 FIX) */}
-      <Link to="/coach/session" style={{ textDecoration: "none" }}>
-        <div style={{
-          ...card,
-          position: "relative",
-          zIndex: 10,
-          cursor: "pointer"
-        }}>
+      {/* 🧠 COACH (FIXED FINAL) */}
+      <Link to="/coach/session/A1" style={{ textDecoration: "none" }}>
+        <div
+          style={{
+            ...card,
+            position: "relative",
+            zIndex: 10,
+            cursor: "pointer",
+          }}
+        >
           <h3 style={{ pointerEvents: "none" }}>🧠 Coach</h3>
           <p style={{ pointerEvents: "none" }}>{coach}</p>
         </div>
@@ -205,9 +205,13 @@ function Dashboard() {
         <h3>🔁 Daily Review</h3>
 
         <p>
-          {reviewCount > 0
-            ? <>You have <strong>{reviewCount}</strong> reviews.</>
-            : "You're all caught up 🎉"}
+          {reviewCount > 0 ? (
+            <>
+              You have <strong>{reviewCount}</strong> reviews.
+            </>
+          ) : (
+            "You're all caught up 🎉"
+          )}
         </p>
 
         <Link to="/review">
@@ -238,7 +242,6 @@ function Dashboard() {
       </div>
 
       <FeedbackBox />
-
     </div>
   );
 }
@@ -257,7 +260,7 @@ const bar = {
   height: 10,
   background: "#eee",
   borderRadius: 5,
-  overflow: "hidden"
+  overflow: "hidden",
 };
 
 const grid = {
