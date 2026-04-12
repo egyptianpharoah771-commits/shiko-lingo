@@ -109,9 +109,9 @@ export default function VocabularyUnitPage() {
 
     // 🔥 أهم سطر: ربط الفوكابلري بالكوتش
     updateWordStats(
-      normalizeWord(question.question || selected),
-      isCorrect
-    );
+  normalizeWord(selected),
+  isCorrect
+);
 
     setShowResult(true);
   };
