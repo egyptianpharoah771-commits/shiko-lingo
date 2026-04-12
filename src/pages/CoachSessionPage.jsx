@@ -3,6 +3,9 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { generateCoachSession, updateWordStats } from "../coach/coachEngine";
 import { useWords } from "../hooks/useWords";
 
+// 🔊 SFX
+import { initSFX, playSelect, playCorrect, playWrong } from "../utils/sfx";
+
 export default function CoachSessionPage() {
   const navigate = useNavigate();
   const { level } = useParams();
@@ -18,6 +21,11 @@ export default function CoachSessionPage() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+
+  // 🔥 init SFX once
+  useEffect(() => {
+    initSFX();
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -38,13 +46,19 @@ export default function CoachSessionPage() {
   function handleSelect(option) {
     if (showAnswer || !current) return;
 
+    // 🔊 select sound
+    playSelect();
+
     setSelected(option);
     setShowAnswer(true);
 
     const isCorrect = option === current.correctAnswer;
 
     if (isCorrect) {
+      playCorrect();
       setScore((prev) => prev + 1);
+    } else {
+      playWrong();
     }
 
     updateWordStats(current.wordId, isCorrect);
@@ -77,7 +91,7 @@ export default function CoachSessionPage() {
   }
 
   /* =========================
-     🔥 HARD GUARD (FIX)
+     🔥 GUARDS
   ========================= */
   if (loading) {
     return <p style={{ textAlign: "center" }}>Loading session...</p>;
