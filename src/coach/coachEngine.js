@@ -1,5 +1,3 @@
-// src/coach/coachEngine.js
-
 const SESSION_SIZE = 20;
 const MAX_REPEATS = 2;
 
@@ -47,12 +45,12 @@ export function updateWordStats(wordId, isCorrect) {
 }
 
 /**
- * Weakness score (higher = needs review)
+ * Weakness score
  */
 function getWeaknessScore(wordId, progress) {
   const data = progress[wordId];
 
-  if (!data) return 1; // unseen words
+  if (!data) return 1;
 
   const { correct, wrong, lastSeen } = data;
 
@@ -72,22 +70,43 @@ function shuffle(array) {
 }
 
 /**
- * Generate context question (C1-style)
+ * 🔥 SAFE MEANING RESOLVER (FIX)
+ */
+function getMeaning(word) {
+  return (
+    word.meaning ||
+    word.definition ||
+    word.simple_definition ||
+    ""
+  );
+}
+
+/**
+ * Generate question (FIXED)
  */
 function generateContextQuestion(word, allWords) {
   const sentence =
     word.example ||
     `This is a sentence using "${word.word}".`;
 
-  const correctAnswer = word.meaning;
+  const correctAnswer = getMeaning(word);
+
+  if (!correctAnswer) return null;
 
   const distractors = shuffle(
     allWords
       .filter(w => w.id !== word.id)
-      .map(w => w.meaning)
+      .map(w => getMeaning(w))
+      .filter(Boolean)
   ).slice(0, 3);
 
-  const options = shuffle([correctAnswer, ...distractors]);
+  // 🔥 ضمان وجود 4 اختيارات
+  const options = shuffle([
+    correctAnswer,
+    ...distractors,
+  ]).slice(0, 4);
+
+  if (options.length < 2) return null;
 
   return {
     type: "context_mcq",
@@ -99,12 +118,14 @@ function generateContextQuestion(word, allWords) {
 }
 
 /**
- * Prevent same word repeating too much
+ * Prevent repeats
  */
 function limitRepeats(questions) {
   const seen = {};
 
   return questions.filter(q => {
+    if (!q) return false;
+
     if (!seen[q.wordId]) seen[q.wordId] = 0;
 
     if (seen[q.wordId] >= MAX_REPEATS) return false;
@@ -115,12 +136,13 @@ function limitRepeats(questions) {
 }
 
 /**
- * MAIN FUNCTION
+ * MAIN FUNCTION (FIXED)
  */
 export function generateCoachSession(words) {
+  if (!words || !words.length) return [];
+
   const progress = getCoachProgress();
 
-  // rank by weakness
   const ranked = [...words].sort((a, b) => {
     return (
       getWeaknessScore(b.id, progress) -
@@ -130,9 +152,9 @@ export function generateCoachSession(words) {
 
   const selected = ranked.slice(0, SESSION_SIZE);
 
-  let questions = selected.map(word =>
-    generateContextQuestion(word, words)
-  );
+  let questions = selected
+    .map(word => generateContextQuestion(word, words))
+    .filter(Boolean);
 
   questions = limitRepeats(questions);
 
