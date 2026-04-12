@@ -6,6 +6,9 @@ import "./vocabulary.css";
 import { VOCABULARY_DATA } from "./vocabularyIndex";
 import { playCorrect, playWrong } from "../utils/sfx";
 
+// 🔥 ADD THIS
+import { updateWordStats } from "../coach/coachEngine";
+
 /* ===== Utils ===== */
 function shuffle(array) {
   if (!Array.isArray(array)) return [];
@@ -75,7 +78,7 @@ export default function VocabularyUnitPage() {
     setShowResult(false);
   }, [normalizedLevel, unitKey]);
 
-  /* ===== Audio (FIXED SAFE VERSION) ===== */
+  /* ===== Audio ===== */
   const playAudio = (word) => {
     if (!word || !normalizedLevel || !unitKey) return;
 
@@ -84,14 +87,11 @@ export default function VocabularyUnitPage() {
 
     try {
       const audio = new Audio(src);
-
-      // 🔥 يمنع crash لو الملف مش موجود
       audio.onerror = () => {
         console.warn("Audio not found:", src);
       };
-
       audio.play().catch(() => {});
-    } catch (e) {
+    } catch {
       console.warn("Audio play failed:", src);
     }
   };
@@ -100,9 +100,19 @@ export default function VocabularyUnitPage() {
   const question = questions[current];
   const isLast = current === questions.length - 1;
 
+  // 🔥 FIX هنا فقط
   const handleCheck = () => {
-    if (selected === question.correctAnswer) playCorrect();
+    const isCorrect = selected === question.correctAnswer;
+
+    if (isCorrect) playCorrect();
     else playWrong();
+
+    // 🔥 أهم سطر: ربط الفوكابلري بالكوتش
+    updateWordStats(
+      normalizeWord(question.question || selected),
+      isCorrect
+    );
+
     setShowResult(true);
   };
 
