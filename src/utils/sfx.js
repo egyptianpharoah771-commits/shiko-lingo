@@ -3,44 +3,49 @@ let wrongAudio = null;
 let selectAudio = null;
 
 /**
- * Init once (must be triggered after user interaction)
+ * Safe audio loader
  */
-export function initSFX() {
+function safeAudio(src) {
   try {
-    correctAudio = new Audio("/sounds/correct.mp3");
-    wrongAudio = new Audio("/sounds/wrong.mp3");
-    selectAudio = new Audio("/sounds/select.mp3");
-  } catch (e) {
-    console.error("SFX init error:", e);
+    const audio = new Audio(src);
+
+    // 🔥 يمنع crash لو الملف مش موجود
+    audio.onerror = () => {
+      console.warn("Audio failed:", src);
+    };
+
+    return audio;
+  } catch {
+    return null;
   }
+}
+
+export function initSFX() {
+  correctAudio = safeAudio("/sounds/correct.mp3");
+  wrongAudio = safeAudio("/sounds/wrong.mp3");
+  selectAudio = safeAudio("/sounds/select.mp3");
 }
 
 export function playSelect() {
+  if (!selectAudio) return;
   try {
-    if (!selectAudio) return;
     selectAudio.currentTime = 0;
     selectAudio.play().catch(() => {});
-  } catch (e) {
-    console.error("playSelect error:", e);
-  }
+  } catch {}
 }
 
 export function playCorrect() {
+  if (!correctAudio) return;
   try {
-    if (!correctAudio) return;
     correctAudio.currentTime = 0;
     correctAudio.play().catch(() => {});
-  } catch (e) {
-    console.error("playCorrect error:", e);
-  }
+  } catch {}
 }
 
 export function playWrong() {
+  if (!wrongAudio) return;
   try {
-    if (!wrongAudio) return;
     wrongAudio.currentTime = 0;
     wrongAudio.play().catch(() => {});
-  } catch (e) {
-    console.error("playWrong error:", e);
-  }
+  } catch {}
 }
