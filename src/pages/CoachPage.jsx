@@ -13,37 +13,51 @@ export default function CoachPage() {
   });
 
   useEffect(() => {
-    const profile = JSON.parse(localStorage.getItem("learning_profile") || "{}");
+    // 🔥 FIX: استخدم coach_progress بدل learning_profile
+    const progress = JSON.parse(
+      localStorage.getItem("coach_progress") || "{}"
+    );
 
     let totalCorrect = 0;
     let totalWrong = 0;
     let weakCount = 0;
 
-    Object.values(profile).forEach(data => {
+    Object.values(progress).forEach((data) => {
       const c = data.correct || 0;
       const w = data.wrong || 0;
 
       totalCorrect += c;
       totalWrong += w;
 
-      const strength = data.strength ?? (c / (c + w || 1));
+      const strength = c / (c + w || 1);
 
       if (strength < 0.4) weakCount++;
     });
 
     const total = totalCorrect + totalWrong;
-    const accuracy = total ? (totalCorrect / total) : 0;
+    const accuracy = total ? totalCorrect / total : 0;
+
+    // 🔥 check if any unit is done
+    const hasFinishedUnits = Object.keys(localStorage).some((key) =>
+      key.includes("_done")
+    );
 
     let message = "";
     let action = "";
     let mode = "review";
 
-    // 🔥 Coach Logic (Upgraded)
+    // 🔥 LOGIC FIX
 
-    if (total < 10) {
+    if (total < 5 && !hasFinishedUnits) {
       message = "🚀 Start learning first before using Coach";
       action = "Go to Vocabulary";
       mode = "vocab";
+    }
+
+    else if (total < 5 && hasFinishedUnits) {
+      message = "🧠 Start your first Coach session";
+      action = "Start Coach";
+      mode = "coach";
     }
 
     else if (accuracy < 0.5) {
@@ -52,8 +66,8 @@ export default function CoachPage() {
       mode = "review";
     }
 
-    else if (weakCount > 5) {
-      message = "⚠️ You have weak words — let's train them in context";
+    else if (weakCount > 3) {
+      message = "⚠️ You have weak words — let's train them";
       action = "Start Coach Training";
       mode = "coach";
     }
@@ -82,7 +96,7 @@ export default function CoachPage() {
 
   function handleAction() {
     if (coach.mode === "coach") {
-      navigate("/coach/session");
+      navigate("/coach/session/A1"); // 🔥 مهم: لازم level
     } else if (coach.mode === "vocab") {
       navigate("/vocabulary");
     } else {
