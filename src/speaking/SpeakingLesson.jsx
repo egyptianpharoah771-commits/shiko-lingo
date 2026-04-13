@@ -111,8 +111,18 @@ function SpeakingLesson() {
     setSeconds(0);
     audioChunksRef.current = [];
 
-    if (!navigator.mediaDevices || typeof MediaRecorder === "undefined") {
+    if (typeof MediaRecorder === "undefined") {
       setRecordError("Recording is not supported in this browser.");
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      const isSecure = window.isSecureContext || window.location.hostname === "localhost";
+      setRecordError(
+        isSecure
+          ? "Microphone API is unavailable in this browser."
+          : "Microphone requires HTTPS (or localhost). Please open the app on a secure URL."
+      );
       return;
     }
 
@@ -147,8 +157,19 @@ function SpeakingLesson() {
           return s + 1;
         });
       }, 1000);
-    } catch {
-      setRecordError("Microphone access denied.");
+    } catch (err) {
+      const errorName = err?.name || "";
+      if (errorName === "NotAllowedError" || errorName === "SecurityError") {
+        setRecordError("Microphone permission denied. Please allow microphone access in browser settings.");
+      } else if (errorName === "NotFoundError" || errorName === "DevicesNotFoundError") {
+        setRecordError("No microphone device was found on this device.");
+      } else if (errorName === "NotReadableError" || errorName === "TrackStartError") {
+        setRecordError("Microphone is busy or unavailable. Close other apps using the mic and try again.");
+      } else if (errorName === "OverconstrainedError") {
+        setRecordError("Microphone constraints are not supported on this device.");
+      } else {
+        setRecordError("Could not start microphone recording. Please check browser and device permissions.");
+      }
     }
   };
 
