@@ -95,7 +95,8 @@ STRICT RULES:
           { role: "system", content: systemPrompt },
           { role: "user", content: question },
         ],
-        temperature: 0.5,
+        temperature: 0.3,
+        max_tokens: 220,
       },
       1 // 👈 محاولة إضافية واحدة فقط
     );

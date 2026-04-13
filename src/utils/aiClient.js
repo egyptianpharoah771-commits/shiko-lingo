@@ -1,4 +1,5 @@
 // BUILD_ID_2026_01_17_04
+import STORAGE_KEYS from "./storageKeys";
 
 /**
  * AI Client
@@ -12,15 +13,17 @@
  */
 
 function buildPrompt(payload) {
+  const compactStudentText = (payload.studentText || payload.text || "")
+    .toString()
+    .trim()
+    .slice(0, 800);
+
   const baseContext = `
 Skill: ${payload.skill}
 Level: ${payload.level}
 Lesson: ${payload.lessonTitle}
-
-Lesson Text:
-${payload.text}
-
-Score: ${payload.score}/${payload.total}
+Student Input:
+${compactStudentText || "No student input provided."}
 `.trim();
 
   switch (payload.skill) {
@@ -154,8 +157,81 @@ Rules:
   }
 }
 
+const LOCAL_AI_LIMITS = {
+  DAILY_PER_SKILL: 3,
+  COOLDOWN_MS: 60 * 1000,
+};
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function checkLocalAiLimits(skill) {
+  const key = STORAGE_KEYS.AI_FEEDBACK_USAGE;
+  const today = getTodayKey();
+  let usage = {};
+
+  try {
+    usage = JSON.parse(localStorage.getItem(key) || "{}");
+  } catch {
+    usage = {};
+  }
+
+  const skillEntry = usage?.[today]?.[skill] || { count: 0, lastAt: 0 };
+  const now = Date.now();
+
+  if (now - skillEntry.lastAt < LOCAL_AI_LIMITS.COOLDOWN_MS) {
+    return {
+      allowed: false,
+      reason: "cooldown",
+      waitMs: LOCAL_AI_LIMITS.COOLDOWN_MS - (now - skillEntry.lastAt),
+    };
+  }
+
+  if (skillEntry.count >= LOCAL_AI_LIMITS.DAILY_PER_SKILL) {
+    return { allowed: false, reason: "daily_limit", waitMs: 0 };
+  }
+
+  return { allowed: true };
+}
+
+function registerLocalAiUsage(skill) {
+  const key = STORAGE_KEYS.AI_FEEDBACK_USAGE;
+  const today = getTodayKey();
+  let usage = {};
+
+  try {
+    usage = JSON.parse(localStorage.getItem(key) || "{}");
+  } catch {
+    usage = {};
+  }
+
+  if (!usage[today]) usage[today] = {};
+  if (!usage[today][skill]) usage[today][skill] = { count: 0, lastAt: 0 };
+
+  usage[today][skill].count += 1;
+  usage[today][skill].lastAt = Date.now();
+
+  localStorage.setItem(key, JSON.stringify(usage));
+}
+
 export async function askAITutor(payload) {
   try {
+    const localGate = checkLocalAiLimits(payload.skill || "General");
+    if (!localGate.allowed) {
+      if (localGate.reason === "cooldown") {
+        const seconds = Math.ceil(localGate.waitMs / 1000);
+        return {
+          status: "LIMIT",
+          message: `Please wait ${seconds}s before requesting AI feedback again.`,
+        };
+      }
+      return {
+        status: "LIMIT",
+        message: "You reached today's AI feedback limit for this skill.",
+      };
+    }
+
     const question = buildPrompt(payload);
 
     const res = await fetch("/api/ai/tutor", {
@@ -184,6 +260,7 @@ export async function askAITutor(payload) {
     }
 
     if (res.ok) {
+      registerLocalAiUsage(payload.skill || "General");
       return {
         status: "SUCCESS",
         message:

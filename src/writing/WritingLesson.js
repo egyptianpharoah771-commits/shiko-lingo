@@ -150,7 +150,7 @@ function WritingLesson() {
 
       <button
         onClick={handleAskAI}
-        disabled={!hasAnswer}
+        disabled={!submitted}
         style={{
           marginTop: "12px",
           padding: "8px 14px",
@@ -159,7 +159,7 @@ function WritingLesson() {
           borderRadius: "8px",
           border: "none",
           fontWeight: "bold",
-          opacity: hasAnswer ? 1 : 0.6,
+          opacity: submitted ? 1 : 0.6,
         }}
       >
         🤖 Ask AI Tutor

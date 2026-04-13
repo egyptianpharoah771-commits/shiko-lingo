@@ -8,8 +8,6 @@ import STORAGE_KEYS from "../utils/storageKeys";
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
 import LockedFeature from "../components/LockedFeature";
 
-// 🤖 AI Client
-import { askAITutor } from "../utils/aiClient";
 import { WRITING_CURRICULUM } from "./writingCurriculum";
 
 /* ======================
@@ -61,8 +59,6 @@ function WritingLevel() {
   /* ===== Hooks FIRST ===== */
   const {
     canAccess,
-    userId,
-    packageName,
   } = useFeatureAccess({
     skill: "Writing", // ✅ unified
     level,
@@ -116,52 +112,9 @@ function WritingLevel() {
     return completed.includes(prevKey);
   };
 
-  /* ===== AI Tutor (Level intro) ===== */
-  const askAI = async () => {
-    const res = await askAITutor({
-      skill: "Writing",
-      level,
-      lessonTitle: `Writing Level ${level}`,
-      prompt: `
-You are an English writing tutor.
-Explain what the student will learn in Writing level ${level}.
-Use simple English suitable for ${level}.
-Give 3 short writing tips.
-Encourage the student to keep writing.
-      `,
-      userId,
-      packageName,
-    });
-
-    if (res.status === "SUCCESS") {
-      alert(res.message);
-    } else if (res.status === "LIMIT") {
-      alert(res.message);
-    } else {
-      alert("AI service unavailable.");
-    }
-  };
-
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto" }}>
       <h3>✍️ Writing – Level {level}</h3>
-
-      {/* 🤖 AI Tutor */}
-      <button
-        onClick={askAI}
-        style={{
-          marginBottom: "18px",
-          padding: "8px 14px",
-          borderRadius: "6px",
-          border: "none",
-          cursor: "pointer",
-          backgroundColor: "#000",
-          color: "white",
-          fontWeight: "bold",
-        }}
-      >
-        🤖 Ask AI Tutor
-      </button>
 
       <ProgressBar
         completed={completedCount}

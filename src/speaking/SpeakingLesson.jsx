@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 import { markLessonCompleted } from "../utils/progressStorage";
@@ -37,9 +37,20 @@ function SpeakingLesson() {
     });
 
   const answerKey = `speaking-answer-${level}-lesson${lessonNumber}`;
+  const audioKey = `speaking-audio-${level}-lesson${lessonNumber}`;
+  const MAX_SECONDS = 75;
 
   const [answer, setAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioURL, setAudioURL] = useState("");
+  const [recordingReady, setRecordingReady] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [recordError, setRecordError] = useState("");
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
+  const timerRef = useRef(null);
 
   const [aiOpen, setAiOpen] = useState(false);
   const [aiStatus, setAiStatus] = useState("IDLE");
@@ -50,12 +61,21 @@ function SpeakingLesson() {
     if (!canAccess) return;
 
     const saved = localStorage.getItem(answerKey);
+    const savedAudio = localStorage.getItem(audioKey);
     setAnswer(saved || "");
-    setSubmitted(!!saved);
+    setAudioURL(savedAudio || "");
+    setRecordingReady(!!savedAudio);
+    setSubmitted(!!saved || !!savedAudio);
+    setSeconds(0);
+    setRecordError("");
 
     setAiStatus("IDLE");
     setAiMessage("");
-  }, [answerKey, canAccess]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
+    };
+  }, [answerKey, audioKey, canAccess]);
 
   /* ===== Lock ===== */
   if (!canAccess) {
@@ -71,17 +91,73 @@ function SpeakingLesson() {
 
   const { content, questions } = lessonData;
   const hasAnswer = answer.trim().length > 0;
+  const canSubmit = recordingReady || hasAnswer;
 
   const lastLesson = isLastLesson(
     getLessonFolder(level, "speaking"),
     lessonNumber
   );
 
+  const stopRecording = () => {
+    if (!isRecording) return;
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
+  const startRecording = async () => {
+    if (submitted || isRecording) return;
+    setRecordError("");
+    setSeconds(0);
+    audioChunksRef.current = [];
+
+    if (!navigator.mediaDevices || typeof MediaRecorder === "undefined") {
+      setRecordError("Recording is not supported in this browser.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const url = URL.createObjectURL(blob);
+        setAudioURL(url);
+        setRecordingReady(true);
+        stream.getTracks().forEach((t) => t.stop());
+      };
+
+      recorder.start();
+      setIsRecording(true);
+
+      timerRef.current = setInterval(() => {
+        setSeconds((s) => {
+          if (s + 1 >= MAX_SECONDS) {
+            stopRecording();
+            return s;
+          }
+          return s + 1;
+        });
+      }, 1000);
+    } catch {
+      setRecordError("Microphone access denied.");
+    }
+  };
+
   /* ===== Submit ===== */
   const handleSubmit = () => {
-    if (submitted || !hasAnswer) return;
+    if (submitted || !canSubmit) return;
 
-    localStorage.setItem(answerKey, answer);
+    if (hasAnswer) localStorage.setItem(answerKey, answer);
+    if (audioURL) localStorage.setItem(audioKey, audioURL);
 
     markLessonCompleted(
       STORAGE_KEYS.SPEAKING_COMPLETED,
@@ -93,7 +169,7 @@ function SpeakingLesson() {
 
   /* ===== Ask AI Tutor ===== */
   const handleAskAI = async () => {
-    if (!hasAnswer) return;
+    if (!canSubmit) return;
 
     setAiOpen(true);
     setAiStatus("LOADING");
@@ -104,7 +180,7 @@ function SpeakingLesson() {
       level,
       lessonTitle: content.title,
       prompt: content.prompt,
-      studentText: answer,
+      studentText: answer || `Audio response submitted (${seconds}s).`,
       userId,
       packageName,
     });
@@ -148,10 +224,10 @@ function SpeakingLesson() {
         ))}
       </ul>
 
-      {/* 🤖 AI Tutor */}
+      {/* 🤖 AI Tutor (post-submit only to reduce AI calls) */}
       <button
         onClick={handleAskAI}
-        disabled={!hasAnswer}
+        disabled={!submitted}
         style={{
           marginBottom: "12px",
           padding: "8px 14px",
@@ -160,16 +236,40 @@ function SpeakingLesson() {
           backgroundColor: "#111",
           color: "white",
           fontWeight: "bold",
-          cursor: hasAnswer
-            ? "pointer"
-            : "not-allowed",
-          opacity: hasAnswer ? 1 : 0.6,
+          cursor: submitted ? "pointer" : "not-allowed",
+          opacity: submitted ? 1 : 0.6,
         }}
       >
         🤖 Ask AI Tutor
       </button>
 
-      <h3>Your Answer</h3>
+      <h3>Speak Your Answer</h3>
+      <p style={{ marginTop: 0, color: "#666" }}>
+        Record your voice first. Writing below is optional support.
+      </p>
+
+      {isRecording ? (
+        <button onClick={stopRecording} disabled={submitted}>
+          ⏹ Stop Recording ({seconds}s)
+        </button>
+      ) : (
+        <button onClick={startRecording} disabled={submitted}>
+          🎙 Start Recording
+        </button>
+      )}
+
+      {recordError && (
+        <p style={{ color: "crimson", marginTop: 8 }}>{recordError}</p>
+      )}
+
+      {audioURL && (
+        <div style={{ marginTop: 12 }}>
+          <p style={{ marginBottom: 6 }}>🎧 Your recording:</p>
+          <audio controls src={audioURL} style={{ width: "100%" }} />
+        </div>
+      )}
+
+      <h3 style={{ marginTop: 18 }}>Optional Writing Support</h3>
       <textarea
         rows={6}
         value={answer}
@@ -180,11 +280,11 @@ function SpeakingLesson() {
 
       <button
         onClick={handleSubmit}
-        disabled={submitted || !hasAnswer}
+        disabled={submitted || !canSubmit}
         style={{
           marginTop: "10px",
           opacity:
-            submitted || !hasAnswer ? 0.6 : 1,
+            submitted || !canSubmit ? 0.6 : 1,
         }}
       >
         Submit

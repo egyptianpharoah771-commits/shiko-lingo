@@ -21,6 +21,7 @@ const STORAGE_KEYS = {
 
   /* ===== Meta / UX ===== */
   LAST_VISITED_SKILL: "lastVisitedSkill",
+  AI_FEEDBACK_USAGE: "ai_feedback_usage",
 
   /* ===== Flags / Unlocks (Normalized) ===== */
   B1_LISTENING_UNLOCKED: "b1_listening_unlocked",
