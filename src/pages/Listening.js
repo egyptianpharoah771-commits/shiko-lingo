@@ -178,7 +178,7 @@ function Listening() {
     }
 
     setLoading(true);
-    setLesson(null);
+    setLesson(buildFallbackLesson(null, normalizeLessonId(lessonId)));
     setAnswers({});
     setSubmitted(false);
     setScore(0);
