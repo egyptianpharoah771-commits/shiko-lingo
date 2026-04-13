@@ -1,6 +1,6 @@
 // src/core/engine/sessionEngine.js
 
-import { generateMCQOptions } from "../../utils/mcqGenerator";
+import { buildQuestionSet } from "./QuestionEngine";
 
 /**
  * Normalize text
@@ -12,23 +12,8 @@ function normalize(text) {
 /**
  * Create session questions
  */
-export function createSession(words) {
-  if (!Array.isArray(words)) return [];
-
-  return words
-    .filter((w) => w && w.word && (w.simple_definition || w.definition))
-    .map((word) => {
-      const correct =
-        word.simple_definition || word.definition;
-
-      const options = generateMCQOptions(word, words);
-
-      return {
-        word: word.word,
-        correctAnswer: correct,
-        options,
-      };
-    });
+export function createSession(words, level = "A1") {
+  return buildQuestionSet(words, level);
 }
 
 /**

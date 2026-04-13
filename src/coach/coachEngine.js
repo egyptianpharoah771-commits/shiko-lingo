@@ -1,3 +1,4 @@
+import { generateMCQOptions } from "../utils/mcqGenerator";
 const SESSION_SIZE = 20;
 const MAX_REPEATS = 2;
 
@@ -63,29 +64,29 @@ function getWeaknessScore(wordId, progress) {
 }
 
 /**
- * Shuffle helper
- */
-function shuffle(array) {
-  return [...array].sort(() => Math.random() - 0.5);
-}
-
-/**
  * Stable question generator (uses word.definition — matches useWords output)
  */
-function generateContextQuestion(word, allWords) {
+const LEVEL_SENTENCE_TEMPLATES = {
+  A1: (w) => `I see a ${w}.`,
+  A2: (w) => `I use the word "${w}" in a short daily sentence.`,
+  B1: (w) => `In daily communication, "${w}" often appears in practical contexts.`,
+  B2: (w) => `In a more formal context, "${w}" can shift the meaning of the sentence.`,
+  C1: (w) => `In nuanced discourse, "${w}" conveys subtle intent depending on register and context.`,
+};
+
+function getSentenceTemplate(level, word) {
+  const key = (level || "A1").toUpperCase();
+  const template = LEVEL_SENTENCE_TEMPLATES[key] || LEVEL_SENTENCE_TEMPLATES.A1;
+  return template(word);
+}
+
+function generateContextQuestion(word, allWords, level = "A1") {
   const correctAnswer = word.definition;
   if (!correctAnswer || !String(correctAnswer).trim()) return null;
 
-  const sentence = `This is a sentence using "${word.word}".`;
-
-  const distractors = shuffle(
-    allWords
-      .filter((w) => w.id !== word.id)
-      .map((w) => w.definition)
-      .filter(Boolean)
-  ).slice(0, 3);
-
-  const options = shuffle([correctAnswer, ...distractors]).filter(Boolean);
+  const sentence = getSentenceTemplate(level, word.word);
+  const options = generateMCQOptions(word, allWords, level);
+  if (options.length !== 4) return null;
 
   return {
     type: "context_mcq",
@@ -116,8 +117,9 @@ function limitRepeats(questions) {
  * Build coach session from word list.
  * Second argument ignored (kept for call sites that pass { type }).
  */
-export function generateCoachSession(words, _options) {
+export function generateCoachSession(words, options = {}) {
   if (!words || !words.length) return [];
+  const level = options.level || "A1";
 
   const progress = getCoachProgress();
 
@@ -131,7 +133,7 @@ export function generateCoachSession(words, _options) {
   const selected = ranked.slice(0, SESSION_SIZE);
 
   let questions = selected
-    .map((word) => generateContextQuestion(word, words))
+    .map((word) => generateContextQuestion(word, words, level))
     .filter(Boolean);
 
   questions = limitRepeats(questions);

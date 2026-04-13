@@ -18,6 +18,18 @@ function shuffle(arr) {
   return array;
 }
 
+const LEVEL_WEIGHTS = {
+  A1: 0,
+  A2: 1,
+  B1: 2,
+  B2: 3,
+  C1: 4,
+};
+
+function getLevelWeight(level) {
+  return LEVEL_WEIGHTS[(level || "A1").toUpperCase()] ?? 0;
+}
+
 /**
  * Deduplicate definitions safely (supports simple_definition)
  */
@@ -42,7 +54,7 @@ function getUniqueDefinitions(words) {
 /**
  * MCQ Generator — Stable, Supports DB schema, No Empty State
  */
-export function generateMCQOptions(currentWord, words) {
+export function generateMCQOptions(currentWord, words, level = "A1") {
   if (!currentWord || !words?.length) return [];
 
   const correct =
@@ -72,7 +84,24 @@ export function generateMCQOptions(currentWord, words) {
     return [correct];
   }
 
-  const distractors = shuffle(uniquePool).slice(0, 3);
+  const levelWeight = getLevelWeight(level);
+  const correctLength = normalizedCorrect.length;
+
+  // Advanced levels receive closer distractors in definition length to increase difficulty.
+  const scoredPool = uniquePool.map((candidate) => {
+    const normalized = normalize(candidate);
+    return {
+      candidate,
+      score: Math.abs((normalized?.length || 0) - correctLength),
+    };
+  });
+
+  const orderedPool =
+    levelWeight >= 2
+      ? scoredPool.sort((a, b) => a.score - b.score).map((x) => x.candidate)
+      : shuffle(uniquePool);
+
+  const distractors = orderedPool.slice(0, 3);
 
   const options = shuffle([correct, ...distractors]);
 

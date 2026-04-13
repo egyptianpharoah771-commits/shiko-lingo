@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { generateCoachSession, updateWordStats } from "../coach/coachEngine";
 import { useWords } from "../hooks/useWords";
+import { useAuth } from "../context/AuthContext";
+import { saveCoachSessionResult } from "../services/coachSessionService";
 
 // 🔊 SFX
 import { initSFX, playSelect, playCorrect, playWrong } from "../utils/sfx";
@@ -9,6 +11,7 @@ import { initSFX, playSelect, playCorrect, playWrong } from "../utils/sfx";
 export default function CoachSessionPage() {
   const navigate = useNavigate();
   const { level } = useParams();
+  const { user } = useAuth();
 
   const { words, loading } = useWords(level || "A1");
 
@@ -28,7 +31,9 @@ export default function CoachSessionPage() {
     if (loading) return;
     if (!words || !words.length) return;
 
-    const session = generateCoachSession(words);
+    const session = generateCoachSession(words, {
+      level: (level || "A1").toUpperCase(),
+    });
 
     setQuestions(session || []);
     setCurrentIndex(0);
@@ -36,7 +41,7 @@ export default function CoachSessionPage() {
     setFinished(false);
     setSelected(null);
     setShowAnswer(false);
-  }, [words, loading]);
+  }, [words, loading, level]);
 
   const current = questions[currentIndex];
 
@@ -69,6 +74,12 @@ export default function CoachSessionPage() {
 
     if (currentIndex + 1 >= questions.length) {
       setFinished(true);
+      saveCoachSessionResult({
+        user,
+        level,
+        score: selected === current.correctAnswer ? score + 1 : score,
+        totalQuestions: questions.length,
+      });
     } else {
       setCurrentIndex((prev) => prev + 1);
     }
@@ -77,7 +88,9 @@ export default function CoachSessionPage() {
   function handleRestart() {
     if (!words || !words.length) return;
 
-    const session = generateCoachSession(words);
+    const session = generateCoachSession(words, {
+      level: (level || "A1").toUpperCase(),
+    });
 
     setQuestions(session || []);
     setCurrentIndex(0);
@@ -115,7 +128,7 @@ export default function CoachSessionPage() {
   if (finished) {
     return (
       <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
-        <h2>🎯 Session Complete</h2>
+        <h2>🎯 Session Complete - {(level || "A1").toUpperCase()}</h2>
 
         <p>
           Score: {score} / {questions.length}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function CoachPage() {
   const navigate = useNavigate();
+  const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
 
   const [coach, setCoach] = useState({
     accuracy: 0,
@@ -139,6 +140,28 @@ export default function CoachPage() {
       >
         {coach.action}
       </button>
+
+      <div style={{ marginTop: 20 }}>
+        <p style={{ marginBottom: 10 }}>Choose your training level:</p>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+          {LEVELS.map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => navigate(`/coach/session/${item}`)}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #d8d8d8",
+                borderRadius: 8,
+                background: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {coach.mode === "vocab" && (
         <p style={{ marginTop: 20, fontSize: 14, color: "#6c757d" }}>

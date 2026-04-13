@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { generateMCQOptions } from "../../utils/mcqGenerator";
-export function useQuizEngine(words) {
+export function useQuizEngine(words, level = "A1") {
   const [index, setIndex] = useState(0);
   const [current, setCurrent] = useState(null);
   const [type, setType] = useState("mcq");
@@ -11,7 +11,7 @@ export function useQuizEngine(words) {
 
     const word = words[index % words.length];
 
-    const mcq = generateMCQOptions(word, words);
+    const mcq = generateMCQOptions(word, words, level);
 
     if (mcq.length === 4) {
       setType("mcq");
@@ -22,7 +22,7 @@ export function useQuizEngine(words) {
     }
 
     setCurrent(word);
-  }, [index, words]);
+  }, [index, words, level]);
 
   function next() {
     setIndex((prev) => prev + 1);
