@@ -38,9 +38,14 @@ export default function CoachSessionPage() {
   useEffect(() => {
     if (loading) return;
     if (!words || !words.length) return;
+    const requestedLevel = (level || "A1").toUpperCase();
+    const mismatch = words.some(
+      (w) => w?.level && String(w.level).toUpperCase() !== requestedLevel
+    );
+    if (mismatch) return;
 
     const session = generateCoachSession(words, {
-      level: (level || "A1").toUpperCase(),
+      level: requestedLevel,
     });
 
     setQuestions(session || []);

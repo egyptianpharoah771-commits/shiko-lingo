@@ -32,30 +32,34 @@ export function useWords(level) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const normalizedLevel = (level || "").toUpperCase();
+
     // 🔥 FIX 1: guard حقيقي
-    if (!level || level === "session") {
+    if (!normalizedLevel || normalizedLevel === "SESSION") {
       setWords([]);
       setLoading(false);
       return;
     }
 
-    async function fetchWords() {
-      setLoading(true);
+    // Prevent stale words from previous level while fetching new data.
+    setWords([]);
+    setLoading(true);
 
+    async function fetchWords() {
       try {
         // select("*") avoids PostgREST 400 when optional columns (e.g. definition) are missing.
         // Try common CEFR column names used in different schemas.
         let { data, error } = await supabase
           .from("words")
           .select("*")
-          .eq("level", level)
+          .eq("level", normalizedLevel)
           .limit(50);
 
-        if (error) {
+        if (error || !data?.length) {
           const second = await supabase
             .from("words")
             .select("*")
-            .eq("cefr_level", level)
+            .eq("cefr_level", normalizedLevel)
             .limit(50);
           data = second.data;
           error = second.error;
@@ -72,7 +76,7 @@ export function useWords(level) {
         }
 
         // 🥈 Local fallback
-        const levelData = VOCABULARY_DATA[level];
+        const levelData = VOCABULARY_DATA[normalizedLevel];
 
         if (levelData) {
           const localWords = Object.values(levelData).flatMap((unit) =>
@@ -81,7 +85,7 @@ export function useWords(level) {
               word: item.word,
               definition: item.meaning,
               audio: item.audio,
-              level,
+              level: normalizedLevel,
             }))
           );
 
