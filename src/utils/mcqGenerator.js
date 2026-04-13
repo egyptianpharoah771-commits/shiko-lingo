@@ -96,10 +96,21 @@ export function generateMCQOptions(currentWord, words, level = "A1") {
     };
   });
 
-  const orderedPool =
-    levelWeight >= 2
-      ? scoredPool.sort((a, b) => a.score - b.score).map((x) => x.candidate)
-      : shuffle(uniquePool);
+  let orderedPool = [];
+  if (levelWeight <= 1) {
+    // A1/A2: easiest distractors (very different lengths from the correct answer)
+    orderedPool = scoredPool
+      .sort((a, b) => b.score - a.score)
+      .map((x) => x.candidate);
+  } else if (levelWeight >= 4) {
+    // C1: hardest distractors (closest lengths to the correct answer)
+    orderedPool = scoredPool
+      .sort((a, b) => a.score - b.score)
+      .map((x) => x.candidate);
+  } else {
+    // B1/B2: balanced difficulty
+    orderedPool = shuffle(uniquePool);
+  }
 
   const distractors = orderedPool.slice(0, 3);
 

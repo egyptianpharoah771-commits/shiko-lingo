@@ -8,6 +8,14 @@ import { saveCoachSessionResult } from "../services/coachSessionService";
 // 🔊 SFX
 import { initSFX, playSelect, playCorrect, playWrong } from "../utils/sfx";
 
+const LEVEL_BADGE_COLORS = {
+  A1: "#2e7d32",
+  A2: "#558b2f",
+  B1: "#f9a825",
+  B2: "#ef6c00",
+  C1: "#c62828",
+};
+
 export default function CoachSessionPage() {
   const navigate = useNavigate();
   const { level } = useParams();
@@ -44,6 +52,8 @@ export default function CoachSessionPage() {
   }, [words, loading, level]);
 
   const current = questions[currentIndex];
+  const currentLevel = (level || "A1").toUpperCase();
+  const levelBadgeColor = LEVEL_BADGE_COLORS[currentLevel] || LEVEL_BADGE_COLORS.A1;
 
   function handleSelect(option) {
     if (showAnswer || !current) return;
@@ -174,6 +184,21 @@ export default function CoachSessionPage() {
         color: "#212529",
       }}
     >
+      <div style={{ marginBottom: 10 }}>
+        <span
+          style={{
+            display: "inline-block",
+            padding: "6px 12px",
+            borderRadius: 999,
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#fff",
+            background: levelBadgeColor,
+          }}
+        >
+          Level: {currentLevel}
+        </span>
+      </div>
       <h3>
         Question {currentIndex + 1} / {questions.length}
       </h3>
