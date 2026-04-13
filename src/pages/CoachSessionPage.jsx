@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { generateCoachSession, updateWordStats } from "../coach/coachEngine";
 import { useWords } from "../hooks/useWords";
 import { useAuth } from "../context/AuthContext";
 import { saveCoachSessionResult } from "../services/coachSessionService";
+import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 
 // 🔊 SFX
 import { initSFX, playSelect, playCorrect, playWrong } from "../utils/sfx";
@@ -20,8 +21,28 @@ export default function CoachSessionPage() {
   const navigate = useNavigate();
   const { level } = useParams();
   const { user } = useAuth();
+  const currentLevel = (level || "A1").toUpperCase();
 
-  const { words, loading } = useWords(level || "A1");
+  const { words: remoteWords, loading: remoteLoading } = useWords(currentLevel);
+
+  const localWords = useMemo(() => {
+    const levelData = VOCABULARY_DATA[currentLevel];
+    if (!levelData) return [];
+
+    return Object.values(levelData).flatMap((unit) =>
+      (unit.content?.items || []).map((item) => ({
+        id: `${currentLevel}-${item.word}`,
+        word: item.word,
+        definition: item.meaning,
+        simple_definition: item.meaning,
+        level: currentLevel,
+      }))
+    );
+  }, [currentLevel]);
+
+  // Use local level vocabulary as source of truth to avoid DB level-mapping inconsistencies.
+  const words = localWords.length ? localWords : remoteWords;
+  const loading = localWords.length ? false : remoteLoading;
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,7 +59,7 @@ export default function CoachSessionPage() {
   useEffect(() => {
     if (loading) return;
     if (!words || !words.length) return;
-    const requestedLevel = (level || "A1").toUpperCase();
+    const requestedLevel = currentLevel;
     const mismatch = words.some(
       (w) => w?.level && String(w.level).toUpperCase() !== requestedLevel
     );
@@ -54,10 +75,9 @@ export default function CoachSessionPage() {
     setFinished(false);
     setSelected(null);
     setShowAnswer(false);
-  }, [words, loading, level]);
+  }, [words, loading, currentLevel]);
 
   const current = questions[currentIndex];
-  const currentLevel = (level || "A1").toUpperCase();
   const levelBadgeColor = LEVEL_BADGE_COLORS[currentLevel] || LEVEL_BADGE_COLORS.A1;
 
   function handleSelect(option) {
