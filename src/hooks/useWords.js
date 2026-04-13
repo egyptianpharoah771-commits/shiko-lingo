@@ -4,7 +4,14 @@ import { supabase } from "../lib/supabaseClient";
 // ✅ FIX: explicit path (Vercel safe)
 import { VOCABULARY_DATA } from "../vocabulary/vocabularyIndex";
 
-function normalizeWord(raw) {
+function getCanonicalLevel(raw) {
+  const fromCefr = raw?.cefr_level ? String(raw.cefr_level).toUpperCase().trim() : "";
+  const fromLevel = raw?.level ? String(raw.level).toUpperCase().trim() : "";
+  // Prefer cefr_level when available because some datasets keep legacy `level` values.
+  return fromCefr || fromLevel || "";
+}
+
+function normalizeWord(raw, requestedLevel = "") {
   if (!raw) return null;
 
   const definition =
@@ -20,7 +27,7 @@ function normalizeWord(raw) {
     id: raw.id || raw.word,
     word: raw.word,
     definition,
-    level: raw.level || raw.cefr_level,
+    level: getCanonicalLevel(raw) || requestedLevel,
     audio: audioSrc,
     audio_url: audioSrc,
     simple_definition: raw.simple_definition,
@@ -52,21 +59,24 @@ export function useWords(level) {
         let { data, error } = await supabase
           .from("words")
           .select("*")
-          .eq("level", normalizedLevel)
+          .eq("cefr_level", normalizedLevel)
           .limit(50);
 
         if (error || !data?.length) {
           const second = await supabase
             .from("words")
             .select("*")
-            .eq("cefr_level", normalizedLevel)
+            .eq("level", normalizedLevel)
             .limit(50);
           data = second.data;
           error = second.error;
         }
 
         if (!error && data && data.length) {
-          const cleaned = data.map(normalizeWord).filter(Boolean);
+          const cleaned = data
+            .map((item) => normalizeWord(item, normalizedLevel))
+            .filter(Boolean)
+            .filter((item) => item.level === normalizedLevel);
 
           if (cleaned.length) {
             setWords(cleaned);
