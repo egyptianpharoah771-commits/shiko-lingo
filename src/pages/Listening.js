@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
 import STORAGE_KEYS from "../utils/storageKeys";
 import { markLessonCompleted } from "../utils/progressStorage";
@@ -20,6 +20,7 @@ import AIResponseModal from "../components/AIResponseModal";
 
 function Listening() {
   const { level, lessonId } = useParams();
+  const navigate = useNavigate();
 
   const {
     canAccess,
@@ -37,6 +38,7 @@ function Listening() {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [levelLessons, setLevelLessons] = useState([]);
 
   const [aiOpen, setAiOpen] = useState(false);
   const [aiStatus, setAiStatus] = useState("IDLE");
@@ -77,6 +79,15 @@ function Listening() {
     return id;
   };
 
+  const normalizeLessonId = (id) => {
+    if (!id) return "";
+    if (id.includes("-L")) {
+      const num = id.split("-L")[1];
+      return `lesson${num}`;
+    }
+    return resolveLessonFolder(id);
+  };
+
   /* =========================
      Load Lesson + Re-init Audio
   ========================= */
@@ -103,13 +114,27 @@ function Listening() {
     correctSound.current = new Audio("/sounds/correct.mp3");
     wrongSound.current = new Audio("/sounds/wrong.mp3");
 
-    fetch(`/listening/${level}/${folderName}/data.json`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Lesson not found");
-        return res.json();
-      })
-      .then((data) => {
-        setLesson(data);
+    Promise.all([
+      fetch(`/listening/${level}/${folderName}/data.json`),
+      fetch(`/listening/${level}/index.json`).catch(() => null),
+    ])
+      .then(async ([lessonRes, indexRes]) => {
+        if (!lessonRes.ok) throw new Error("Lesson not found");
+        const lessonData = await lessonRes.json();
+
+        let normalizedIds = [];
+        if (indexRes?.ok) {
+          const indexData = await indexRes.json();
+          const baseLessons = Array.isArray(indexData)
+            ? indexData
+            : (indexData?.lessons || []);
+          normalizedIds = baseLessons
+            .map((l) => normalizeLessonId(l.id))
+            .filter(Boolean);
+        }
+
+        setLevelLessons(normalizedIds);
+        setLesson(lessonData);
         setLoading(false);
       })
       .catch((err) => {
@@ -173,6 +198,15 @@ function Listening() {
       `${level}-${lessonId}`
     );
   };
+
+  const currentNormalizedId = normalizeLessonId(lessonId);
+  const currentLessonIndex = levelLessons.indexOf(currentNormalizedId);
+  const hasNextLesson =
+    currentLessonIndex !== -1 && currentLessonIndex < levelLessons.length - 1;
+  const nextLessonId = hasNextLesson ? levelLessons[currentLessonIndex + 1] : null;
+  const isLastLesson = currentLessonIndex !== -1 && !hasNextLesson;
+  const totalQuestions = lesson.questions?.length || 0;
+  const isPassed = totalQuestions > 0 && score === totalQuestions;
 
   /* =========================
      AI Feedback
@@ -345,9 +379,60 @@ function Listening() {
             {lesson.questions?.length}
           </p>
 
-          <Link to={`/listening/${level}`}>
-            Back to {level} Lessons
-          </Link>
+          {hasNextLesson ? (
+            <button
+              onClick={() => navigate(`/listening/${level}/${nextLessonId}`)}
+              style={{
+                padding: "10px 16px",
+                border: "none",
+                borderRadius: 8,
+                background: "#4A90E2",
+                color: "#fff",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              Next Lesson →
+            </button>
+          ) : (
+            <>
+              {isLastLesson && isPassed ? (
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: 14,
+                    borderRadius: 12,
+                    background: "#ecfff1",
+                    border: "1px solid #b7efc5",
+                    textAlign: "center",
+                  }}
+                >
+                  <style>
+                    {`@keyframes listeningCelebratePulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }`}
+                  </style>
+                  <div
+                    style={{
+                      fontSize: 24,
+                      marginBottom: 6,
+                      animation: "listeningCelebratePulse 1.2s ease-in-out infinite",
+                    }}
+                  >
+                    🎉✨🎧✨🎉
+                  </div>
+                  <strong>Congratulations, well done!</strong>
+                  <p style={{ margin: "8px 0 0" }}>
+                    You completed all {level} listening lessons.
+                  </p>
+                </div>
+              ) : null}
+
+              <div style={{ marginTop: 12 }}>
+                <Link to={`/listening/${level}`}>
+                  Back to {level} Lessons
+                </Link>
+              </div>
+            </>
+          )}
         </>
       )}
 
