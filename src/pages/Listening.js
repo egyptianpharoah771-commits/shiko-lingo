@@ -216,12 +216,19 @@ function Listening() {
           lessonData = buildFallbackLesson(meta, currentId);
         }
 
+        if (!lessonData) {
+          const currentId = normalizeLessonId(lessonId);
+          lessonData = buildFallbackLesson(null, currentId);
+        }
+
         setLevelLessons(normalizedIds);
         setLesson(lessonData);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Lesson load error:", err);
+        const currentId = normalizeLessonId(lessonId);
+        setLesson(buildFallbackLesson(null, currentId));
         setLoading(false);
       });
   }, [level, lessonId, canAccess]);
