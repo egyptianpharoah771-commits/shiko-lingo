@@ -7,6 +7,7 @@ import STORAGE_KEYS from "../utils/storageKeys";
 // 🔐 Feature Gating
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
 import LockedFeature from "../components/LockedFeature";
+import { SPEAKING_CURRICULUM } from "./speakingCurriculum";
 
 /* ======================
    Progress Bar
@@ -44,11 +45,12 @@ function ProgressBar({ completed, total }) {
 /* ======================
    Lessons count by level
 ====================== */
-const LESSONS_BY_LEVEL = {
-  A1: 5,
-  A2: 6,
-  B1: 6,
-};
+const LESSONS_BY_LEVEL = Object.fromEntries(
+  Object.entries(SPEAKING_CURRICULUM).map(([level, lessons]) => [
+    level,
+    Object.keys(lessons || {}).length,
+  ])
+);
 
 function SpeakingLevel() {
   const { level } = useParams();
@@ -171,10 +173,7 @@ function SpeakingLevel() {
           const unlocked =
             isLessonUnlocked(index);
 
-          const lessonLink =
-            level === "B1"
-              ? `/speaking/B1/${lesson}`
-              : `/speaking/${level}/${lesson}`;
+          const lessonLink = `/speaking/${level}/${lesson}`;
 
           return (
             <div

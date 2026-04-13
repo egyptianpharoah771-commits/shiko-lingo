@@ -15,55 +15,7 @@ import LockedFeature from "../components/LockedFeature";
 // 🤖 AI
 import { askAITutor } from "../utils/aiClient";
 import AIResponseModal from "../components/AIResponseModal";
-
-/* ===== Import Speaking Content ===== */
-// A1
-import A1Lesson1 from "./A1/lesson1/content";
-import A1Lesson2 from "./A1/lesson2/content";
-import A1Lesson3 from "./A1/lesson3/content";
-import A1Lesson4 from "./A1/lesson4/content";
-import A1Lesson5 from "./A1/lesson5/content";
-
-// A2
-import A2Lesson1 from "./A2/lesson1/content";
-import A2Lesson2 from "./A2/lesson2/content";
-import A2Lesson3 from "./A2/lesson3/content";
-import A2Lesson4 from "./A2/lesson4/content";
-import A2Lesson5 from "./A2/lesson5/content";
-import A2Lesson6 from "./A2/lesson6/content";
-
-// ===== Questions =====
-import A1Q1 from "./A1/lesson1/questions";
-import A1Q2 from "./A1/lesson2/questions";
-import A1Q3 from "./A1/lesson3/questions";
-import A1Q4 from "./A1/lesson4/questions";
-import A1Q5 from "./A1/lesson5/questions";
-
-import A2Q1 from "./A2/lesson1/questions";
-import A2Q2 from "./A2/lesson2/questions";
-import A2Q3 from "./A2/lesson3/questions";
-import A2Q4 from "./A2/lesson4/questions";
-import A2Q5 from "./A2/lesson5/questions";
-import A2Q6 from "./A2/lesson6/questions";
-
-/* ===== Mapping ===== */
-const SPEAKING_CONTENT = {
-  A1: {
-    lesson1: { content: A1Lesson1, questions: A1Q1 },
-    lesson2: { content: A1Lesson2, questions: A1Q2 },
-    lesson3: { content: A1Lesson3, questions: A1Q3 },
-    lesson4: { content: A1Lesson4, questions: A1Q4 },
-    lesson5: { content: A1Lesson5, questions: A1Q5 },
-  },
-  A2: {
-    lesson1: { content: A2Lesson1, questions: A2Q1 },
-    lesson2: { content: A2Lesson2, questions: A2Q2 },
-    lesson3: { content: A2Lesson3, questions: A2Q3 },
-    lesson4: { content: A2Lesson4, questions: A2Q4 },
-    lesson5: { content: A2Lesson5, questions: A2Q5 },
-    lesson6: { content: A2Lesson6, questions: A2Q6 },
-  },
-};
+import { SPEAKING_CURRICULUM } from "./speakingCurriculum";
 
 function SpeakingLesson() {
   const { level, lessonId } = useParams();
@@ -110,19 +62,8 @@ function SpeakingLesson() {
     return <LockedFeature title="Speaking Lesson" />;
   }
 
-  /* ===== B1 Placeholder ===== */
-  if (level === "B1") {
-    return (
-      <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-        <h2>🎤 Speaking – B1</h2>
-        <p>B1 speaking lessons are coming soon 🚀</p>
-        <Link to="/speaking">← Back</Link>
-      </div>
-    );
-  }
-
   const lessonData =
-    SPEAKING_CONTENT[level]?.[normalizedLessonId];
+    SPEAKING_CURRICULUM[level]?.[normalizedLessonId];
 
   if (!lessonData) {
     return <p>Lesson not found.</p>;

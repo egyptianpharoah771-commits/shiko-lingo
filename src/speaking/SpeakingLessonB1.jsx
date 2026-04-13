@@ -15,34 +15,9 @@ import LockedFeature from "../components/LockedFeature";
 // 🤖 AI
 import { askAITutor } from "../utils/aiClient";
 import AIResponseModal from "../components/AIResponseModal";
+import { SPEAKING_CURRICULUM } from "./speakingCurriculum";
 
 const MAX_SECONDS = 90;
-
-/* ===== B1 Lesson Prompts ===== */
-const B1_PROMPTS = {
-  lesson1: {
-    title: "City vs Countryside",
-    prompt:
-      "Do you prefer living in the city or in the countryside? Why?",
-    bullets: [
-      "Where do you live now?",
-      "One advantage of city life",
-      "One advantage of countryside life",
-      "Your personal preference",
-    ],
-  },
-  lesson2: {
-    title: "Technology in Daily Life",
-    prompt:
-      "How has technology changed your daily life?",
-    bullets: [
-      "Technology you use every day",
-      "One positive effect",
-      "One negative effect",
-      "Your opinion",
-    ],
-  },
-};
 
 function SpeakingLessonB1() {
   const { lessonId } = useParams();
@@ -90,8 +65,14 @@ function SpeakingLessonB1() {
   const [aiMessage, setAiMessage] =
     useState("");
 
-  const lesson =
-    B1_PROMPTS[normalizedLessonId];
+  const lessonData = SPEAKING_CURRICULUM.B1?.[normalizedLessonId];
+  const lesson = lessonData
+    ? {
+        title: lessonData.content.title,
+        prompt: lessonData.content.prompt,
+        bullets: lessonData.content.tips || [],
+      }
+    : null;
 
   /* ===== Reset on lesson change ===== */
   useEffect(() => {
