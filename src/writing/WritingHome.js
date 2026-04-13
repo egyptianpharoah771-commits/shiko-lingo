@@ -4,6 +4,7 @@ import STORAGE_KEYS from "../utils/storageKeys";
 import {
   countCompletedByLevel
 } from "../utils/progressStorage";
+import { WRITING_CURRICULUM, WRITING_LEVEL_ORDER } from "./writingCurriculum";
 
 /* ===== Small Progress Bar ===== */
 function ProgressBar({ completed, total }) {
@@ -37,30 +38,20 @@ function ProgressBar({ completed, total }) {
 }
 
 function WritingHome() {
-  /* ===== Totals ===== */
-  const A1_TOTAL = 5;
-  const A2_TOTAL = 6;
-  const B1_TOTAL = 6;
+  const progressByLevel = WRITING_LEVEL_ORDER.map((level) => {
+    const total = Object.keys(WRITING_CURRICULUM[level] || {}).length;
+    const completed = countCompletedByLevel(
+      STORAGE_KEYS.WRITING_COMPLETED,
+      level
+    );
+    return { level, total, completed };
+  });
 
-  /* ===== Progress (via helpers) ===== */
-  const completedA1 = countCompletedByLevel(
-    STORAGE_KEYS.WRITING_COMPLETED,
-    "A1"
-  );
-
-  const completedA2 = countCompletedByLevel(
-    STORAGE_KEYS.WRITING_COMPLETED,
-    "A2"
-  );
-
-  const completedB1 = countCompletedByLevel(
-    STORAGE_KEYS.WRITING_COMPLETED,
-    "B1"
-  );
-
-  /* ===== Locking Rules ===== */
-  const isA2Unlocked = completedA1 === A1_TOTAL;
-  const isB1Unlocked = completedA2 === A2_TOTAL;
+  const isUnlocked = (index) => {
+    if (index === 0) return true;
+    const prev = progressByLevel[index - 1];
+    return prev.completed >= prev.total;
+  };
 
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto" }}>
@@ -75,93 +66,52 @@ function WritingHome() {
         Focus on clarity, not perfection.
       </p>
 
-      {/* ===== A1 ===== */}
-      <div style={cardStyle}>
-        <h3>A1 – Beginner</h3>
+      {progressByLevel.map((item, index) => {
+        const unlocked = isUnlocked(index);
+        const previous = progressByLevel[index - 1];
+        const levelTitle = {
+          A1: "Beginner",
+          A2: "Elementary",
+          B1: "Intermediate",
+          B2: "Upper-Intermediate",
+          C1: "Advanced",
+        }[item.level];
 
-        <ProgressBar
-          completed={completedA1}
-          total={A1_TOTAL}
-        />
+        return (
+          <div
+            key={item.level}
+            style={{
+              ...cardStyle,
+              opacity: unlocked ? 1 : 0.6,
+            }}
+          >
+            <h3>{item.level} - {levelTitle}</h3>
 
-        <p style={progressText}>
-          {completedA1} / {A1_TOTAL} lessons completed
-        </p>
+            <ProgressBar
+              completed={Math.min(item.completed, item.total)}
+              total={item.total}
+            />
 
-        <Link to="/writing/A1">
-          <button style={btnStyle}>
-            {completedA1 === 0
-              ? "Start A1"
-              : "Continue A1"}
-          </button>
-        </Link>
-      </div>
+            <p style={progressText}>
+              {Math.min(item.completed, item.total)} / {item.total} lessons completed
+            </p>
 
-      {/* ===== A2 ===== */}
-      <div
-        style={{
-          ...cardStyle,
-          opacity: isA2Unlocked ? 1 : 0.6,
-        }}
-      >
-        <h3>A2 – Elementary</h3>
-
-        <ProgressBar
-          completed={completedA2}
-          total={A2_TOTAL}
-        />
-
-        <p style={progressText}>
-          {completedA2} / {A2_TOTAL} lessons completed
-        </p>
-
-        {isA2Unlocked ? (
-          <Link to="/writing/A2">
-            <button style={btnStyle}>
-              {completedA2 === 0
-                ? "Start A2"
-                : "Continue A2"}
-            </button>
-          </Link>
-        ) : (
-          <p style={lockedText}>
-            🔒 Complete all A1 lessons to unlock A2
-          </p>
-        )}
-      </div>
-
-      {/* ===== B1 ===== */}
-      <div
-        style={{
-          ...cardStyle,
-          opacity: isB1Unlocked ? 1 : 0.6,
-        }}
-      >
-        <h3>B1 – Intermediate</h3>
-
-        <ProgressBar
-          completed={completedB1}
-          total={B1_TOTAL}
-        />
-
-        <p style={progressText}>
-          {completedB1} / {B1_TOTAL} lessons completed
-        </p>
-
-        {isB1Unlocked ? (
-          <Link to="/writing/B1">
-            <button style={btnStyle}>
-              {completedB1 === 0
-                ? "Start B1"
-                : "Continue B1"}
-            </button>
-          </Link>
-        ) : (
-          <p style={lockedText}>
-            🔒 Complete all A2 lessons to unlock B1
-          </p>
-        )}
-      </div>
+            {unlocked ? (
+              <Link to={`/writing/${item.level}`}>
+                <button style={btnStyle}>
+                  {item.completed === 0
+                    ? `Start ${item.level}`
+                    : `Continue ${item.level}`}
+                </button>
+              </Link>
+            ) : (
+              <p style={lockedText}>
+                🔒 Complete all {previous.level} lessons to unlock {item.level}
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import LockedFeature from "../components/LockedFeature";
 
 // 🤖 AI Client
 import { askAITutor } from "../utils/aiClient";
+import { WRITING_CURRICULUM } from "./writingCurriculum";
 
 /* ======================
    Progress Bar
@@ -47,11 +48,12 @@ function ProgressBar({ completed, total }) {
 /* ======================
    Lessons count by level
 ====================== */
-const LESSONS_BY_LEVEL = {
-  A1: 5,
-  A2: 6,
-  B1: 6,
-};
+const LESSONS_BY_LEVEL = Object.fromEntries(
+  Object.entries(WRITING_CURRICULUM).map(([level, lessons]) => [
+    level,
+    Object.keys(lessons || {}).length,
+  ])
+);
 
 function WritingLevel() {
   const { level } = useParams();

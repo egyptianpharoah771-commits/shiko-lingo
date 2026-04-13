@@ -43,6 +43,8 @@ import SpeakingHome from "./speaking/SpeakingHome";
 import SpeakingLevel from "./speaking/SpeakingLevel";
 import SpeakingLesson from "./speaking/SpeakingLesson";
 import SpeakingLessonB1 from "./speaking/SpeakingLessonB1";
+import WritingLevel from "./writing/WritingLevel";
+import WritingLesson from "./writing/WritingLesson";
 
 /* Vocabulary */
 import VocabularyPage from "./vocabulary/VocabularyPage";
@@ -452,6 +454,22 @@ function App() {
               element={
                 <Guard>
                   <Writing />
+                </Guard>
+              }
+            />
+            <Route
+              path="/writing/:level"
+              element={
+                <Guard>
+                  <WritingLevel />
+                </Guard>
+              }
+            />
+            <Route
+              path="/writing/:level/:lessonId"
+              element={
+                <Guard>
+                  <WritingLesson />
                 </Guard>
               }
             />

@@ -15,78 +15,7 @@ import LockedFeature from "../components/LockedFeature";
 // 🤖 AI
 import { askAITutor } from "../utils/aiClient";
 import AIResponseModal from "../components/AIResponseModal";
-
-/* ======================
-   CONTENT IMPORTS
-====================== */
-// A1
-import A1L1Content from "./A1/lesson1/content";
-import A1L1Questions from "./A1/lesson1/questions";
-import A1L2Content from "./A1/lesson2/content";
-import A1L2Questions from "./A1/lesson2/questions";
-import A1L3Content from "./A1/lesson3/content";
-import A1L3Questions from "./A1/lesson3/questions";
-import A1L4Content from "./A1/lesson4/content";
-import A1L4Questions from "./A1/lesson4/questions";
-import A1L5Content from "./A1/lesson5/content";
-import A1L5Questions from "./A1/lesson5/questions";
-
-// A2
-import A2L1Content from "./A2/lesson1/content";
-import A2L1Questions from "./A2/lesson1/questions";
-import A2L2Content from "./A2/lesson2/content";
-import A2L2Questions from "./A2/lesson2/questions";
-import A2L3Content from "./A2/lesson3/content";
-import A2L3Questions from "./A2/lesson3/questions";
-import A2L4Content from "./A2/lesson4/content";
-import A2L4Questions from "./A2/lesson4/questions";
-import A2L5Content from "./A2/lesson5/content";
-import A2L5Questions from "./A2/lesson5/questions";
-import A2L6Content from "./A2/lesson6/content";
-import A2L6Questions from "./A2/lesson6/questions";
-
-// B1
-import B1L1Content from "./B1/lesson1/content";
-import B1L1Questions from "./B1/lesson1/questions";
-import B1L2Content from "./B1/lesson2/content";
-import B1L2Questions from "./B1/lesson2/questions";
-import B1L3Content from "./B1/lesson3/content";
-import B1L3Questions from "./B1/lesson3/questions";
-import B1L4Content from "./B1/lesson4/content";
-import B1L4Questions from "./B1/lesson4/questions";
-import B1L5Content from "./B1/lesson5/content";
-import B1L5Questions from "./B1/lesson5/questions";
-import B1L6Content from "./B1/lesson6/content";
-import B1L6Questions from "./B1/lesson6/questions";
-
-/* ======================
-   MAPPING
-====================== */
-const WRITING_CONTENT = {
-  A1: {
-    lesson1: { content: A1L1Content, questions: A1L1Questions },
-    lesson2: { content: A1L2Content, questions: A1L2Questions },
-    lesson3: { content: A1L3Content, questions: A1L3Questions },
-    lesson4: { content: A1L4Content, questions: A1L4Questions },
-    lesson5: { content: A1L5Content, questions: A1L5Questions },
-  },
-  A2: {
-    lesson1: { content: A2L1Content, questions: A2L1Questions },
-    lesson2: { content: A2L2Content, questions: A2L2Questions },
-    lesson3: { content: A2L3Content, questions: A2L3Questions },
-    lesson4: { content: A2L4Content, questions: A2L4Questions },
-    lesson5: { content: A2L5Content, questions: A2L5Questions },
-    lesson6: { content: A2L6Content, questions: A2L6Questions },
-  },
-  B1: {
-    lesson1: { content: B1L1Content, questions: B1L1Questions },
-    lesson2: { content: B1L2Content, questions: B1L2Questions },
-    lesson3: { content: B1L3Content, questions: B1L3Questions },
-    lesson4: { content: B1L4Content, questions: B1L4Questions },
-    lesson5: { content: B1L5Content, questions: B1L5Questions },
-    lesson6: { content: B1L6Content, questions: B1L6Questions },
-  },
-};
+import { WRITING_CURRICULUM } from "./writingCurriculum";
 
 function WritingLesson() {
   const { level, lessonId } = useParams();
@@ -117,7 +46,7 @@ function WritingLesson() {
   const [aiMessage, setAiMessage] = useState("");
 
   const lessonData =
-    WRITING_CONTENT[level]?.[normalizedLessonId];
+    WRITING_CURRICULUM[level]?.[normalizedLessonId];
 
   const content = lessonData?.content;
   const questions = lessonData?.questions || [];
