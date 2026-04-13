@@ -1,0 +1,17 @@
+{
+  "level": "C1",
+  "lessons": [
+    { "id": "lesson1", "lesson": 1, "title": "Ethics of Artificial Intelligence", "description": "Experts debate fairness, accountability, and transparency in AI systems." },
+    { "id": "lesson2", "lesson": 2, "title": "Media Framing and Bias", "description": "A newsroom discussion on narrative framing and public interpretation." },
+    { "id": "lesson3", "lesson": 3, "title": "Freedom and Security", "description": "A policy debate about civil liberties and national safety." },
+    { "id": "lesson4", "lesson": 4, "title": "Economic Inequality", "description": "An economist explains structural causes of inequality and mobility gaps." },
+    { "id": "lesson5", "lesson": 5, "title": "Climate Justice", "description": "A conference exchange on responsibility between developed and developing nations." },
+    { "id": "lesson6", "lesson": 6, "title": "Future of Education 2040", "description": "Educators discuss competencies, technology, and social equity in schools." },
+    { "id": "lesson7", "lesson": 7, "title": "Leadership in Crisis", "description": "A case analysis of decision-making under uncertainty." },
+    { "id": "lesson8", "lesson": 8, "title": "Cultural Identity in a Global World", "description": "A public talk about preserving identity while embracing globalization." },
+    { "id": "lesson9", "lesson": 9, "title": "Public Health Communication", "description": "Health officials discuss trust, misinformation, and behavior change." },
+    { "id": "lesson10", "lesson": 10, "title": "Innovation and Regulation", "description": "Legal and business voices debate how regulation can support innovation." },
+    { "id": "lesson11", "lesson": 11, "title": "Urban Planning and Quality of Life", "description": "Urban specialists compare transport, housing, and inclusive city design." },
+    { "id": "lesson12", "lesson": 12, "title": "Progress and Human Values", "description": "A philosophical conversation on whether progress improves human wellbeing." }
+  ]
+}

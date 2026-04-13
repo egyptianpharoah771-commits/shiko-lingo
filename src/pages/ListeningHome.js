@@ -6,7 +6,7 @@ import STORAGE_KEYS from "../utils/storageKeys";
    Config
 ========================= */
 
-const LEVELS = ["A1", "A2", "B1"];
+const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
 
 /* =========================
    Progress Bar

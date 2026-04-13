@@ -9,6 +9,7 @@ import LockedFeature from "../components/LockedFeature";
 
 import { askAITutor } from "../utils/aiClient";
 import AIResponseModal from "../components/AIResponseModal";
+import { LISTENING_ADVANCED_CONTENT } from "../data/listeningAdvancedContent";
 
 /* =========================
    Listening Lesson Page
@@ -88,6 +89,79 @@ function Listening() {
     return resolveLessonFolder(id);
   };
 
+  const buildFallbackLesson = (meta, normalizedId) => {
+    const lessonNumber =
+      Number(String(normalizedId || "").replace("lesson", "")) || 1;
+    const advancedFromMap =
+      LISTENING_ADVANCED_CONTENT?.[level]?.[normalizedId];
+    if (advancedFromMap) {
+      return {
+        lesson: lessonNumber,
+        level,
+        ...advancedFromMap,
+      };
+    }
+
+    return {
+      lesson: lessonNumber,
+      level,
+      title: meta?.title || `Listening Lesson ${lessonNumber}`,
+      description:
+        meta?.description ||
+        "Lesson content will be refined in the next update.",
+      speaker: "Narrator",
+      audio: "speaker.mp3",
+      text: [
+        "This is a temporary dialogue script for this lesson.",
+        "The full voice script will be added in the production audio phase.",
+        "Please focus on the topic and answer the comprehension questions.",
+        "Use the lesson title and description to infer key details.",
+      ],
+      questions: [
+        {
+          question: "What is the main topic of this lesson?",
+          options: [
+            "A personal story with no clear topic",
+            meta?.title || "The lesson title topic",
+            "A scientific lecture",
+            "A weather report",
+          ],
+          correctAnswer: meta?.title || "The lesson title topic",
+        },
+        {
+          question: "What should the learner focus on in this fallback lesson?",
+          options: [
+            "Memorizing every word exactly",
+            "Ignoring the description",
+            "Understanding the main idea and key details",
+            "Skipping all questions",
+          ],
+          correctAnswer: "Understanding the main idea and key details",
+        },
+        {
+          question: "Why was this temporary script added?",
+          options: [
+            "Because the lesson was removed",
+            "To bridge the course until final audio scripts are produced",
+            "To replace all advanced lessons permanently",
+            "To test random content",
+          ],
+          correctAnswer: "To bridge the course until final audio scripts are produced",
+        },
+        {
+          question: "What is the best next step after this temporary lesson?",
+          options: [
+            "Wait for final dialogue and audio release for this level",
+            "Delete your progress",
+            "Skip listening practice forever",
+            "Only practice grammar",
+          ],
+          correctAnswer: "Wait for final dialogue and audio release for this level",
+        },
+      ],
+    };
+  };
+
   /* =========================
      Load Lesson + Re-init Audio
   ========================= */
@@ -119,18 +193,27 @@ function Listening() {
       fetch(`/listening/${level}/index.json`).catch(() => null),
     ])
       .then(async ([lessonRes, indexRes]) => {
-        if (!lessonRes.ok) throw new Error("Lesson not found");
-        const lessonData = await lessonRes.json();
-
         let normalizedIds = [];
+        let baseLessons = [];
         if (indexRes?.ok) {
           const indexData = await indexRes.json();
-          const baseLessons = Array.isArray(indexData)
+          baseLessons = Array.isArray(indexData)
             ? indexData
             : (indexData?.lessons || []);
           normalizedIds = baseLessons
             .map((l) => normalizeLessonId(l.id))
             .filter(Boolean);
+        }
+
+        let lessonData = null;
+        if (lessonRes.ok) {
+          lessonData = await lessonRes.json();
+        } else {
+          const currentId = normalizeLessonId(lessonId);
+          const meta = baseLessons.find(
+            (item) => normalizeLessonId(item.id) === currentId
+          );
+          lessonData = buildFallbackLesson(meta, currentId);
         }
 
         setLevelLessons(normalizedIds);

@@ -1,0 +1,17 @@
+{
+  "level": "B2",
+  "lessons": [
+    { "id": "lesson1", "lesson": 1, "title": "Remote Work and Productivity", "description": "Two colleagues discuss the real impact of remote work on productivity." },
+    { "id": "lesson2", "lesson": 2, "title": "Work-Life Balance", "description": "A manager and employee explore practical strategies for healthier routines." },
+    { "id": "lesson3", "lesson": 3, "title": "Advertising and Consumer Choices", "description": "A podcast segment about how advertising shapes buying behavior." },
+    { "id": "lesson4", "lesson": 4, "title": "Travel Delays and Decision-Making", "description": "Passengers discuss options during an unexpected travel disruption." },
+    { "id": "lesson5", "lesson": 5, "title": "Public Health and Personal Habits", "description": "A radio interview about prevention, responsibility, and healthcare pressure." },
+    { "id": "lesson6", "lesson": 6, "title": "Social Media and Public Opinion", "description": "A media analyst explains how online trends influence public thinking." },
+    { "id": "lesson7", "lesson": 7, "title": "Sustainable Choices at Home", "description": "A family debate on costs and benefits of greener daily choices." },
+    { "id": "lesson8", "lesson": 8, "title": "Online Learning vs Classroom Learning", "description": "Students compare flexibility, discipline, and outcomes in both formats." },
+    { "id": "lesson9", "lesson": 9, "title": "Leadership in Team Projects", "description": "A team lead reflects on communication under pressure." },
+    { "id": "lesson10", "lesson": 10, "title": "Cross-Cultural Communication", "description": "A workplace case study of misunderstanding and repair." },
+    { "id": "lesson11", "lesson": 11, "title": "Financial Decisions and Risk", "description": "A discussion about budgeting, investing, and realistic risk appetite." },
+    { "id": "lesson12", "lesson": 12, "title": "Innovation, Data, and Privacy", "description": "A panel conversation on innovation speed versus privacy safeguards." }
+  ]
+}

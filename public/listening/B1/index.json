@@ -60,6 +60,18 @@
       "lesson": 10,
       "title": "Adapting to a New Environment",
       "description": "Julia talks about starting a new job and learning how to adapt."
+    },
+    {
+      "id": "lesson11",
+      "lesson": 11,
+      "title": "Taking Responsibility",
+      "description": "Noah talks about taking responsibility during a team project and what he learned from it."
+    },
+    {
+      "id": "lesson12",
+      "lesson": 12,
+      "title": "Rethinking My Goals",
+      "description": "Emma talks about rethinking her goals and finding a healthier definition of success."
     }
   ]
 }
