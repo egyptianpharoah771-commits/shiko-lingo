@@ -22,42 +22,40 @@ const content = {
     {
       word: "inequality",
       phonetic: "/ˌɪnɪˈkwɒləti/",
-      meaning: "عدم مساواة",
-      example: "Social inequality affects many communities."
+      meaning: "a systemic disparity in the distribution of resources, opportunities, or rights among individuals or social groups",
+      example: "Social inequality continues to hinder progress in many communities."
     },
     {
       word: "education system",
       phonetic: "/ˌedʒuˈkeɪʃn ˈsɪstəm/",
-      meaning: "نظام التعليم",
-      example: "The education system needs reform."
+      meaning: "the institutionalized framework through which a society formally transmits knowledge, values, and skills across generations",
+      example: "The education system must adapt to the demands of a changing economy."
     },
     {
       word: "social pressure",
       phonetic: "/ˈsəʊʃl ˈpreʃər/",
-      meaning: "ضغط اجتماعي",
-      example: "Young people often face social pressure."
+      meaning: "the compelling influence exerted by peer groups or societal norms that drives individuals toward conformity or compliance",
+      example: "Adolescents are particularly vulnerable to social pressure."
     },
     {
       word: "opportunity",
       phonetic: "/ˌɒpəˈtjuːnəti/",
-      meaning: "فرصة",
-      example: "Education creates equal opportunities."
+      meaning: "a favorable set of circumstances that enables the pursuit of advancement, achievement, or access to resources",
+      example: "Equal access to education creates equitable opportunities for all citizens."
     },
     {
       word: "discrimination",
       phonetic: "/dɪˌskrɪmɪˈneɪʃn/",
-      meaning: "تمييز",
-      example: "Discrimination is a serious social problem."
+      meaning: "the unjust differential treatment of individuals based on characteristics such as race, gender, or socioeconomic status",
+      example: "Discrimination in the workplace undermines both morale and productivity."
     },
     {
       word: "social responsibility",
       phonetic: "/ˈsəʊʃl rɪˌspɒnsəˈbɪləti/",
-      meaning: "مسؤولية اجتماعية",
-      example: "Companies have social responsibility."
+      meaning: "the ethical obligation of individuals or institutions to act in ways that benefit society and minimize harm to others",
+      example: "Corporations are increasingly expected to demonstrate social responsibility."
     }
   ]
 };
 
 export default content;
-
-

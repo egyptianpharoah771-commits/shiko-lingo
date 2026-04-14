@@ -22,42 +22,40 @@ const content = {
     {
       word: "bias",
       phonetic: "/ˈbaɪəs/",
-      meaning: "تحيز",
-      example: "Media bias can influence public opinion."
+      meaning: "a systematic predisposition to favor particular perspectives or outcomes, often undermining impartiality and balanced reasoning",
+      example: "Confirmation bias leads individuals to seek information that reinforces existing beliefs."
     },
     {
       word: "misinformation",
       phonetic: "/ˌmɪsɪnfəˈmeɪʃn/",
-      meaning: "معلومات مضللة",
-      example: "Misinformation spreads quickly online."
+      meaning: "inaccurate or misleading information that circulates widely, often distorting public understanding regardless of deliberate intent",
+      example: "The rapid spread of misinformation during crises poses significant risks to public health."
     },
     {
       word: "source",
       phonetic: "/sɔːrs/",
-      meaning: "مصدر",
-      example: "Always check the source of the news."
+      meaning: "an identifiable origin of information whose authority, methodology, and transparency determine its credibility and reliability",
+      example: "Evaluating the credibility of a source is fundamental to responsible information consumption."
     },
     {
       word: "manipulation",
       phonetic: "/məˌnɪpjʊˈleɪʃn/",
-      meaning: "تلاعب",
-      example: "Images can be used for emotional manipulation."
+      meaning: "the strategic use of deceptive or exploitative tactics to control the perceptions, emotions, or decisions of others",
+      example: "Algorithmic manipulation of content can subtly alter political attitudes at scale."
     },
     {
       word: "objective",
       phonetic: "/əbˈdʒektɪv/",
-      meaning: "موضوعي",
-      example: "Good journalism aims to be objective."
+      meaning: "characterized by impartial analysis of evidence without distortion from personal sentiment, ideology, or vested interest",
+      example: "Truly objective reporting requires transparency about methods and potential conflicts of interest."
     },
     {
       word: "critical thinking",
       phonetic: "/ˌkrɪtɪkl ˈθɪŋkɪŋ/",
-      meaning: "تفكير نقدي",
-      example: "Critical thinking helps people evaluate information."
+      meaning: "the disciplined cognitive process of rigorously analyzing, evaluating, and synthesizing claims to form independent and well-reasoned judgments",
+      example: "Critical thinking is an indispensable skill in navigating an era of information overload."
     }
   ]
 };
 
 export default content;
-
-

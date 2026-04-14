@@ -22,42 +22,40 @@ const content = {
     {
       word: "freedom",
       phonetic: "/ˈfriːdəm/",
-      meaning: "حرية",
-      example: "Freedom of expression is essential in any society."
+      meaning: "the absence of coercion or constraint in one's choices and actions, particularly from authoritative or oppressive forces",
+      example: "Freedom of expression is essential in any democratic society."
     },
     {
       word: "responsibility",
       phonetic: "/rɪˌspɒnsəˈbɪləti/",
-      meaning: "مسؤولية",
+      meaning: "the state of being morally or legally accountable for one's conduct and its consequences",
       example: "With freedom comes responsibility."
     },
     {
       word: "identity",
       phonetic: "/aɪˈdentɪti/",
-      meaning: "هوية",
-      example: "Culture plays a big role in shaping identity."
+      meaning: "the set of characteristics, beliefs, and experiences that distinguish an individual or group from others",
+      example: "Culture plays a significant role in shaping personal identity."
     },
     {
       word: "success",
       phonetic: "/səkˈses/",
-      meaning: "نجاح",
+      meaning: "the favorable achievement of a desired aim, goal, or social status through sustained effort or competence",
       example: "Success means different things to different people."
     },
     {
       word: "failure",
       phonetic: "/ˈfeɪljər/",
-      meaning: "فشل",
-      example: "Failure can be a valuable learning experience."
+      meaning: "the inability to meet expected standards or achieve an intended outcome, often serving as a catalyst for learning",
+      example: "Failure can be a valuable and instructive experience."
     },
     {
       word: "purpose",
       phonetic: "/ˈpɜːrpəs/",
-      meaning: "هدف / غاية",
-      example: "Many people search for purpose in their lives."
+      meaning: "the underlying intention or motivation that gives direction and meaning to an individual's actions or existence",
+      example: "Many people spend years searching for a clear sense of purpose."
     }
   ]
 };
 
 export default content;
-
-

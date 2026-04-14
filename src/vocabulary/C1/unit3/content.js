@@ -22,42 +22,40 @@ const content = {
     {
       word: "digital dependence",
       phonetic: "/ˈdɪdʒɪtl dɪˈpendəns/",
-      meaning: "اعتماد رقمي",
-      example: "Digital dependence has increased in recent years."
+      meaning: "an excessive reliance on digital devices and platforms that impairs autonomous functioning and critical engagement",
+      example: "Digital dependence among younger generations has raised concerns among psychologists."
     },
     {
       word: "privacy",
       phonetic: "/ˈprɪvəsi/",
-      meaning: "خصوصية",
-      example: "Online privacy is a major concern."
+      meaning: "the individual's right to control access to their personal information and to be free from unsanctioned surveillance",
+      example: "Online privacy is increasingly difficult to maintain in the age of data collection."
     },
     {
       word: "efficiency",
       phonetic: "/ɪˈfɪʃənsi/",
-      meaning: "كفاءة",
-      example: "Technology improves efficiency at work."
+      meaning: "the capacity to accomplish objectives with minimal expenditure of time, energy, or resources relative to output",
+      example: "Automation has significantly improved operational efficiency across many industries."
     },
     {
       word: "automation",
       phonetic: "/ˌɔːtəˈmeɪʃn/",
-      meaning: "أتمتة",
-      example: "Automation is changing many industries."
+      meaning: "the deployment of technology to perform tasks with reduced human intervention, transforming labor markets and production processes",
+      example: "Automation is displacing routine jobs while simultaneously creating demand for technical expertise."
     },
     {
       word: "innovation",
       phonetic: "/ˌɪnəˈveɪʃn/",
-      meaning: "ابتكار",
-      example: "Innovation drives technological progress."
+      meaning: "the deliberate introduction of novel ideas, methods, or products that generate substantial improvements or paradigm shifts",
+      example: "Sustained innovation requires investment in both research and a culture of experimentation."
     },
     {
       word: "screen time",
       phonetic: "/ˈskriːn taɪm/",
-      meaning: "وقت استخدام الشاشات",
-      example: "Excessive screen time can affect mental health."
+      meaning: "the cumulative duration of engagement with digital screens, with implications for cognitive development and psychological well-being",
+      example: "Excessive screen time has been correlated with reduced attention spans in adolescents."
     }
   ]
 };
 
 export default content;
-
-
