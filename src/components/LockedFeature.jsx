@@ -5,11 +5,13 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { createPiPayment } from "../pi/piPayments";
 
 function LockedFeature({ title }) {
   const { user, loginWithPi, isPiBrowser } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,7 +45,7 @@ function LockedFeature({ title }) {
         uid: currentUser.id, // ✅ unified identity
       });
 
-      window.location.reload();
+      navigate("/dashboard");
 
     } catch (err) {
       console.error("Subscription error:", err);
