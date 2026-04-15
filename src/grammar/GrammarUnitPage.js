@@ -4,6 +4,9 @@ import useFeedbackSounds from "../core/feedback/useFeedbackSounds";
 import AnswerOption from "../core/ui/AnswerOption";
 import "../core/ui/answer-option.css";
 import STORAGE_KEYS from "../utils/storageKeys";
+import { askAITutor } from "../utils/aiClient";
+import AIResponseModal from "../components/AIResponseModal";
+import { useFeatureAccess } from "../hooks/useFeatureAccess";
 
 /* ===== CONTENT IMPORTS ===== */
 import a1Content1 from "./A1/unit1/content";
@@ -83,6 +86,17 @@ function GrammarUnitPage() {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [passed, setPassed] = useState(false);
+  const [score, setScore] = useState(0);
+  const [weakPoints, setWeakPoints] = useState([]);
+
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiStatus, setAiStatus] = useState("IDLE");
+  const [aiMessage, setAiMessage] = useState("");
+
+  const { canGetAIFeedback, userId, packageName } = useFeatureAccess({
+    skill: "Grammar",
+    level,
+  });
 
   const feedback = useFeedbackSounds();
 
@@ -90,6 +104,10 @@ function GrammarUnitPage() {
     setAnswers({});
     setSubmitted(false);
     setPassed(false);
+    setScore(0);
+    setWeakPoints([]);
+    setAiStatus("IDLE");
+    setAiMessage("");
     feedback.reset();
   }, [level, unit]);
 
@@ -127,10 +145,13 @@ function GrammarUnitPage() {
 
   const submitAnswers = () => {
     let correct = 0;
+    const weak = [];
 
     questions.forEach((q) => {
       if (answers[q.id] === q.answer) {
         correct++;
+      } else {
+        weak.push(q.question);
       }
     });
 
@@ -138,6 +159,8 @@ function GrammarUnitPage() {
 
     setSubmitted(true);
     setPassed(isPassed);
+    setScore(correct);
+    setWeakPoints(weak);
 
     if (isPassed) {
       saveProgress(); // ✅ الآن متوافق
@@ -149,6 +172,34 @@ function GrammarUnitPage() {
   const handleSubmit = () => {
     const result = submitAnswers();
     result ? feedback.correct() : feedback.wrong();
+  };
+
+  const handleAIFeedback = async () => {
+    setAiOpen(true);
+
+    if (!canGetAIFeedback) {
+      setAiStatus("LIMIT");
+      setAiMessage("AI feedback is available after completing lessons.");
+      return;
+    }
+
+    setAiStatus("LOADING");
+    setAiMessage("");
+
+    const result = await askAITutor({
+      skill: "Grammar",
+      level,
+      lessonTitle: content?.title || unit,
+      studentText: `Correct answers: ${score}/${questions.length}.`,
+      score,
+      total: questions.length,
+      weakPoints,
+      userId,
+      packageName,
+    });
+
+    setAiStatus(result.status);
+    setAiMessage(result.message || "");
   };
 
   const handleNextUnit = () => {
@@ -204,9 +255,22 @@ function GrammarUnitPage() {
         <button onClick={handleSubmit}>Check Answers</button>
       )}
 
+      <div style={{ marginTop: 12 }}>
+        <button onClick={handleAIFeedback} disabled={!submitted}>
+          🤖 AI Lesson Feedback
+        </button>
+      </div>
+
       {submitted && passed && (
         <button onClick={handleNextUnit}>Next Unit →</button>
       )}
+
+      <AIResponseModal
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        status={aiStatus}
+        message={aiMessage}
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 function AIResponseModal({
   open,
   onClose,
-  status, // "IDLE" | "LOADING" | "SUCCESS" | "ERROR"
+  status, // "IDLE" | "LOADING" | "SUCCESS" | "LIMIT" | "ERROR"
   message,
 }) {
   if (!open || status === "IDLE") return null;
@@ -28,6 +28,13 @@ function AIResponseModal({
         {status === "SUCCESS" && (
           <>
             <h3>🧠 AI Lesson Feedback</h3>
+            <p style={messageStyle}>{safeMessage}</p>
+          </>
+        )}
+
+        {status === "LIMIT" && (
+          <>
+            <h3 style={{ color: "#b7791f" }}>⏳ AI Limit Reached</h3>
             <p style={messageStyle}>{safeMessage}</p>
           </>
         )}

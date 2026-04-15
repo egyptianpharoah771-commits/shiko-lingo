@@ -16,145 +16,53 @@ function buildPrompt(payload) {
   const compactStudentText = (payload.studentText || payload.text || "")
     .toString()
     .trim()
-    .slice(0, 800);
+    .slice(0, 500);
+
+  const performanceLine =
+    typeof payload.score === "number" && typeof payload.total === "number"
+      ? `Score: ${payload.score}/${payload.total}`
+      : "Score: Not provided";
+
+  const weakPointsLine =
+    Array.isArray(payload.weakPoints) && payload.weakPoints.length
+      ? `Weak points: ${payload.weakPoints.slice(0, 4).join(" | ")}`
+      : "Weak points: Not provided";
 
   const baseContext = `
 Skill: ${payload.skill}
 Level: ${payload.level}
 Lesson: ${payload.lessonTitle}
+${performanceLine}
+${weakPointsLine}
 Student Input:
 ${compactStudentText || "No student input provided."}
 `.trim();
 
-  switch (payload.skill) {
-    case "Grammar":
-      return `
+  return `
 ${baseContext}
 
-You are an English grammar tutor.
+You are an English learning coach for the ${payload.skill} skill.
 
-Return feedback in the following exact structure:
+Return feedback in this exact structure:
 
-Overall Feedback:
-- Brief summary of the student's grammar performance.
+Encouragement:
+- One short motivating sentence.
 
-What You Did Well:
-- One or two positive grammar points.
+Focus Point:
+- One specific thing the student should focus on next.
 
-Common Grammar Mistakes:
-- Mention common mistakes related to this lesson.
+Weak Areas:
+- One or two concrete weaknesses based on the student input or score.
 
-How to Improve:
-- Clear and practical tips to improve grammar accuracy.
-
-Rules:
-- Do NOT ask questions.
-- Do NOT start a conversation.
-- Be clear, supportive, and educational.
-`.trim();
-
-    case "Reading":
-      return `
-${baseContext}
-
-You are an English reading comprehension coach.
-
-Return feedback in the following exact structure:
-
-Overall Feedback:
-- Brief summary of the student's reading performance.
-
-What You Did Well:
-- One or two strengths in comprehension or vocabulary.
-
-Common Reading Mistakes:
-- Typical comprehension or interpretation issues.
-
-How to Improve:
-- Practical tips to improve reading accuracy and speed.
+Next Practice Step:
+- One practical action for the next attempt.
 
 Rules:
-- Do NOT ask questions.
-- Do NOT start a conversation.
-- Be clear, supportive, and educational.
+- Keep it short (max 8 lines total).
+- No questions.
+- No conversation.
+- Be clear, supportive, and specific.
 `.trim();
-
-    case "Speaking":
-      return `
-${baseContext}
-
-You are an English speaking coach.
-
-Return feedback in the following exact structure:
-
-Overall Feedback:
-- Brief summary of the student's speaking performance.
-
-What You Did Well:
-- Positive points about pronunciation or fluency.
-
-Common Speaking Mistakes:
-- Typical pronunciation or fluency issues.
-
-How to Improve:
-- Simple and practical tips to improve spoken English.
-
-Rules:
-- Do NOT ask questions.
-- Do NOT start a conversation.
-- Be supportive and confidence-building.
-`.trim();
-
-    case "Writing":
-      return `
-${baseContext}
-
-You are an English writing tutor.
-
-Return feedback in the following exact structure:
-
-Overall Feedback:
-- Brief summary of the student's writing quality.
-
-What You Did Well:
-- Strengths in structure, clarity, or grammar.
-
-Common Writing Mistakes:
-- Typical sentence or organization issues.
-
-How to Improve:
-- Practical tips to improve writing quality and clarity.
-
-Rules:
-- Do NOT ask questions.
-- Do NOT start a conversation.
-- Be clear, supportive, and educational.
-`.trim();
-
-    default:
-      return `
-${baseContext}
-
-Return feedback in the following exact structure:
-
-Overall Feedback:
-- Brief summary of the student's performance.
-
-What You Did Well:
-- One or two positive points.
-
-Areas to Improve:
-- Key areas that need improvement.
-
-Next Steps:
-- Practical advice for future lessons.
-
-Rules:
-- Do NOT ask questions.
-- Do NOT start a conversation.
-- Be clear, supportive, and educational.
-`.trim();
-  }
 }
 
 const LOCAL_AI_LIMITS = {

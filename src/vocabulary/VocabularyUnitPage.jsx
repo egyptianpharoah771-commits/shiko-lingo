@@ -8,6 +8,9 @@ import { playCorrect, playWrong } from "../utils/sfx";
 
 // 🔥 ADD THIS
 import { updateWordStats } from "../coach/coachEngine";
+import { askAITutor } from "../utils/aiClient";
+import AIResponseModal from "../components/AIResponseModal";
+import { useFeatureAccess } from "../hooks/useFeatureAccess";
 
 /* ===== Utils ===== */
 function shuffle(array) {
@@ -51,8 +54,18 @@ export default function VocabularyUnitPage() {
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
   const [showResult, setShowResult] = useState(false);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [weakPoints, setWeakPoints] = useState([]);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiStatus, setAiStatus] = useState("IDLE");
+  const [aiMessage, setAiMessage] = useState("");
 
   const audioRef = useRef(null);
+  const { canGetAIFeedback, userId, packageName } =
+    useFeatureAccess({
+      skill: "Vocabulary",
+      level: normalizedLevel,
+    });
 
   /* ===== Load Data ===== */
   useEffect(() => {
@@ -76,6 +89,10 @@ export default function VocabularyUnitPage() {
     setCurrent(0);
     setSelected(null);
     setShowResult(false);
+    setCorrectCount(0);
+    setWeakPoints([]);
+    setAiStatus("IDLE");
+    setAiMessage("");
   }, [normalizedLevel, unitKey]);
 
   /* ===== Audio ===== */
@@ -113,7 +130,44 @@ export default function VocabularyUnitPage() {
   isCorrect
 );
 
+    if (isCorrect) {
+      setCorrectCount((prev) => prev + 1);
+    } else {
+      setWeakPoints((prev) => {
+        const q = question.question || "Vocabulary meaning mismatch";
+        return prev.includes(q) ? prev : [...prev, q];
+      });
+    }
+
     setShowResult(true);
+  };
+
+  const handleAIFeedback = async () => {
+    setAiOpen(true);
+
+    if (!canGetAIFeedback) {
+      setAiStatus("LIMIT");
+      setAiMessage("AI feedback is available after completing lessons.");
+      return;
+    }
+
+    setAiStatus("LOADING");
+    setAiMessage("");
+
+    const result = await askAITutor({
+      skill: "Vocabulary",
+      level: normalizedLevel,
+      lessonTitle: content?.title || `Unit ${unitNumber}`,
+      studentText: `Vocabulary quiz progress in unit ${unitNumber}.`,
+      score: correctCount,
+      total: questions.length,
+      weakPoints,
+      userId,
+      packageName,
+    });
+
+    setAiStatus(result.status);
+    setAiMessage(result.message || "");
   };
 
   const handleNext = () => {
@@ -215,8 +269,25 @@ export default function VocabularyUnitPage() {
               {isLast ? "Next Unit" : "Next"}
             </button>
           )}
+
+          {showResult && isLast && (
+            <button
+              className="vocab-btn primary"
+              onClick={handleAIFeedback}
+              style={{ marginLeft: 8 }}
+            >
+              🤖 AI Unit Feedback
+            </button>
+          )}
         </div>
       )}
+
+      <AIResponseModal
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        status={aiStatus}
+        message={aiMessage}
+      />
     </div>
   );
 }
