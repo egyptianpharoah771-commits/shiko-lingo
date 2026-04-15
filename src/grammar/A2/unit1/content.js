@@ -1,10 +1,17 @@
 const content = {
   title: "Past Simple",
   explanation: `
-We use the Past Simple to talk about actions that happened in the past
-and are completely finished.
+We use the Past Simple for actions that started and finished in the past.
+Example: I visited my grandmother last weekend.
 
-These actions usually have a clear or known time in the past.
+It is common when the time is clear, stated, or understood.
+Example: She arrived at 9 p.m.
+
+We use regular verbs with -ed and irregular verbs with their special past forms.
+Example: We watched a film, then we went home.
+
+At A2 level, connect events in sequence to tell short past stories clearly.
+Example: He woke up late, missed the bus, and took a taxi.
   `,
   rules: [
     "Regular verbs: verb + ed (work → worked)",

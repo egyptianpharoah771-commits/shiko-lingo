@@ -1,12 +1,17 @@
 const content = {
   title: "Advanced Linking & Cohesion",
   explanation: `
-At C1 level, effective communication depends on how ideas are connected
-across sentences and entire paragraphs.
+At C1 level, cohesion is a strategic skill for building persuasive and logically coherent discourse.
+Example: The proposal is costly; however, its long-term impact is substantial.
 
-Advanced linking expressions help speakers and writers organize arguments,
-highlight relationships between ideas, and produce clear, formal,
-and persuasive discourse.
+Advanced linkers do more than connect sentences; they signal argument structure and reader guidance.
+Example: On the one hand, automation increases efficiency; on the other hand, it may widen inequality.
+
+Precise linking improves flow by marking contrast, cause, addition, concession, and sequencing clearly.
+Example: The data were incomplete; therefore, the conclusion remains provisional.
+
+In formal writing, varied cohesive devices create sophistication and prevent repetitive low-level connectors.
+Example: Furthermore, the revised model outperformed previous benchmarks.
   `,
   rules: [
     "Use contrast linkers to introduce opposing ideas (however, nevertheless, whereas)",

@@ -1,14 +1,17 @@
 const content = {
   title: "Present Perfect vs Past Simple",
   explanation: `
-Both the Present Perfect and the Past Simple are used to talk about past actions,
-but they show different ways of looking at time.
+Both Present Perfect and Past Simple refer to the past, but they organize time differently.
+Example: I have finished my report. / I finished my report yesterday.
 
-The Present Perfect looks at the past from the present moment.
-The exact time is not important — what matters is the experience or result now.
+Use Present Perfect when the exact time is unknown or not important, and the present result matters.
+Example: She has lost her keys. (She cannot open the door now.)
 
-The Past Simple looks at the past as finished and separate from the present.
-The time is known, mentioned, or understood.
+Use Past Simple when the action happened at a finished time in the past.
+Example: She lost her keys last night.
+
+At B1 level, always ask: "Do I mean life experience/result now, or a finished past moment?"
+Example: Have you ever visited Rome? / I visited Rome in 2021.
   `,
   rules: [
     "Present Perfect: have / has + past participle",

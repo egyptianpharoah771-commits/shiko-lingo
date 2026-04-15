@@ -1,11 +1,17 @@
 const content = {
   title: "Nuance, Tone & Formality",
   explanation: `
-At C1 level, speakers and writers adjust tone, style, and word choice
-deliberately according to context, audience, and purpose.
+At C1 level, effective communication depends on deliberate control of tone, register, and interpersonal stance.
+Example: Send me the file. / Could you please forward the file at your convenience?
 
-Mastering nuance and formality helps communication sound polite,
-professional, and precise without losing clarity or confidence.
+Formality is shaped largely by lexical choice, sentence framing, and degree of directness.
+Example: We reject your request. / We regret to inform you that your request cannot be approved.
+
+Hedging and diplomatic phrasing help express caution, disagreement, or uncertainty professionally.
+Example: The findings seem to suggest a possible reporting bias.
+
+The objective is context-sensitive expression: clear, respectful, and precise in academic or professional settings.
+Example: While I appreciate your perspective, I would argue that the current evidence is insufficient.
   `,
   rules: [
     "Formal language often avoids contractions (do not, cannot)",

@@ -1,12 +1,17 @@
 const content = {
   title: "Reported Speech (Statements, Questions & Commands)",
   explanation: `
-At B2 level, reported speech is used to accurately report
-what someone said, asked, or told another person to do.
+At B2 level, reported speech is used to transmit statements, questions, and instructions accurately in a new context.
+Example: "I am busy" becomes She said that she was busy.
 
-The main focus is on adjusting language to fit the new context,
-including verb tense, pronouns, and time or place expressions.
-However, tense changes depend on meaning, not on rules alone.
+Good reporting requires coordinated shifts in tense, pronouns, reference time, and place.
+Example: "I will come tomorrow" becomes He said he would come the next day.
+
+Backshifting is common with past reporting verbs, but not always required when facts remain true.
+Example: She said that water boils at 100 degrees.
+
+Mastery here is meaning-based, not mechanical: choose forms that preserve intention and clarity.
+Example: "Close the window" becomes The teacher told us to close the window.
   `,
   rules: [
     "Statements: said (that) + clause",

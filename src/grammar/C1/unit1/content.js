@@ -1,12 +1,17 @@
 const content = {
   title: "Nuance in Meaning and Expression",
   explanation: `
-At C1 level, learners move beyond grammatical correctness
-to understanding subtle differences in meaning and intention.
+At C1 level, strong users move beyond correctness to rhetorical precision and pragmatic control.
+Example: The results show a difference. / The results indicate a statistically significant difference.
 
-This unit focuses on how small changes in wording can affect
-tone, emphasis, certainty, and implication, even when sentences
-are grammatically correct.
+Small lexical and structural changes can shift tone, certainty, and speaker distance.
+Example: It will happen. / It appears likely to happen.
+
+Nuance allows a speaker to sound objective, cautious, critical, or diplomatic without changing core facts.
+Example: The policy failed. / The policy appears to have produced limited outcomes.
+
+This unit trains you to choose forms that match intention, audience, and register.
+Example: We need more data. / Further evidence is required before drawing conclusions.
   `,
   rules: [
     "Different word choices can signal varying levels of certainty or caution",

@@ -1,12 +1,17 @@
 const content = {
   title: "Conditionals (All Types & Mixed Conditionals)",
   explanation: `
-At B2 level, conditionals are used to express more than simple cause and effect.
-They help speakers talk about probability, imagination, regret,
-and the consequences of different choices across time.
+At B2 level, conditionals express logic, probability, hypothesis, and retrospective evaluation.
+Example: If demand increases, prices rise.
 
-Mixed conditionals allow us to connect past actions
-with present or future results.
+Different conditional types map to different realities: factual, likely, hypothetical, and impossible past.
+Example: If it rains, we will cancel the event.
+
+Third and mixed conditionals are especially useful for discussing regret and alternative outcomes.
+Example: If I had left earlier, I would not be stuck in traffic now.
+
+Mastering conditionals improves argument quality because it clarifies cause, consequence, and degree of certainty.
+Example: Unless governments act decisively, long-term costs will escalate.
   `,
   rules: [
     "Zero Conditional: if + present simple, present simple (general truths)",

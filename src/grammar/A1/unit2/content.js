@@ -1,9 +1,17 @@
 const content = {
   title: "Present Continuous",
   explanation: `
-We use the Present Continuous to talk about actions that are happening now or around the present time.
+We use the Present Continuous for actions happening right now.
+Example: I am reading this sentence now.
 
-It focuses on what is in progress, not on habits or permanent situations.
+We also use it for temporary actions around the present period.
+Example: She is staying with her aunt this week.
+
+It describes actions in progress, not habits or permanent facts.
+Example: They are working on a school project these days.
+
+At A1 level, remember the pattern: am/is/are + verb-ing.
+Example: He is playing in the garden.
   `,
   rules: [
     "Subject + am / is / are + verb + ing",

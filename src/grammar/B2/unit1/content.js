@@ -1,12 +1,17 @@
 const content = {
   title: "Passive Voice (All Tenses & Advanced Use)",
   explanation: `
-At B2 level, the Passive Voice is used to control focus.
-The emphasis is placed on the action, result, or process,
-not on who performs the action.
+At B2 level, Passive Voice is a discourse tool for controlling information focus.
+Example: The policy was approved yesterday.
 
-It is commonly used when the doer is unknown, unimportant,
-obvious from context, or deliberately omitted to sound formal or objective.
+It foregrounds the action, process, or result instead of the agent.
+Example: The data was collected over six months.
+
+Use it when the doer is unknown, irrelevant, obvious, or intentionally hidden for objectivity.
+Example: Several mistakes were made during the experiment.
+
+Passive structures are frequent in reports, scientific writing, and formal announcements.
+Example: The findings have been published in an international journal.
   `,
   rules: [
     "Basic structure: subject + be + past participle (V3)",

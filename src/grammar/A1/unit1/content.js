@@ -1,13 +1,17 @@
 const content = {
   title: "Present Simple – Basics",
   explanation: `
-We use the Present Simple to talk about:
-• Daily routines
-• Habits
-• Facts and general truths
+We use the Present Simple for routines that repeat regularly.
+Example: I wake up at 7:00 every day.
 
-At this level, we focus on how the tense is formed
-and how it is used in simple, clear sentences.
+We use it for habits and personal behavior patterns.
+Example: She always drinks tea in the morning.
+
+We also use it for facts and general truths that do not change.
+Example: Water boils at 100 degrees Celsius.
+
+At A1 level, focus on building short, clear sentences with correct subject-verb form.
+Example: He plays football on Fridays.
   `,
   rules: [
     "I / You / We / They + base verb (work, live, play)",

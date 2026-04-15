@@ -1,11 +1,17 @@
 const content = {
   title: "Modal Verbs: Obligation, Necessity & Deduction",
   explanation: `
-At B2 level, modal verbs are used to express obligation, necessity,
-prohibition, advice, and logical deduction.
+At B2 level, modal verbs are essential for expressing stance: duty, permission, advice, likelihood, and inference.
+Example: You must submit the form today.
 
-They allow speakers to be more precise about rules, expectations,
-and conclusions based on evidence.
+They help distinguish strict obligation from recommendation.
+Example: You have to wear a badge, but you should arrive early.
+
+Modals also support evidence-based deduction in present and past contexts.
+Example: She must be at home. / He can't have forgotten the meeting.
+
+Using the right modal makes communication precise, especially in professional and academic contexts.
+Example: The results may indicate a measurement error.
   `,
   rules: [
     "Must / have to express strong obligation or necessity",

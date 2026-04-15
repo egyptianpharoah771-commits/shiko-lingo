@@ -1,11 +1,17 @@
 const content = {
   title: "Applying Advanced Sentence Structures",
   explanation: `
-This unit focuses on applying advanced grammatical structures
-to complete sentences accurately.
+This unit develops advanced sentence architecture, not only grammatical accuracy.
+Example: Having reviewed the data, the committee approved the proposal.
 
-You will practice participle clauses, reduced relative clauses,
-noun clauses, and concessive structures in controlled contexts.
+Participle clauses and reduced relatives increase concision and information density.
+Example: Students enrolled in the course must submit a portfolio.
+
+Noun clauses and concessive structures support complex reasoning and balanced argumentation.
+Example: What concerns analysts most is that growth remains uneven.
+
+At C1, the goal is flexible syntactic choice based on clarity, emphasis, and style.
+Example: Although the method is efficient, it raises ethical concerns.
   `,
   rules: [
     "Participle clauses are used to show time or cause",

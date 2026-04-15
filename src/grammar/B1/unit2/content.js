@@ -1,12 +1,17 @@
 const content = {
   title: "Choosing Between Present Perfect and Past Simple",
   explanation: `
-At B1 level, learners often know the two tenses,
-but feel unsure which one to use in real situations.
+At B1 level, the challenge is often not grammar form, but grammar choice in context.
+Example: I have read that book. / I read that book last month.
 
-This unit focuses on choosing the correct tense
-based on whether the speaker is thinking about
-a finished time or a general experience.
+Choose Present Perfect when discussing experience or change connected to now.
+Example: He has worked in three countries.
+
+Choose Past Simple when the sentence includes a completed time reference.
+Example: He worked in Spain in 2018.
+
+To decide correctly, identify the time logic before speaking.
+Example: Have you seen this film? / Yes, I saw it on Friday.
   `,
   rules: [
     "Use Present Perfect to talk about experiences without saying when",

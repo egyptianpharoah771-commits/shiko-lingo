@@ -1,11 +1,17 @@
 const content = {
   title: "Future Forms: will vs going to",
   explanation: `
-At B1 level, we use 'will' and 'going to' to talk about the future,
-but the difference depends on intention and timing.
+At B1 level, both "will" and "going to" talk about the future, but speaker intention changes the choice.
+Example: I will answer the phone. / I am going to study medicine.
 
-The key idea is whether the decision is made now
-or was already planned before speaking.
+Use "will" for instant decisions, promises, and spontaneous reactions.
+Example: The bag looks heavy. I will carry it for you.
+
+Use "going to" for prior plans and visible evidence-based predictions.
+Example: We are going to move next month. / Look at the sky. It is going to storm.
+
+In real communication, this contrast helps your future meaning sound precise and natural.
+Example: I think she will like the gift, because I am going to choose something personal.
   `,
   rules: [
     "Use 'will' for decisions made at the moment of speaking",
