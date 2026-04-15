@@ -23,6 +23,7 @@ import LearnPage from "./pages/LearnPage";
 import Login from "./pages/Login";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import AdminAnnouncements from "./pages/AdminAnnouncements";
 
 /* 🔥 Coach */
 import CoachPage from "./pages/CoachPage";
@@ -74,6 +75,7 @@ import { isInsidePiProductFlow } from "./lib/initPi";
 import FeedbackButton from "./components/FeedbackButton";
 import AdminGuard from "./components/AdminGuard";
 import ReviewErrorBoundary from "./components/ReviewErrorBoundary";
+import AnnouncementBanner from "./components/AnnouncementBanner";
 
 /* ====================== 🔥 HARD FIX ====================== */
 
@@ -103,6 +105,7 @@ function Entry() {
 
       <h1>Shiko Lingo</h1>
       <p>Learn English the smart way</p>
+      <AnnouncementBanner />
 
       <button style={primaryBtn} onClick={() => navigate("/dashboard")}>
         🚀 Enter App
@@ -163,6 +166,7 @@ function Guard({ children }) {
 function AppLayout({ children }) {
   const location = useLocation();
   const hideLayout = location.pathname === "/";
+  const isAdminAuthed = sessionStorage.getItem("admin_authed") === "true";
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -181,6 +185,9 @@ function AppLayout({ children }) {
             <NavButton to="/coach" label="🧠 Coach" />
             <NavButton to="/listening" label="🎧 Practice" />
             <NavButton to="/speaking" label="👤 Profile" />
+            {isAdminAuthed && (
+              <NavButton to="/admin/announcements" label="📢 Admin Announcements" />
+            )}
           </nav>
         </>
       )}
@@ -490,6 +497,16 @@ function App() {
                 <Guard>
                   <AdminGuard>
                     <AdminFeedback />
+                  </AdminGuard>
+                </Guard>
+              }
+            />
+            <Route
+              path="/admin/announcements"
+              element={
+                <Guard>
+                  <AdminGuard>
+                    <AdminAnnouncements />
                   </AdminGuard>
                 </Guard>
               }
