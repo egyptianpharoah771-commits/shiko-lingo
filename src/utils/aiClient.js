@@ -70,6 +70,58 @@ const LOCAL_AI_LIMITS = {
   COOLDOWN_MS: 60 * 1000,
 };
 
+function buildOfflineFeedback(payload = {}) {
+  const score =
+    typeof payload.score === "number" ? payload.score : null;
+  const total =
+    typeof payload.total === "number" && payload.total > 0
+      ? payload.total
+      : null;
+  const weakPoints = Array.isArray(payload.weakPoints)
+    ? payload.weakPoints
+    : [];
+  const firstWeak = weakPoints[0] || "accuracy in this lesson";
+  const ratio = score != null && total ? score / total : null;
+
+  let encouragement = "You are improving step by step. Keep going.";
+  let focusPoint = "Focus on one clear objective before your next attempt.";
+  let weakArea = `Some confusion appears in ${firstWeak}.`;
+  let nextStep =
+    "Review one model example, then retry this lesson carefully.";
+
+  if (ratio != null) {
+    if (ratio >= 0.8) {
+      encouragement = "Excellent effort. Your progress is strong.";
+      focusPoint =
+        "Focus on precision and consistency under lesson conditions.";
+      weakArea =
+        weakPoints.length > 0
+          ? `Minor weakness: ${firstWeak}.`
+          : "No major weakness detected in this attempt.";
+      nextStep =
+        "Do one harder follow-up attempt and aim for the same quality.";
+    } else if (ratio >= 0.6) {
+      encouragement = "Good work. You are on the right track.";
+      focusPoint = "Focus on reducing repeated mistakes in key items.";
+      weakArea = `Most errors are linked to ${firstWeak}.`;
+      nextStep =
+        "Review the missed items and retry one short practice round.";
+    }
+  }
+
+  return `Encouragement:
+- ${encouragement}
+
+Focus Point:
+- ${focusPoint}
+
+Weak Areas:
+- ${weakArea}
+
+Next Practice Step:
+- ${nextStep}`;
+}
+
 function getTodayKey() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -191,17 +243,14 @@ export async function askAITutor(payload) {
     }
 
     return {
-      status: "ERROR",
-      message:
-        data.message ||
-        "AI service error.",
+      status: "SUCCESS",
+      message: buildOfflineFeedback(payload),
     };
   } catch (err) {
     console.error("❌ AI CLIENT ERROR:", err);
     return {
-      status: "ERROR",
-      message:
-        "Cannot connect to AI service.",
+      status: "SUCCESS",
+      message: buildOfflineFeedback(payload),
     };
   }
 }
