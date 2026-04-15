@@ -39,6 +39,17 @@ function buildKey(level, unitNumber) {
   return `vocab_${normalizeLevel(level)}_unit${unitNumber}_done`;
 }
 
+function getExampleText(item) {
+  if (!item) return "";
+  return (
+    item.example ||
+    item.example_easy ||
+    item.example_medium ||
+    item.example_hard ||
+    ""
+  );
+}
+
 export default function VocabularyUnitPage() {
   const { level, unitId } = useParams();
   const navigate = useNavigate();
@@ -111,6 +122,18 @@ export default function VocabularyUnitPage() {
     } catch {
       console.warn("Audio play failed:", src);
     }
+  };
+
+  const speakExample = (exampleText) => {
+    const text = String(exampleText || "").trim();
+    if (!text) return;
+
+    if (!window?.speechSynthesis) return;
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utter);
   };
 
   /* ===== Logic ===== */
@@ -220,6 +243,34 @@ export default function VocabularyUnitPage() {
             <div className="vocab-item-meaning">
               {item.meaning}
             </div>
+
+            {getExampleText(item) && (
+              <div
+                style={{
+                  marginTop: 6,
+                  color: "#444",
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong>Example:</strong> {getExampleText(item)}
+                <button
+                  type="button"
+                  onClick={() => speakExample(getExampleText(item))}
+                  style={{
+                    marginLeft: 8,
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    color: "#4A90E2",
+                    fontWeight: 600,
+                  }}
+                  title="Pronounce example"
+                >
+                  🔊
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
