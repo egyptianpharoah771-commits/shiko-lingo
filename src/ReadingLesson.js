@@ -51,6 +51,13 @@ function ReadingLesson() {
 
   const [activeWord, setActiveWord] = useState(null);
   const [activeSentence, setActiveSentence] = useState(null);
+  const [showWordTip, setShowWordTip] = useState(() => {
+    try {
+      return localStorage.getItem("READING_WORD_TIP_DISMISSED") !== "1";
+    } catch {
+      return true;
+    }
+  });
   const selectSound = useRef(null);
   const correctSound = useRef(null);
   const wrongSound = useRef(null);
@@ -168,6 +175,15 @@ const saveWord = async (word) => {
   const handleWordClick = async (word) => {
     const clean = cleanWord(word);
     if (!clean) return;
+
+    if (showWordTip) {
+      setShowWordTip(false);
+      try {
+        localStorage.setItem("READING_WORD_TIP_DISMISSED", "1");
+      } catch {
+        // ignore storage errors
+      }
+    }
 
     setActiveWord(clean);
     setDictionaryWord(clean);
@@ -404,6 +420,46 @@ if (cache[definition]) {
         🤖 AI Lesson Feedback
       </button>
 
+      {showWordTip && (
+        <div
+          style={{
+            marginTop: 14,
+            marginBottom: 10,
+            padding: "10px 12px",
+            borderRadius: 10,
+            background: "#eef6ff",
+            border: "1px solid #cfe2ff",
+            color: "#0b3d91",
+            fontSize: 14,
+            lineHeight: 1.5,
+          }}
+        >
+          💡 Tip: Tap any word in the text to open its translation, pronunciation, and save options.
+          <button
+            type="button"
+            onClick={() => {
+              setShowWordTip(false);
+              try {
+                localStorage.setItem("READING_WORD_TIP_DISMISSED", "1");
+              } catch {
+                // ignore storage errors
+              }
+            }}
+            style={{
+              marginLeft: 10,
+              border: "none",
+              background: "transparent",
+              color: "#0b3d91",
+              textDecoration: "underline",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Got it
+          </button>
+        </div>
+      )}
+
       <div
   style={{
     maxWidth: 680,
@@ -422,7 +478,23 @@ lineHeight: 1.8,
     boxSizing: "border-box",
   }}
 >
-      
+        {showWordTip && (
+          <p
+            style={{
+              marginTop: 0,
+              marginBottom: 22,
+              padding: "8px 10px",
+              borderRadius: 8,
+              background: "#fff8e1",
+              color: "#6b4f00",
+              fontSize: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            👆 Press any word to see dictionary details, Arabic translation, pronunciation, and save it.
+          </p>
+        )}
+
         {textLines.map((line, i) => {
           const words = line.split(" ");
 
