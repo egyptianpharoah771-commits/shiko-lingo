@@ -183,8 +183,6 @@ function AppLayout({ children }) {
             <NavButton to="/learn" label="📚 Learn" />
             <NavButton to="/review" label="🔁 Review" />
             <NavButton to="/coach" label="🧠 Coach" />
-            <NavButton to="/listening" label="🎧 Practice" />
-            <NavButton to="/speaking" label="👤 Profile" />
             {isAdminAuthed && (
               <NavButton to="/admin/announcements" label="📢 Admin Announcements" />
             )}
