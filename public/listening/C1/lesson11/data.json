@@ -1,0 +1,25 @@
+{
+  "lesson": 11,
+  "level": "C1",
+  "title": "Urban Planning and Quality of Life",
+  "description": "A systemic view of how transport, housing, and public space shape urban equity.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Cities are complex systems. Transport, housing, public space, employment, and social infrastructure interact continuously.",
+    "The quality of those interactions determines whether a city functions as an engine of opportunity or as a mechanism for entrenching disadvantage.",
+    "Transport policy offers a clear illustration. The decision to prioritise road capacity for private vehicles shapes where development occurs, who can access employment, and whether low-income residents can participate fully in urban life.",
+    "Cities that have invested in integrated public transport consistently show stronger economic mobility and social cohesion.",
+    "Housing affordability has similar systemic effects. When housing costs rise faster than incomes in city centres, lower-income residents are displaced to peripheral areas with weaker transport links and fewer services.",
+    "The result is spatial inequality that reinforces economic inequality.",
+    "Inclusive urban planning requires decisions that are explicitly designed to prevent these outcomes — not as an afterthought when problems are already established, but as a founding principle of development policy.",
+    "Public space, access to green areas, and the quality of local services are not luxury considerations. They are determinants of physical health, mental well-being, and social trust.",
+    "The most liveable cities are not necessarily the wealthiest — they are the most coherent in how they design the relationship between mobility, housing, and public life."
+  ],
+  "questions": [
+    { "question": "What does transport policy prioritising private vehicles affect beyond traffic?", "options": ["Only road maintenance costs", "Development location, employment access, and social participation", "National defence planning", "International trade routes"], "correctAnswer": "Development location, employment access, and social participation" },
+    { "question": "What outcome is described when housing costs outpace incomes?", "options": ["City centres become more diverse", "Lower-income residents are displaced to peripheral areas", "Public transport becomes unnecessary", "Property values stabilise automatically"], "correctAnswer": "Lower-income residents are displaced to peripheral areas" },
+    { "question": "What does the speaker say about public space and green areas?", "options": ["They are luxury considerations", "They are determinants of health, well-being, and social trust", "They only benefit wealthy residents", "They reduce city productivity"], "correctAnswer": "They are determinants of health, well-being, and social trust" },
+    { "question": "What characterises the most liveable cities according to the speaker?", "options": ["The highest GDP per capita", "Coherence in designing mobility, housing, and public life together", "The largest surface area", "The most advanced digital infrastructure"], "correctAnswer": "Coherence in designing mobility, housing, and public life together" }
+  ]
+}

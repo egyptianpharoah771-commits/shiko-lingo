@@ -1,0 +1,26 @@
+{
+  "lesson": 12,
+  "level": "C1",
+  "title": "Progress and Human Values",
+  "description": "A philosophical examination of what progress means and what it should serve.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Progress is one of the most contested concepts in contemporary discourse.",
+    "In its most common usage, progress implies movement in a positive direction — improvement in material conditions, expansion of knowledge, development of technology.",
+    "By many of these measures, the last two centuries have seen extraordinary progress.",
+    "And yet, surveys of subjective well-being across wealthy nations suggest that increases in material prosperity have not produced proportional increases in reported happiness or life satisfaction.",
+    "This observation invites a question that is difficult but important: what is progress for?",
+    "If progress is measured only by economic output, technological capability, or average income, it can coexist with rising loneliness, declining trust in institutions, and the erosion of the social ties that give individual lives meaning.",
+    "A richer conception of progress would integrate multiple dimensions: not only what people have, but what they can do, who they can become, and the quality of the relationships and communities they inhabit.",
+    "This does not require rejecting the genuine achievements of material and scientific progress.",
+    "It requires situating those achievements within a broader framework that asks whether progress is serving human flourishing — or whether human beings are being reshaped to serve the metrics of progress.",
+    "The most important decisions facing societies in the coming decades are not primarily technical. They are questions about what kind of life is worth living, and what kind of world we are collectively choosing to build."
+  ],
+  "questions": [
+    { "question": "What paradox does the speaker highlight about material prosperity?", "options": ["It always increases happiness proportionally", "Increases in prosperity have not produced proportional increases in well-being", "It reduces technological development", "It only benefits developing nations"], "correctAnswer": "Increases in prosperity have not produced proportional increases in well-being" },
+    { "question": "What problems can coexist with progress measured only by economic output?", "options": ["Increased innovation and creativity", "Rising loneliness and erosion of social ties", "Universal access to education", "Improved democratic participation"], "correctAnswer": "Rising loneliness and erosion of social ties" },
+    { "question": "What does a richer conception of progress integrate?", "options": ["Only GDP and technology metrics", "What people have, can do, can become, and their relationships", "Exclusively scientific achievement", "Military and political power only"], "correctAnswer": "What people have, can do, can become, and their relationships" },
+    { "question": "What does the speaker identify as the most important decisions facing societies?", "options": ["Primarily technical and economic decisions", "Questions about what kind of life is worth living and what world to build", "Decisions about military capability", "Choices about international trade only"], "correctAnswer": "Questions about what kind of life is worth living and what world to build" }
+  ]
+}

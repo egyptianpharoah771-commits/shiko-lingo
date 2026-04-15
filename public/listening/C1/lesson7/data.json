@@ -1,0 +1,26 @@
+{
+  "lesson": 7,
+  "level": "C1",
+  "title": "Leadership in Crisis",
+  "description": "An analysis of decision-making, communication, and accountability under pressure.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Crisis is the ultimate test of leadership — not because it reveals hidden strengths, but because it strips away the conditions that allow ordinary management to function.",
+    "In stable environments, leaders can rely on established processes, clear information, and predictable timelines. Crisis removes all three.",
+    "Effective crisis leadership begins with the recognition that certainty is unavailable.",
+    "Waiting for complete information before acting is itself a decision — often a costly one.",
+    "The skill lies in making reasoned judgments with incomplete information while remaining genuinely open to revision as conditions change.",
+    "Communication is equally critical. The temptation in crisis is to project confidence by minimising uncertainty.",
+    "But audiences who are told that everything is under control and then discover it is not will lose trust that is very difficult to rebuild.",
+    "More effective is honest acknowledgment of what is known, what is unknown, and what is being done in response.",
+    "Trust is built through consistency between what leaders say and what they do. It erodes when words and actions diverge.",
+    "Leaders who document their reasoning, acknowledge trade-offs, and demonstrate genuine concern are better positioned to survive scrutiny with their legitimacy intact."
+  ],
+  "questions": [
+    { "question": "Why is waiting for complete information before acting described as costly?", "options": ["It is always the best strategy", "It is itself a decision that can cause harm", "It reduces public trust immediately", "It violates legal requirements"], "correctAnswer": "It is itself a decision that can cause harm" },
+    { "question": "What communication mistake do leaders commonly make in crises?", "options": ["Being too transparent", "Projecting false confidence by minimising uncertainty", "Communicating too frequently", "Using overly technical language"], "correctAnswer": "Projecting false confidence by minimising uncertainty" },
+    { "question": "What communication approach does the speaker recommend?", "options": ["Silence until all facts are confirmed", "Honest acknowledgment of what is known and unknown", "Delegating all communication to spokespeople", "Focusing only on positive outcomes"], "correctAnswer": "Honest acknowledgment of what is known and unknown" },
+    { "question": "What helps leaders maintain legitimacy after a crisis?", "options": ["Avoiding all public accountability", "Documenting reasoning and acknowledging trade-offs", "Claiming no responsibility for outcomes", "Focusing only on future plans"], "correctAnswer": "Documenting reasoning and acknowledging trade-offs" }
+  ]
+}

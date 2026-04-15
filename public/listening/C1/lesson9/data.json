@@ -1,0 +1,26 @@
+{
+  "lesson": 9,
+  "level": "C1",
+  "title": "Public Health Communication",
+  "description": "An examination of trust, misinformation, and the conditions for effective health messaging.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Effective public health communication is one of the most demanding forms of communication there is.",
+    "It requires delivering accurate, often complex, and sometimes alarming information to diverse audiences with different levels of scientific literacy, different levels of trust in institutions, and different relationships with risk.",
+    "The challenge is compounded by the information environment. In a world of social media and real-time communication, misinformation spreads rapidly and is often more emotionally compelling than accurate information.",
+    "Research consistently shows that trust is the primary determinant of health communication effectiveness. People do not simply act on information — they act on information from sources they trust.",
+    "Building that trust requires consistency. Messages that change significantly without explanation undermine confidence.",
+    "It requires honesty — acknowledging uncertainty rather than projecting false reassurance.",
+    "And it requires accessibility — translating technical evidence into language that is clear without being condescending.",
+    "One of the most consistent findings is that early, transparent, and repeated communication outperforms delayed communication that arrives only when authorities feel they have a complete picture.",
+    "By the time a perfect message is ready, the information space has often been filled with alternatives.",
+    "Public health communication is ultimately about building and maintaining the institutional trust that allows health guidance to translate into behaviour change."
+  ],
+  "questions": [
+    { "question": "Why is misinformation particularly challenging in public health contexts?", "options": ["It is always more accurate than official guidance", "It spreads rapidly and is often more emotionally compelling", "It only affects non-digital audiences", "It is easily corrected by simple rebuttals"], "correctAnswer": "It spreads rapidly and is often more emotionally compelling" },
+    { "question": "What does research identify as the primary determinant of communication effectiveness?", "options": ["Message length", "Trust in the source", "Visual design quality", "Technical accuracy alone"], "correctAnswer": "Trust in the source" },
+    { "question": "What communication timing finding is highlighted?", "options": ["Delayed polished messages are always more effective", "Early transparent communication outperforms delayed perfect messages", "Frequency of messages has no impact", "Only one channel should be used"], "correctAnswer": "Early transparent communication outperforms delayed perfect messages" },
+    { "question": "What is the ultimate purpose of public health communication according to the speaker?", "options": ["Generating media coverage", "Building trust that translates guidance into behaviour change", "Demonstrating institutional expertise", "Replacing individual medical advice"], "correctAnswer": "Building trust that translates guidance into behaviour change" }
+  ]
+}

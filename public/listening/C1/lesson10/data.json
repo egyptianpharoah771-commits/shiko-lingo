@@ -1,0 +1,25 @@
+{
+  "lesson": 10,
+  "level": "C1",
+  "title": "Innovation and Regulation",
+  "description": "An analysis of how well-designed regulation can support rather than hinder innovation.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "The relationship between innovation and regulation is often framed as a tension — as though every regulatory requirement reduces innovative potential.",
+    "This framing is incomplete.",
+    "Regulation can inhibit innovation when it is poorly designed, poorly timed, or captured by established interests seeking to limit competition. These are genuine and documented problems.",
+    "But regulation also enables innovation. Clear standards create markets for compliant technologies. Enforceable rights build user trust in new platforms.",
+    "Liability frameworks create incentives for safety investment. Intellectual property protection allows innovators to capture returns on their investments.",
+    "The more accurate framing is that the quality of regulation matters more than its quantity.",
+    "Good regulation is developed with ongoing engagement between regulators and innovators — not as a one-time negotiation, but as a continuous process that adapts as technologies and their consequences evolve.",
+    "It is proportional — applying more scrutiny to higher-risk applications and lighter frameworks where evidence of harm is limited.",
+    "The goal should not be the minimum possible regulation. It should be the most effective possible regulation — designed to protect against genuine harms while creating the conditions for sustainable, responsible innovation."
+  ],
+  "questions": [
+    { "question": "What does the speaker say is incomplete about the regulation-innovation framing?", "options": ["That regulation always supports innovation", "That every regulation necessarily reduces innovation", "That innovation precedes all regulation", "That only private markets regulate effectively"], "correctAnswer": "That every regulation necessarily reduces innovation" },
+    { "question": "How does regulation enable innovation according to the speaker?", "options": ["By eliminating all competition", "Through clear standards, trust-building, and liability incentives", "By replacing market mechanisms", "By slowing down new entrants"], "correctAnswer": "Through clear standards, trust-building, and liability incentives" },
+    { "question": "What is described as more important than the quantity of regulation?", "options": ["The speed of implementation", "The quality and design of regulation", "The number of regulators involved", "The political party in power"], "correctAnswer": "The quality and design of regulation" },
+    { "question": "What is the speaker's stated goal for regulation?", "options": ["Minimum possible intervention", "The most effective regulation that protects while enabling innovation", "Regulation designed only by industry", "Uniform global rules with no flexibility"], "correctAnswer": "The most effective regulation that protects while enabling innovation" }
+  ]
+}

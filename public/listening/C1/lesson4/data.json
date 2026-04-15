@@ -1,0 +1,24 @@
+{
+  "lesson": 4,
+  "level": "C1",
+  "title": "Economic Inequality",
+  "description": "A structural analysis of opportunity gaps and the limits of income redistribution.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Economic inequality is frequently discussed in terms of income gaps — the distance between what the highest earners and the lowest earners receive.",
+    "But income is only one dimension of inequality. The deeper issue is the inequality of opportunity — the degree to which a person's starting conditions determine their long-term possibilities.",
+    "Research consistently shows that factors such as parental education, neighbourhood quality, access to healthcare, and early childhood development have a profound and lasting influence on life outcomes.",
+    "When these factors are unevenly distributed, social mobility — the ability to improve one's position across generations — becomes severely constrained.",
+    "The policy implication is significant. Addressing inequality requires more than redistribution of income.",
+    "It requires investment in the structural conditions that shape opportunity: universal early education, accessible healthcare, neighbourhood infrastructure, and legal systems that apply equitably across class lines.",
+    "Without these investments, short-term relief programmes can reduce immediate suffering while leaving the underlying systems unchanged.",
+    "The goal should not simply be to reduce the gap — it should be to redesign the systems that determine who reaches the top in the first place."
+  ],
+  "questions": [
+    { "question": "What does the speaker identify as the deeper issue beyond income gaps?", "options": ["Tax policy differences", "Inequality of opportunity based on starting conditions", "Currency fluctuations", "Employment law variations"], "correctAnswer": "Inequality of opportunity based on starting conditions" },
+    { "question": "Which factors are said to influence life outcomes profoundly?", "options": ["Personal ambition and luck only", "Parental education, healthcare access, and neighbourhood quality", "National GDP alone", "Technology access only"], "correctAnswer": "Parental education, healthcare access, and neighbourhood quality" },
+    { "question": "What limitation of short-term relief programmes is described?", "options": ["They increase income gaps", "They reduce immediate suffering without changing underlying systems", "They are too expensive to implement", "They reduce motivation to work"], "correctAnswer": "They reduce immediate suffering without changing underlying systems" },
+    { "question": "What is identified as the ultimate policy goal?", "options": ["Reducing all wages equally", "Redesigning the systems that determine opportunity", "Eliminating private enterprise", "Capping maximum income"], "correctAnswer": "Redesigning the systems that determine opportunity" }
+  ]
+}

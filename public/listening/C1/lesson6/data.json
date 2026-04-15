@@ -1,0 +1,25 @@
+{
+  "lesson": 6,
+  "level": "C1",
+  "title": "Future of Education 2040",
+  "description": "A forward analysis of learning competencies, automation, and educational equity.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Predictions about the future of education are often dominated by technology — artificial intelligence tutors, adaptive learning platforms, virtual classrooms.",
+    "Technology will certainly play a significant role. But focusing primarily on tools risks missing the deeper question: what should education be for?",
+    "The skills most likely to remain valuable in an increasingly automated world are not those that machines replicate most easily.",
+    "Routine cognitive tasks — information retrieval, pattern recognition, calculation — are increasingly handled by algorithms.",
+    "What becomes more valuable is the capacity to reason across domains, to collaborate effectively, to make ethical judgments in ambiguous situations, and to adapt continuously as contexts change.",
+    "These are not skills that emerge from passive information consumption. They develop through active engagement, challenging problems, and meaningful feedback from knowledgeable teachers.",
+    "There is also a social dimension. Education is not only an individual investment — it is a mechanism for social cohesion and democratic participation.",
+    "When educational quality is distributed unequally, the consequences extend beyond individual outcomes to the functioning of society itself.",
+    "The classroom of 2040 will need to balance technological capability with human relationship — preparing learners not just for specific jobs, but for a lifetime of thoughtful engagement with the world."
+  ],
+  "questions": [
+    { "question": "What risk does focusing primarily on educational technology carry?", "options": ["It improves results too quickly", "It misses the deeper question of what education is for", "It eliminates the need for teachers entirely", "It reduces access for wealthy students"], "correctAnswer": "It misses the deeper question of what education is for" },
+    { "question": "Which skills does the speaker say become more valuable in an automated world?", "options": ["Memorisation and calculation", "Reasoning, collaboration, and ethical judgment", "Speed reading and data entry", "Programming only"], "correctAnswer": "Reasoning, collaboration, and ethical judgment" },
+    { "question": "How do these higher-order skills develop according to the speaker?", "options": ["Through passive consumption of information", "Through active engagement and meaningful feedback", "Through standardised testing only", "Through technology platforms alone"], "correctAnswer": "Through active engagement and meaningful feedback" },
+    { "question": "What broader consequence of unequal educational quality is described?", "options": ["It only affects individual income", "It affects the functioning of society itself", "It has no measurable impact", "It reduces government spending"], "correctAnswer": "It affects the functioning of society itself" }
+  ]
+}

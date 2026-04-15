@@ -1,0 +1,25 @@
+{
+  "lesson": 8,
+  "level": "C1",
+  "title": "Cultural Identity in a Global World",
+  "description": "An exploration of how cultures evolve through globalisation while maintaining coherence.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Globalisation has created unprecedented connections between cultures — in trade, communication, entertainment, and movement of people.",
+    "These connections carry genuine benefits: broader access to ideas, greater diversity in local communities, and expanded opportunities for cross-cultural understanding.",
+    "But they also create pressures. When dominant cultural products spread globally, they can gradually displace local traditions, languages, and ways of life.",
+    "This does not mean that cultural exchange is inherently harmful. Cultures have always evolved through contact with other cultures.",
+    "The critical question is not whether change occurs, but who directs it and on what terms.",
+    "Cultural identity is not a fixed inheritance that must be preserved unchanged. It is an ongoing negotiation between continuity and adaptation.",
+    "Communities can engage selectively with global influences while maintaining the values, practices, and relationships that give them coherence.",
+    "This requires a degree of conscious agency — an awareness of what is being adopted, what is being retained, and why.",
+    "The strongest cultural identities are not those most resistant to change — they are those most capable of evolving while retaining a clear sense of what they stand for."
+  ],
+  "questions": [
+    { "question": "What pressure does globalisation create for local cultures?", "options": ["It eliminates international trade", "It can gradually displace local traditions and languages", "It reduces access to global ideas", "It strengthens all local languages equally"], "correctAnswer": "It can gradually displace local traditions and languages" },
+    { "question": "What does the speaker say is the critical question about cultural change?", "options": ["Whether change occurs at all", "Who directs it and on what terms", "How quickly it happens", "Whether it affects economic growth"], "correctAnswer": "Who directs it and on what terms" },
+    { "question": "How is cultural identity characterised by the speaker?", "options": ["A fixed inheritance unchanged across generations", "An ongoing negotiation between continuity and adaptation", "Primarily defined by language alone", "Determined entirely by geography"], "correctAnswer": "An ongoing negotiation between continuity and adaptation" },
+    { "question": "What characterises the strongest cultural identities according to the speaker?", "options": ["Maximum resistance to all external influence", "The ability to evolve while retaining core values", "Complete separation from global culture", "Dependence on government protection"], "correctAnswer": "The ability to evolve while retaining core values" }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "lesson": 2,
+  "level": "C1",
+  "title": "Media Framing and Bias",
+  "description": "An analysis of how narrative framing shapes public interpretation of events.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Every news story involves choices — choices about what to include, what to omit, which voices to amplify, and which framing to apply.",
+    "These choices are not neutral. They reflect the values, priorities, and sometimes the commercial interests of the institutions producing the content.",
+    "Framing refers to the way information is presented and contextualised.",
+    "Two journalists can report on the same event using identical facts but produce entirely different impressions in their audiences, depending on which details they foreground and which they leave in the background.",
+    "When framing is used selectively to advance a particular narrative, it crosses into manipulation. Context that contradicts the preferred interpretation is quietly omitted.",
+    "The challenge for audiences is that framing is often invisible. We do not see what has been left out — we only see what has been selected for us to see.",
+    "Developing media literacy means learning to ask: Who produced this content? What perspective does it represent? What might be missing?",
+    "Responsible journalism does not claim false neutrality — it commits to transparency about methodology and reasoning."
+  ],
+  "questions": [
+    { "question": "What do editorial choices in news stories reflect?", "options": ["Only technical constraints", "Values, priorities, and institutional interests", "Random selection", "Audience demographics only"], "correctAnswer": "Values, priorities, and institutional interests" },
+    { "question": "How can two journalists produce different impressions from the same facts?", "options": ["By changing dates", "Through different framing and emphasis", "By interviewing different people only", "By using different languages"], "correctAnswer": "Through different framing and emphasis" },
+    { "question": "What makes framing particularly challenging for audiences?", "options": ["It is always clearly labeled", "It is often invisible — we don't see what was omitted", "It only affects entertainment media", "It requires technical knowledge to detect"], "correctAnswer": "It is often invisible — we don't see what was omitted" },
+    { "question": "What approach does responsible journalism commit to?", "options": ["False neutrality", "Transparency about methodology and reasoning", "Avoiding all interpretation", "Prioritising speed over accuracy"], "correctAnswer": "Transparency about methodology and reasoning" }
+  ]
+}

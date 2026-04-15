@@ -1,0 +1,25 @@
+{
+  "lesson": 3,
+  "level": "C1",
+  "title": "Freedom and Security",
+  "description": "A policy analysis of civil liberties, emergency powers, and accountability.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "In democratic societies, freedom and security are often treated as competing values — as though expanding one necessarily requires sacrificing the other.",
+    "This framing is too simplistic.",
+    "Security measures that are proportional, time-limited, and subject to independent review can coexist with civil liberties.",
+    "The problem arises when emergency powers are introduced without clear boundaries, and when those powers outlast the conditions that originally justified them.",
+    "History offers consistent evidence for this pattern. Surveillance programmes introduced during security crises have persisted for decades.",
+    "The normalisation of exceptional measures is one of the most significant risks in any political system.",
+    "The alternative is not the absence of security policy — it is the design of security policy that includes built-in accountability.",
+    "This means sunset clauses that require active renewal, independent judicial oversight, and transparency about the scope and limits of enforcement powers.",
+    "When security is framed as proportional and accountable, it can coexist with the freedoms that define an open society."
+  ],
+  "questions": [
+    { "question": "What does the speaker say about the freedom-security trade-off framing?", "options": ["It is accurate and necessary", "It is too simplistic", "It is legally required", "It is scientifically proven"], "correctAnswer": "It is too simplistic" },
+    { "question": "What historical pattern is described regarding emergency measures?", "options": ["They are always short-lived", "They tend to persist beyond their original justification", "They reduce public trust immediately", "They are always reviewed annually"], "correctAnswer": "They tend to persist beyond their original justification" },
+    { "question": "What does the speaker propose as a safeguard?", "options": ["Removing all security legislation", "Sunset clauses and independent judicial oversight", "Military control of civil rights", "Permanent emergency powers"], "correctAnswer": "Sunset clauses and independent judicial oversight" },
+    { "question": "What condition allows security and freedom to coexist?", "options": ["Absolute security priority", "Security being proportional and accountable", "Eliminating civil oversight", "Restricting public debate"], "correctAnswer": "Security being proportional and accountable" }
+  ]
+}

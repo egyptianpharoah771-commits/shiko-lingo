@@ -1,0 +1,24 @@
+{
+  "lesson": 1,
+  "level": "C1",
+  "title": "Ethics of Artificial Intelligence",
+  "description": "A critical examination of bias, transparency, and accountability in AI systems.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Artificial intelligence is no longer a distant concept — it is embedded in the systems that shape healthcare decisions, financial assessments, and public resource allocation.",
+    "As these systems become more powerful, questions of ethics become more urgent.",
+    "One of the most significant concerns is bias. AI models learn from historical data, and if that data reflects past inequalities, the model will replicate and potentially amplify those inequalities in its outputs.",
+    "A second challenge is transparency. Many advanced AI systems operate as what experts call black boxes — they produce outputs without a clear explanation of how those outputs were generated.",
+    "This opacity makes accountability difficult. If an AI system makes a harmful decision, determining responsibility becomes complex when the decision-making process itself is invisible.",
+    "A third challenge is the gap between ethical principles and enforceable standards. Many organisations publish ethical guidelines for AI use, but without independent oversight or legal accountability, these principles can function as symbolic language rather than binding commitments.",
+    "In my view, the path forward requires governance frameworks that combine transparency, auditability, and proportional liability.",
+    "Such frameworks must allow innovation to continue while ensuring that those harmed by algorithmic decisions have a meaningful path to remedy."
+  ],
+  "questions": [
+    { "question": "What problem arises when AI learns from historical data?", "options": ["Models become too slow", "Inequalities are replicated or amplified", "Data storage becomes expensive", "Models refuse to generate outputs"], "correctAnswer": "Inequalities are replicated or amplified" },
+    { "question": "Why does opacity make accountability difficult?", "options": ["It speeds up processing", "The decision process is invisible when harm occurs", "It improves user experience", "It prevents data collection"], "correctAnswer": "The decision process is invisible when harm occurs" },
+    { "question": "What risk do ethical guidelines without enforcement carry?", "options": ["They accelerate innovation", "They function as symbolic language only", "They replace legal frameworks", "They reduce transparency"], "correctAnswer": "They function as symbolic language only" },
+    { "question": "What does the speaker say governance frameworks must include?", "options": ["Speed and profit", "Transparency, auditability, and proportional liability", "Only private regulation", "Elimination of all AI risk"], "correctAnswer": "Transparency, auditability, and proportional liability" }
+  ]
+}

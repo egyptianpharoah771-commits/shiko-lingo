@@ -1,0 +1,24 @@
+{
+  "lesson": 5,
+  "level": "C1",
+  "title": "Climate Justice",
+  "description": "An examination of differentiated responsibility between nations in climate policy.",
+  "speaker": "Narrator",
+  "audio": "speaker.mp3",
+  "text": [
+    "Climate change is often discussed as a global challenge requiring global cooperation. But the distribution of its causes and its consequences is deeply unequal.",
+    "Historically, the countries that contributed most to accumulated greenhouse gas emissions are primarily wealthy, industrialised nations.",
+    "The countries most vulnerable to the consequences of climate change — sea level rise, extreme weather events, agricultural disruption — are often among the least responsible for causing them.",
+    "This asymmetry raises a fundamental question of justice. If the costs of a problem fall most heavily on those who contributed least to creating it, then addressing that problem ethically requires differentiated responsibility.",
+    "For wealthy nations, this means not only reducing their own emissions but financing the transition to clean energy in developing economies.",
+    "For developing nations, the challenge is pursuing growth in ways that avoid repeating the high-emission pathways of industrialisation.",
+    "Effective climate policy must recognise that justice and feasibility are not separate concerns.",
+    "An agreement that is technically ambitious but perceived as unfair will not generate the sustained cooperation that climate action requires."
+  ],
+  "questions": [
+    { "question": "What asymmetry does the speaker highlight in climate change?", "options": ["Rich countries suffer more consequences", "Those least responsible often face the greatest consequences", "All countries contribute equally", "Developing nations cause more emissions"], "correctAnswer": "Those least responsible often face the greatest consequences" },
+    { "question": "What does differentiated responsibility require of wealthy nations?", "options": ["Reducing emissions only within their borders", "Financing clean energy transitions in developing economies", "Avoiding all international agreements", "Prioritising economic growth over climate"], "correctAnswer": "Financing clean energy transitions in developing economies" },
+    { "question": "What challenge do developing nations face specifically?", "options": ["Reducing existing clean energy use", "Pursuing growth without repeating high-emission pathways", "Avoiding all international trade", "Cutting agricultural production"], "correctAnswer": "Pursuing growth without repeating high-emission pathways" },
+    { "question": "Why must justice and feasibility be addressed together?", "options": ["They are legally identical", "An unfair agreement will not sustain the cooperation needed", "Feasibility always precedes justice", "Justice reduces technical ambition"], "correctAnswer": "An unfair agreement will not sustain the cooperation needed" }
+  ]
+}
