@@ -76,7 +76,7 @@ Next Practice Step:
   } catch (err) {
     console.error("AI Tutor error:", err);
 
-    return res.status(500).json({
+    return res.status(200).json({
       answer: `Encouragement:
 - You are doing well. Keep practicing.
 

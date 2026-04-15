@@ -179,6 +179,17 @@ export async function askAITutor(payload) {
       };
     }
 
+    // Some backend fallback paths may return non-2xx with a valid `answer`.
+    // Show that answer to keep UX stable instead of blocking the learner.
+    if (data?.answer) {
+      registerLocalAiUsage(payload.skill || "General");
+      return {
+        status: "SUCCESS",
+        message: data.answer,
+        usage: data.usage || null,
+      };
+    }
+
     return {
       status: "ERROR",
       message:
