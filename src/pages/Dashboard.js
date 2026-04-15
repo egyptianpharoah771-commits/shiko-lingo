@@ -7,11 +7,17 @@ import { getUserProgress } from "../adapters/progressAdapter";
 import { supabase } from "../lib/supabaseClient";
 
 /* ===== Mini Progress ===== */
-function MiniProgress({ value = 0, total = 0 }) {
+function MiniProgress({ label, value = 0, total = 0 }) {
   const percent = total === 0 ? 0 : Math.round((value / total) * 100);
 
   return (
-    <div>
+    <div style={skillItem}>
+      <div style={skillHeader}>
+        <strong style={{ fontSize: 13 }}>{label}</strong>
+        <small style={{ color: "#666" }}>
+          {value} / {total}
+        </small>
+      </div>
       <div style={{ height: 6, background: "#eee", borderRadius: 4 }}>
         <div
           style={{
@@ -21,7 +27,7 @@ function MiniProgress({ value = 0, total = 0 }) {
           }}
         />
       </div>
-      <small style={{ color: "#666" }}>{percent}%</small>
+      <small style={{ color: "#666" }}>{percent}% completed</small>
     </div>
   );
 }
@@ -168,25 +174,6 @@ function Dashboard() {
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <h2>🏠 Home</h2>
 
-      {/* 🔥 STREAK */}
-      <div style={{ ...card, position: "relative", zIndex: 1 }}>
-        <h3>🔥 Streak: {daily.streak} days</h3>
-
-        <p>
-          {daily.todayProgress} / {daily.goal}
-        </p>
-
-        <div style={bar}>
-          <div
-            style={{
-              width: `${(daily.todayProgress / daily.goal) * 100}%`,
-              height: "100%",
-              background: "#4A90E2",
-            }}
-          />
-        </div>
-      </div>
-
       {/* 🧠 COACH (FIXED FINAL) */}
       <Link to="/coach/session/A1" style={{ textDecoration: "none" }}>
         <div
@@ -204,6 +191,9 @@ function Dashboard() {
 
       {/* 🔥 isolate component */}
       <div style={{ position: "relative", zIndex: 1 }}>
+        <p style={{ color: "#666", marginTop: 0, marginBottom: 8 }}>
+          Daily Learning tracks your streak and XP progress for today's goal.
+        </p>
         <DailyLearning />
       </div>
 
@@ -238,13 +228,16 @@ function Dashboard() {
       {/* 📚 Skills */}
       <div style={{ ...card, position: "relative", zIndex: 1 }}>
         <h3>📚 Skills</h3>
+        <p style={{ color: "#666", marginTop: 0 }}>
+          Progress by skill (completed lessons out of total lessons).
+        </p>
 
         <div style={grid}>
-          <MiniProgress value={skills.grammar.length} total={5} />
-          <MiniProgress value={skills.vocabulary.length} total={20} />
-          <MiniProgress value={skills.listening.length} total={42} />
-          <MiniProgress value={skills.reading.length} total={17} />
-          <MiniProgress value={skills.speaking.length} total={17} />
+          <MiniProgress label="Grammar" value={skills.grammar.length} total={5} />
+          <MiniProgress label="Vocabulary" value={skills.vocabulary.length} total={20} />
+          <MiniProgress label="Listening" value={skills.listening.length} total={42} />
+          <MiniProgress label="Reading" value={skills.reading.length} total={17} />
+          <MiniProgress label="Speaking" value={skills.speaking.length} total={17} />
         </div>
       </div>
 
@@ -263,17 +256,24 @@ const card = {
   boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
 };
 
-const bar = {
-  height: 10,
-  background: "#eee",
-  borderRadius: 5,
-  overflow: "hidden",
-};
-
 const grid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
   gap: 16,
+};
+
+const skillItem = {
+  border: "1px solid #f0f0f0",
+  borderRadius: 10,
+  padding: 10,
+  background: "#fcfcff",
+};
+
+const skillHeader = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 8,
 };
 
 const primaryBtn = {
