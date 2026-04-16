@@ -9,6 +9,15 @@ const AuthContext = createContext();
 
 const DEV_MODE = process.env.NODE_ENV === "development";
 
+async function waitForPiContext(timeoutMs = 5000, intervalMs = 200) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    if (isPiAppContext()) return true;
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return isPiAppContext();
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -93,7 +102,10 @@ export function AuthProvider({ children }) {
     }
 
     if (!isPiAppContext()) {
-      throw new Error("Pi SDK not ready — open this app in Pi Browser.");
+      const ready = await waitForPiContext();
+      if (!ready) {
+        throw new Error("Pi SDK not ready yet. Please wait a few seconds and try again.");
+      }
     }
 
     try {

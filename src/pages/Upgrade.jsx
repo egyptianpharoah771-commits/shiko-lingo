@@ -12,8 +12,22 @@ function Upgrade() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [piAuthLoading, setPiAuthLoading] = useState(false);
 
   const uid = user?.id || null;
+
+  const handlePiLogin = async () => {
+    if (piAuthLoading) return;
+    setError("");
+    try {
+      setPiAuthLoading(true);
+      await loginWithPi();
+    } catch (err) {
+      setError(err?.message || "Pi login failed.");
+    } finally {
+      setPiAuthLoading(false);
+    }
+  };
 
   const handleSubscribe = async () => {
     if (loading) return;
@@ -68,14 +82,16 @@ function Upgrade() {
         <>
           <p>Please authenticate with Pi first.</p>
           <button
-            onClick={() => loginWithPi()}
+            onClick={handlePiLogin}
+            disabled={piAuthLoading}
             style={{
               marginTop: "20px",
               padding: "12px 20px",
               fontWeight: "bold",
+              cursor: piAuthLoading ? "not-allowed" : "pointer",
             }}
           >
-            🔐 Login with Pi
+            {piAuthLoading ? "Connecting…" : "🔐 Login with Pi"}
           </button>
         </>
       )}
