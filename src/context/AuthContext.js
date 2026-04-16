@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import {
+  ensurePiSdkReady,
   isPiAppContext,
-  isPiBrowserEnvironment,
+  isPiProductShell,
 } from "../lib/initPi";
 
 const AuthContext = createContext();
@@ -23,7 +24,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   /** Pi Browser UA — session restore uses Pi storage, not “window.Pi exists in Chrome”. */
-  const isPiBrowser = () => isPiBrowserEnvironment();
+  /** True in Pi Browser or Pi-embedded checklist iframe (not plain Chrome). */
+  const isPiBrowser = () => isPiProductShell();
 
   /** Pi.authenticate / payments — SDK must be ready (Pi Browser + script). */
   const isPiReady = () => isPiAppContext();
@@ -46,7 +48,7 @@ export function AuthProvider({ children }) {
         }
 
         // 1️⃣ Pi Browser: restore Pi session from storage (SDK may still be loading)
-        if (isPiBrowserEnvironment()) {
+        if (isPiProductShell()) {
           const stored = localStorage.getItem("shiko_pi_user");
 
           if (stored) {
@@ -101,10 +103,19 @@ export function AuthProvider({ children }) {
       return devUser;
     }
 
+    const sdkOk = await ensurePiSdkReady();
+    if (!sdkOk) {
+      throw new Error(
+        "Pi SDK could not load. Open shikolingo.site in Pi Browser and try again."
+      );
+    }
+
     if (!isPiAppContext()) {
-      const ready = await waitForPiContext();
+      const ready = await waitForPiContext(8000, 200);
       if (!ready) {
-        throw new Error("Pi SDK not ready yet. Please wait a few seconds and try again.");
+        throw new Error(
+          "Pi SDK is still starting. Wait a few seconds and tap Login again."
+        );
       }
     }
 
@@ -142,7 +153,7 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    if (isPiBrowserEnvironment()) {
+    if (isPiProductShell()) {
       localStorage.removeItem("shiko_pi_user");
       setUser(null);
       return;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { isPiBrowserEnvironment } from "../lib/initPi";
+import { isInsidePiProductFlow } from "../lib/initPi";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function Login() {
   }
 
   /* Pi Browser: email OTP is not used; Pi Network authentication instead. */
-  if (isPiBrowserEnvironment()) {
+  if (isInsidePiProductFlow()) {
     return (
       <div
         style={{

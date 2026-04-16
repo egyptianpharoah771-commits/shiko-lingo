@@ -82,9 +82,15 @@ function Upgrade() {
         <>
           <p>Please authenticate with Pi first.</p>
           <button
-            onClick={handlePiLogin}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              void handlePiLogin();
+            }}
             disabled={piAuthLoading}
             style={{
+              position: "relative",
+              zIndex: 2,
               marginTop: "20px",
               padding: "12px 20px",
               fontWeight: "bold",
@@ -102,6 +108,7 @@ function Upgrade() {
             ✅ Welcome back — Your PRO subscription is active
           </h3>
           <button
+            type="button"
             style={{
               marginTop: "20px",
               padding: "12px 20px",
@@ -124,7 +131,11 @@ function Upgrade() {
           </p>
 
           <button
-            onClick={handleSubscribe}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              void handleSubscribe();
+            }}
             disabled={loading}
             style={{
               marginTop: "25px",

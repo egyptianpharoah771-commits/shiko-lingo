@@ -35,8 +35,22 @@
         var ua =
           (typeof navigator !== "undefined" && navigator.userAgent) || "";
         var isPiBrowser = /PiBrowser/i.test(ua);
+        function isPiEmbeddedTrusted() {
+          try {
+            if (window.self === window.top) return false;
+            var ref = (document.referrer || "").toLowerCase();
+            return (
+              ref.indexOf("minepi.com") >= 0 ||
+              ref.indexOf("develop.pi") >= 0 ||
+              ref.indexOf("socialchain.app") >= 0 ||
+              ref.indexOf("pi-apps") >= 0
+            );
+          } catch (e) {
+            return false;
+          }
+        }
 
-        if (!isLocal && isPiBrowser) {
+        if (!isLocal && (isPiBrowser || isPiEmbeddedTrusted())) {
           var script = document.createElement("script");
           script.src = "https://sdk.minepi.com/pi-sdk.js";
           script.async = true;

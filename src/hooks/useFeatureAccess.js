@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useSubscriptionContext } from "../context/SubscriptionContext";
+import { isPiProductShell } from "../lib/initPi";
+
+const DEV_MODE = process.env.NODE_ENV === "development";
 
 export function useFeatureAccess() {
   const { user, loading: authLoading } = useAuth();
@@ -11,16 +14,14 @@ export function useFeatureAccess() {
   const [isActive, setIsActive] = useState(false);
   const [packageName, setPackageName] = useState("FREE");
 
-  const isPiBrowser =
-    typeof navigator !== "undefined" &&
-    navigator.userAgent.includes("PiBrowser");
+  const inPiShell = isPiProductShell();
 
   useEffect(() => {
 
     /* =========================
        DEV MODE (non Pi browsers)
     ========================= */
-    if (!isPiBrowser) {
+    if (DEV_MODE && !inPiShell) {
       setIsActive(true);
       setPackageName("DEV");
       setLoading(false);
@@ -48,7 +49,7 @@ export function useFeatureAccess() {
     authLoading,
     subscriptionLoading,
     subscriptionActive,
-    isPiBrowser,
+    inPiShell,
   ]);
 
   return {
