@@ -38,14 +38,12 @@ function Upgrade() {
       return;
     }
 
-    let currentUser = user;
-
     try {
       setLoading(true);
 
-      if (!currentUser?.id) {
-        currentUser = await loginWithPi();
-      }
+      /* Pi SDK requires an active authenticate() with "payments" scope.
+         Restored localStorage user alone does not grant that — always refresh. */
+      const currentUser = await loginWithPi();
 
       if (!currentUser?.id) {
         throw new Error("Authentication failed.");

@@ -10,7 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import { createPiPayment } from "../pi/piPayments";
 
 function LockedFeature({ title }) {
-  const { user, loginWithPi, isPiBrowser } = useAuth();
+  const { loginWithPi, isPiBrowser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,15 +25,11 @@ function LockedFeature({ title }) {
       return;
     }
 
-    let currentUser = user;
-
     try {
       setLoading(true);
 
-      // 🔐 Ensure authenticated
-      if (!currentUser?.id) {
-        currentUser = await loginWithPi(); // ✅ deterministic
-      }
+      /* Must call authenticate with "payments" scope before createPayment */
+      const currentUser = await loginWithPi();
 
       if (!currentUser?.id) {
         throw new Error("Authentication failed.");
@@ -69,6 +65,7 @@ function LockedFeature({ title }) {
       <p>This content is available for Premium users only.</p>
 
       <button
+        type="button"
         onClick={handleSubscribe}
         disabled={loading}
         style={{ marginTop: "12px" }}

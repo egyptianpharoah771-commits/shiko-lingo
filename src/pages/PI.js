@@ -5,7 +5,7 @@ import piLogo from "../assets/pi-logo.png";
 import "./PI.css";
 
 export default function PI() {
-  const { user } = useAuth();
+  const { loginWithPi } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,18 +22,19 @@ export default function PI() {
       return;
     }
 
-    if (!user?.id) {
-      setError("❌ Pi authentication required");
-      return;
-    }
-
     try {
       setLoading(true);
+
+      const sessionUser = await loginWithPi();
+      if (!sessionUser?.id) {
+        setError("❌ Pi authentication required");
+        return;
+      }
 
       await createPiPayment({
         amount: 3,
         memo: "Shiko Lingo - Monthly Subscription",
-        uid: user.id, // ✅ unified identity
+        uid: sessionUser.id,
       });
 
       setMessage("✅ Subscription activated successfully!");
