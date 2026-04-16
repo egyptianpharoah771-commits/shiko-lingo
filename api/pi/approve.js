@@ -13,6 +13,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "METHOD_NOT_ALLOWED" });
   }
 
+  if (!process.env.PI_API_KEY) {
+    console.error("PI_API_KEY is missing in server environment");
+    return res.status(500).json({
+      success: false,
+      error: "SERVER_MISCONFIGURED",
+      message: "PI_API_KEY is not set on the host (e.g. Vercel env).",
+    });
+  }
+
   const { paymentId } = req.body || {};
 
   if (!paymentId) {

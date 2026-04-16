@@ -54,10 +54,25 @@ export async function createPiPayment({ amount, memo, uid }) {
                 body: JSON.stringify({ paymentId }),
               });
 
-              if (!res.ok) {
-                const errText = await res.text();
+              const raw = await res.text();
+              let parsed = null;
+              try {
+                parsed = raw ? JSON.parse(raw) : null;
+              } catch {
                 return safeReject(
-                  new Error("Approve failed: " + errText)
+                  new Error(
+                    "Approve failed: server did not return JSON (often SPA rewrite is catching /api). First bytes: " +
+                      raw.slice(0, 120)
+                  )
+                );
+              }
+
+              if (!res.ok || !parsed?.success) {
+                return safeReject(
+                  new Error(
+                    "Approve failed: " +
+                      (parsed?.message || parsed?.error || raw.slice(0, 300))
+                  )
                 );
               }
             } catch (err) {

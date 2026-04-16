@@ -34,6 +34,22 @@ export default async function handler(req, res) {
     });
   }
 
+  if (!process.env.PI_API_KEY) {
+    return res.status(500).json({
+      success: false,
+      error: "SERVER_MISCONFIGURED",
+      message: "PI_API_KEY is not set on the host.",
+    });
+  }
+
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(500).json({
+      success: false,
+      error: "SERVER_MISCONFIGURED",
+      message: "Supabase env vars are missing on the host.",
+    });
+  }
+
   try {
     /* =========================
        STEP 1 — Complete on Pi
