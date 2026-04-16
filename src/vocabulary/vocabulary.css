@@ -3,15 +3,15 @@
 ========================= */
 
 :root {
-  --vocab-bg: #f3f5fb;
+  --vocab-bg: #f8f7fc;
   --vocab-card: #ffffff;
-  --vocab-card-soft: #f8faff;
-  --vocab-border: #dde3ef;
+  --vocab-card-soft: #faf8ff;
+  --vocab-border: #ece8fb;
 
   --vocab-text: #182033;
   --vocab-muted: #657089;
 
-  --vocab-accent: #5661f6;
+  --vocab-accent: #6c4de6;
 }
 
 /* =========================
@@ -24,7 +24,7 @@
   max-width: 920px;
   margin: 0 auto;
   padding: 22px 16px 60px;
-  animation: fadeIn 0.5s ease;
+  animation: fadeIn 0.4s ease;
   border-radius: 18px;
 }
 
@@ -341,11 +341,13 @@
 .vocab-btn.primary {
   background: var(--vocab-accent);
   color: white;
+  border: 1px solid #583bc4;
 }
 
 .vocab-btn.success {
-  background: #22c55e;
+  background: #58cc6a;
   color: white;
+  border: 1px solid #48b457;
 }
 
 /* =========================

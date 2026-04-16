@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { isPiBrowserEnvironment } from "../lib/initPi";
 
@@ -8,11 +7,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { user, logout, loading, loginWithPi } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [step, setStep] = useState("EMAIL");
   const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
   const [piBusy, setPiBusy] = useState(false);
 
   if (loading) {
@@ -99,57 +94,6 @@ export default function Login() {
     );
   }
 
-  const handleSendCode = async () => {
-    if (!email) {
-      setMessage("Please enter your email.");
-      return;
-    }
-
-    setSending(true);
-    setMessage("Sending verification code...");
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true },
-    });
-
-    setSending(false);
-
-    if (error) {
-      setMessage(error.message);
-      return;
-    }
-
-    setMessage("📩 Check your email for the verification code.");
-    setStep("CODE");
-  };
-
-  const handleVerifyCode = async () => {
-    if (!code) {
-      setMessage("Please enter the verification code.");
-      return;
-    }
-
-    setSending(true);
-    setMessage("Verifying code...");
-
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: code,
-      type: "email",
-    });
-
-    setSending(false);
-
-    if (error) {
-      setMessage(error.message);
-      return;
-    }
-
-    setMessage("✅ Login successful.");
-    navigate("/dashboard", { replace: true });
-  };
-
   return (
     <div
       style={{
@@ -167,48 +111,26 @@ export default function Login() {
           <strong>{user.email || user.id}</strong>
           <br />
           <br />
-          <button type="button" onClick={() => logout()}>
-            Logout
-          </button>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button type="button" onClick={() => navigate("/admin/announcements")}>
+              Go to Announcements
+            </button>
+            <button type="button" onClick={() => navigate("/dashboard", { replace: true })}>
+              Enter App
+            </button>
+            <button type="button" onClick={() => logout()}>
+              Logout
+            </button>
+          </div>
         </>
       ) : (
         <>
-          <p style={{ fontSize: 14, color: "#666" }}>Login with email</p>
-
-          {step === "EMAIL" && (
-            <>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ padding: 10, width: "100%", marginBottom: 10 }}
-              />
-              <button type="button" onClick={handleSendCode} disabled={sending}>
-                {sending ? "Sending..." : "Send Verification Code"}
-              </button>
-            </>
-          )}
-
-          {step === "CODE" && (
-            <>
-              <input
-                type="text"
-                placeholder="Enter code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                style={{
-                  padding: 10,
-                  width: "100%",
-                  marginBottom: 10,
-                  textAlign: "center",
-                }}
-              />
-              <button type="button" onClick={handleVerifyCode} disabled={sending}>
-                {sending ? "Verifying..." : "Verify & Login"}
-              </button>
-            </>
-          )}
+          <p style={{ fontSize: 14, color: "#666" }}>
+            Full access and subscriptions are only available inside the official Pi Browser.
+          </p>
+          <p style={{ fontSize: 13, color: "#777", marginTop: 8 }}>
+            Please open <strong>Shiko Lingo</strong> from Pi Browser to sign in with Pi.
+          </p>
 
           {message && <p style={{ marginTop: 15 }}>{message}</p>}
         </>

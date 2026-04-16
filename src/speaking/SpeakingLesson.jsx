@@ -221,29 +221,33 @@ function SpeakingLesson() {
   };
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-      <h2>{content.title}</h2>
+    <div style={pageStyle}>
+      <div style={heroCardStyle}>
+        <h2 style={{ marginTop: 0 }}>{content.title}</h2>
 
-      {content.prompt && (
-        <p style={{ fontWeight: "bold" }}>
-          {content.prompt}
-        </p>
-      )}
+        {content.prompt && (
+          <p style={{ fontWeight: "bold", color: "#3f2e95" }}>
+            {content.prompt}
+          </p>
+        )}
 
-      {Array.isArray(content.tips) && (
+        {Array.isArray(content.tips) && (
+          <ul>
+            {content.tips.map((tip, i) => (
+              <li key={i}>{tip}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div style={cardStyle}>
+        <h3 style={{ marginTop: 0 }}>Guiding Questions</h3>
         <ul>
-          {content.tips.map((tip, i) => (
-            <li key={i}>{tip}</li>
+          {questions.map((q) => (
+            <li key={q.id}>{q.question}</li>
           ))}
         </ul>
-      )}
-
-      <h3>Guiding Questions</h3>
-      <ul>
-        {questions.map((q) => (
-          <li key={q.id}>{q.question}</li>
-        ))}
-      </ul>
+      </div>
 
       {/* 🤖 AI Tutor (post-submit only to reduce AI calls) */}
       <button
@@ -251,10 +255,10 @@ function SpeakingLesson() {
         disabled={!submitted}
         style={{
           marginBottom: "12px",
-          padding: "8px 14px",
-          borderRadius: "8px",
-          border: "none",
-          backgroundColor: "#111",
+          padding: "10px 16px",
+          borderRadius: "10px",
+          border: submitted ? "1px solid #583bc4" : "1px solid #9aa1ae",
+          backgroundColor: submitted ? "#6c4de6" : "#a7adba",
           color: "white",
           fontWeight: "bold",
           cursor: submitted ? "pointer" : "not-allowed",
@@ -264,48 +268,52 @@ function SpeakingLesson() {
         🤖 Ask AI Tutor
       </button>
 
-      <h3>Speak Your Answer</h3>
-      <p style={{ marginTop: 0, color: "#666" }}>
-        Record your voice first. Writing below is optional support.
-      </p>
+      <div style={cardStyle}>
+        <h3 style={{ marginTop: 0 }}>Speak Your Answer</h3>
+        <p style={{ marginTop: 0, color: "#5c6370" }}>
+          Record your voice first. Writing below is optional support.
+        </p>
 
-      {isRecording ? (
-        <button onClick={stopRecording} disabled={submitted}>
-          ⏹ Stop Recording ({seconds}s)
-        </button>
-      ) : (
-        <button onClick={startRecording} disabled={submitted}>
-          🎙 Start Recording
-        </button>
-      )}
+        {isRecording ? (
+          <button onClick={stopRecording} disabled={submitted} style={dangerBtnStyle}>
+            ⏹ Stop Recording ({seconds}s)
+          </button>
+        ) : (
+          <button onClick={startRecording} disabled={submitted} style={primaryBtnStyle}>
+            🎙 Start Recording
+          </button>
+        )}
 
-      {recordError && (
-        <p style={{ color: "crimson", marginTop: 8 }}>{recordError}</p>
-      )}
+        {recordError && (
+          <p style={{ color: "crimson", marginTop: 8 }}>{recordError}</p>
+        )}
 
-      {audioURL && (
-        <div style={{ marginTop: 12 }}>
-          <p style={{ marginBottom: 6 }}>🎧 Your recording:</p>
-          <audio controls src={audioURL} style={{ width: "100%" }} />
-        </div>
-      )}
+        {audioURL && (
+          <div style={{ marginTop: 12 }}>
+            <p style={{ marginBottom: 6 }}>🎧 Your recording:</p>
+            <audio controls src={audioURL} style={{ width: "100%" }} />
+          </div>
+        )}
+      </div>
 
-      <h3 style={{ marginTop: 18 }}>Optional Writing Support</h3>
-      <textarea
-        rows={6}
-        value={answer}
-        disabled={submitted}
-        onChange={(e) => setAnswer(e.target.value)}
-        style={{ width: "100%", padding: "10px" }}
-      />
+      <div style={cardStyle}>
+        <h3 style={{ marginTop: 0 }}>Optional Writing Support</h3>
+        <textarea
+          rows={6}
+          value={answer}
+          disabled={submitted}
+          onChange={(e) => setAnswer(e.target.value)}
+          style={textareaStyle}
+        />
+      </div>
 
       <button
         onClick={handleSubmit}
         disabled={submitted || !canSubmit}
         style={{
+          ...primaryBtnStyle,
           marginTop: "10px",
-          opacity:
-            submitted || !canSubmit ? 0.6 : 1,
+          opacity: submitted || !canSubmit ? 0.6 : 1,
         }}
       >
         Submit
@@ -339,6 +347,57 @@ function SpeakingLesson() {
     </div>
   );
 }
+
+const pageStyle = {
+  maxWidth: "760px",
+  margin: "0 auto",
+};
+
+const heroCardStyle = {
+  background: "#fff",
+  border: "1px solid #ece8fb",
+  borderRadius: 16,
+  boxShadow: "0 8px 20px rgba(45,37,89,0.08)",
+  padding: 18,
+  marginBottom: 14,
+};
+
+const cardStyle = {
+  background: "#fff",
+  border: "1px solid #ece8fb",
+  borderRadius: 14,
+  boxShadow: "0 6px 16px rgba(45,37,89,0.06)",
+  padding: 16,
+  marginBottom: 12,
+};
+
+const primaryBtnStyle = {
+  padding: "10px 16px",
+  borderRadius: "10px",
+  border: "1px solid #583bc4",
+  background: "#6c4de6",
+  color: "#fff",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const dangerBtnStyle = {
+  padding: "10px 16px",
+  borderRadius: "10px",
+  border: "1px solid #bf2f45",
+  background: "#dc3545",
+  color: "#fff",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const textareaStyle = {
+  width: "100%",
+  padding: "10px",
+  border: "1px solid #d8cbff",
+  borderRadius: 10,
+  outline: "none",
+};
 
 export default SpeakingLesson;
 

@@ -123,41 +123,47 @@ function WritingLesson() {
   };
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-      <h2>{content.title}</h2>
+    <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+      <div style={heroCardStyle}>
+        <h2 style={{ marginTop: 0 }}>{content.title}</h2>
 
-      {content.prompt && (
-        <p style={{ fontWeight: "bold" }}>
-          {content.prompt}
-        </p>
-      )}
+        {content.prompt && (
+          <p style={{ fontWeight: "bold", color: "#3f2e95" }}>
+            {content.prompt}
+          </p>
+        )}
+      </div>
 
-      <h3>Guiding Questions</h3>
-      <ul>
-        {questions.map((q) => (
-          <li key={q.id}>{q.question}</li>
-        ))}
-      </ul>
+      <div style={cardStyle}>
+        <h3 style={{ marginTop: 0 }}>Guiding Questions</h3>
+        <ul>
+          {questions.map((q) => (
+            <li key={q.id}>{q.question}</li>
+          ))}
+        </ul>
+      </div>
 
-      <h3>Your Writing</h3>
-      <textarea
-        rows={8}
-        value={answer}
-        disabled={submitted}
-        onChange={(e) => setAnswer(e.target.value)}
-        style={{ width: "100%", padding: "10px" }}
-      />
+      <div style={cardStyle}>
+        <h3 style={{ marginTop: 0 }}>Your Writing</h3>
+        <textarea
+          rows={8}
+          value={answer}
+          disabled={submitted}
+          onChange={(e) => setAnswer(e.target.value)}
+          style={textareaStyle}
+        />
+      </div>
 
       <button
         onClick={handleAskAI}
         disabled={!submitted}
         style={{
           marginTop: "12px",
-          padding: "8px 14px",
-          backgroundColor: "#111",
+          padding: "10px 16px",
+          backgroundColor: submitted ? "#6c4de6" : "#a7adba",
           color: "white",
-          borderRadius: "8px",
-          border: "none",
+          borderRadius: "10px",
+          border: submitted ? "1px solid #583bc4" : "1px solid #9aa1ae",
           fontWeight: "bold",
           opacity: submitted ? 1 : 0.6,
         }}
@@ -169,6 +175,12 @@ function WritingLesson() {
         onClick={handleSubmit}
         disabled={submitted || !hasAnswer}
         style={{
+          padding: "10px 16px",
+          borderRadius: "10px",
+          border: "1px solid #583bc4",
+          background: "#6c4de6",
+          color: "#fff",
+          fontWeight: 700,
           marginTop: "15px",
           opacity:
             submitted || !hasAnswer ? 0.6 : 1,
@@ -204,6 +216,32 @@ function WritingLesson() {
     </div>
   );
 }
+
+const heroCardStyle = {
+  background: "#fff",
+  border: "1px solid #ece8fb",
+  borderRadius: 16,
+  boxShadow: "0 8px 20px rgba(45,37,89,0.08)",
+  padding: 18,
+  marginBottom: 14,
+};
+
+const cardStyle = {
+  background: "#fff",
+  border: "1px solid #ece8fb",
+  borderRadius: 14,
+  boxShadow: "0 6px 16px rgba(45,37,89,0.06)",
+  padding: 16,
+  marginBottom: 12,
+};
+
+const textareaStyle = {
+  width: "100%",
+  padding: "10px",
+  border: "1px solid #d8cbff",
+  borderRadius: 10,
+  outline: "none",
+};
 
 export default WritingLesson;
 

@@ -3,13 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { createPiPayment } from "../pi/piPayments";
-
-function isInsideRealPi() {
-  if (typeof window === "undefined") return false;
-  if (!window.Pi) return false;
-  if (window.self === window.top) return false;
-  return true;
-}
+import { isPiAppContext } from "../lib/initPi";
 
 function Upgrade() {
   const { user, loginWithPi } = useAuth();
@@ -25,7 +19,7 @@ function Upgrade() {
     if (loading) return;
     setError("");
 
-    if (!isInsideRealPi()) {
+    if (!isPiAppContext()) {
       setError("Subscriptions are only available inside the official Pi Browser.");
       return;
     }
@@ -108,6 +102,9 @@ function Upgrade() {
         <>
           <p style={{ marginTop: "12px", color: "#555" }}>
             Access requires an active PRO subscription.
+          </p>
+          <p style={{ marginTop: "6px", color: "#666", fontSize: 14 }}>
+            Monthly plan: <strong>3 Pi / month</strong>. Payment is available only inside the official Pi Browser.
           </p>
 
           <button

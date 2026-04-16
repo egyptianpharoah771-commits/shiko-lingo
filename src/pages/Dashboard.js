@@ -171,7 +171,7 @@ function Dashboard() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto" }}>
+    <div style={{ maxWidth: 920, margin: "0 auto" }}>
       <h2>🏠 Home</h2>
 
       {/* 🧠 COACH (FIXED FINAL) */}
@@ -182,6 +182,7 @@ function Dashboard() {
             position: "relative",
             zIndex: 10,
             cursor: "pointer",
+            borderLeft: "4px solid #6c4de6",
           }}
         >
           <h3 style={{ pointerEvents: "none" }}>🧠 Coach</h3>
@@ -250,10 +251,11 @@ function Dashboard() {
 
 const card = {
   background: "#fff",
-  padding: 20,
+  padding: 22,
   borderRadius: 14,
-  marginBottom: 20,
-  boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+  marginBottom: 16,
+  border: "1px solid #ece8fb",
+  boxShadow: "0 6px 18px rgba(45,37,89,0.08)",
 };
 
 const grid = {
@@ -263,10 +265,10 @@ const grid = {
 };
 
 const skillItem = {
-  border: "1px solid #f0f0f0",
+  border: "1px solid #ece8fb",
   borderRadius: 10,
-  padding: 10,
-  background: "#fcfcff",
+  padding: 12,
+  background: "#faf8ff",
 };
 
 const skillHeader = {
@@ -279,10 +281,10 @@ const skillHeader = {
 const primaryBtn = {
   padding: "10px 16px",
   borderRadius: 10,
-  border: "none",
+  border: "1px solid #583bc4",
   fontWeight: "bold",
   cursor: "pointer",
-  background: "#4A90E2",
+  background: "#6c4de6",
   color: "#fff",
 };
 

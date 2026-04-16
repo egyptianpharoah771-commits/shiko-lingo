@@ -74,11 +74,12 @@ export default function DailyLearning() {
   return (
     <div
       style={{
-        border: "1px solid #eee",
-        borderRadius: 12,
+        border: "1px solid #ece8fb",
+        borderRadius: 14,
         padding: 20,
-        marginBottom: 20,
-        background: "#fafafa",
+        marginBottom: 16,
+        background: "#faf8ff",
+        boxShadow: "0 6px 16px rgba(45,37,89,0.06)",
       }}
     >
       <h3>🔥 Daily Learning</h3>
@@ -98,7 +99,7 @@ export default function DailyLearning() {
       <div
         style={{
           height: 10,
-          background: "#eee",
+          background: "#ede7ff",
           borderRadius: 10,
           overflow: "hidden",
         }}
@@ -107,7 +108,7 @@ export default function DailyLearning() {
           style={{
             width: `${progress}%`,
             height: "100%",
-            background: "#4CAF50",
+            background: "linear-gradient(90deg, #6c4de6, #58cc6a)",
           }}
         />
       </div>

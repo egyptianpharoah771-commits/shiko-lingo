@@ -259,17 +259,18 @@ function SpeakingLessonB1() {
   };
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-      <h2>
-        🎤 Speaking B1 – {lesson.title}
-      </h2>
-      <p>{lesson.prompt}</p>
-
-      <ul>
-        {lesson.bullets.map((b, i) => (
-          <li key={i}>{b}</li>
-        ))}
-      </ul>
+    <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+      <div style={heroCardStyle}>
+        <h2 style={{ marginTop: 0 }}>
+          🎤 Speaking B1 – {lesson.title}
+        </h2>
+        <p style={{ color: "#3f2e95", fontWeight: 700 }}>{lesson.prompt}</p>
+        <ul>
+          {lesson.bullets.map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
+      </div>
 
       {isRecording && (
         <p style={{ color: "red" }}>
@@ -281,11 +282,12 @@ function SpeakingLessonB1() {
         <button
           onClick={startRecording}
           disabled={submitted}
+          style={primaryBtnStyle}
         >
           🎙️ Start Recording
         </button>
       ) : (
-        <button onClick={stopRecording}>
+        <button onClick={stopRecording} style={dangerBtnStyle}>
           ⏹️ Stop
         </button>
       )}
@@ -306,7 +308,7 @@ function SpeakingLessonB1() {
       <button
         onClick={handleSubmit}
         disabled={!recordingReady || submitted}
-        style={{ marginTop: "10px" }}
+        style={{ ...primaryBtnStyle, marginTop: "10px", opacity: !recordingReady || submitted ? 0.6 : 1 }}
       >
         Submit Recording
       </button>
@@ -317,11 +319,11 @@ function SpeakingLessonB1() {
             onClick={handleAskAI}
             style={{
               marginTop: "12px",
-              background: "#111",
+              background: "#6c4de6",
               color: "#fff",
-              padding: "8px 14px",
-              borderRadius: "8px",
-              border: "none",
+              padding: "10px 16px",
+              borderRadius: "10px",
+              border: "1px solid #583bc4",
               fontWeight: "bold",
             }}
           >
@@ -355,6 +357,35 @@ function SpeakingLessonB1() {
     </div>
   );
 }
+
+const heroCardStyle = {
+  background: "#fff",
+  border: "1px solid #ece8fb",
+  borderRadius: 16,
+  boxShadow: "0 8px 20px rgba(45,37,89,0.08)",
+  padding: 18,
+  marginBottom: 14,
+};
+
+const primaryBtnStyle = {
+  padding: "10px 16px",
+  borderRadius: "10px",
+  border: "1px solid #583bc4",
+  background: "#6c4de6",
+  color: "#fff",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const dangerBtnStyle = {
+  padding: "10px 16px",
+  borderRadius: "10px",
+  border: "1px solid #bf2f45",
+  background: "#dc3545",
+  color: "#fff",
+  fontWeight: 700,
+  cursor: "pointer",
+};
 
 export default SpeakingLessonB1;
 

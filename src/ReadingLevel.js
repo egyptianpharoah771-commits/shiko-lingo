@@ -25,7 +25,7 @@ function ProgressBar({ completed, total }) {
       <div
         style={{
           height: "6px",
-          backgroundColor: "#eee",
+          backgroundColor: "#ede7ff",
           borderRadius: "4px",
           overflow: "hidden",
         }}
@@ -34,12 +34,12 @@ function ProgressBar({ completed, total }) {
           style={{
             width: `${percent}%`,
             height: "100%",
-            backgroundColor: "#4A90E2",
+            background: "linear-gradient(90deg, #6c4de6, #58cc6a)",
             transition: "width 0.3s ease",
           }}
         />
       </div>
-      <small style={{ color: "#555" }}>
+      <small style={{ color: "#5c6370" }}>
         {percent}% completed
       </small>
     </div>
@@ -133,11 +133,11 @@ function ReadingLevel() {
     completedCount === lessons.length;
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "760px", margin: "0 auto" }}>
       <h2 style={{ marginBottom: "6px" }}>
         📘 Reading – Level {level}
       </h2>
-      <p style={{ color: "#666" }}>
+      <p style={{ color: "#5c6370" }}>
         Complete lessons in order to unlock the next
         ones.
       </p>
@@ -156,8 +156,8 @@ function ReadingLevel() {
       {levelCompleted && (
         <div
           style={{
-            backgroundColor: "#e8f5e9",
-            border: "1px solid #c8e6c9",
+            backgroundColor: "#f3fdf4",
+            border: "1px solid #b9eec2",
             borderRadius: "12px",
             padding: "16px",
             marginBottom: "20px",
@@ -185,7 +185,8 @@ function ReadingLevel() {
               <button
                 style={{
                   ...buttonStyle,
-                  backgroundColor: "#6c757d",
+                  backgroundColor: "#7b8190",
+                  border: "1px solid #6a707e",
                 }}
               >
                 Choose Another Level
@@ -254,18 +255,18 @@ function ReadingLevel() {
 const cardStyle = {
   backgroundColor: "#fff",
   padding: "16px",
-  borderRadius: "12px",
-  marginBottom: "14px",
-  boxShadow:
-    "0 4px 10px rgba(0,0,0,0.06)",
+  borderRadius: "14px",
+  marginBottom: "12px",
+  border: "1px solid #ece8fb",
+  boxShadow: "0 6px 16px rgba(45,37,89,0.08)",
 };
 
 const buttonStyle = {
-  padding: "8px 14px",
-  border: "none",
-  borderRadius: "6px",
+  padding: "10px 16px",
+  border: "1px solid #583bc4",
+  borderRadius: "10px",
   cursor: "pointer",
-  backgroundColor: "#4A90E2",
+  backgroundColor: "#6c4de6",
   color: "white",
   fontWeight: "bold",
 };

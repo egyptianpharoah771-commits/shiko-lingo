@@ -336,20 +336,20 @@ function Listening() {
   ========================= */
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto" }}>
+    <div style={{ maxWidth: 760, margin: "0 auto" }}>
       <h2>{lesson.title}</h2>
-      <p>{lesson.description}</p>
+      <p style={{ color: "#5c6370" }}>{lesson.description}</p>
 
       <button
         onClick={handleAIFeedback}
         disabled={!submitted}
         style={{
           marginBottom: 15,
-          padding: "8px 14px",
-          borderRadius: 8,
-          background: submitted ? "#111" : "#aaa",
+          padding: "10px 16px",
+          borderRadius: 10,
+          background: submitted ? "#6c4de6" : "#a7adba",
           color: "#fff",
-          border: "none",
+          border: submitted ? "1px solid #583bc4" : "1px solid #9aa1ae",
           cursor: submitted ? "pointer" : "not-allowed",
           fontWeight: "bold",
         }}
@@ -357,7 +357,7 @@ function Listening() {
         🤖 AI Lesson Feedback
       </button>
 
-      <hr />
+      <hr style={{ borderColor: "#ece8fb", marginBottom: 18 }} />
 
       <audio
         controls
@@ -367,7 +367,7 @@ function Listening() {
         )}/${lesson.audio}`}
       />
 
-      <ul>
+      <ul style={{ background: "#fff", border: "1px solid #ece8fb", borderRadius: 14, padding: "16px 20px", boxShadow: "0 6px 16px rgba(45,37,89,0.06)" }}>
         {lesson.text?.map((line, i) => (
           <li key={i}>{line}</li>
         ))}
@@ -384,8 +384,10 @@ function Listening() {
             style={{
               marginBottom: 20,
               padding: 15,
-              border: "1px solid #eee",
-              borderRadius: 10,
+              border: "1px solid #ece8fb",
+              borderRadius: 12,
+              background: "#fff",
+              boxShadow: "0 6px 16px rgba(45,37,89,0.06)",
             }}
           >
             <strong>{getQuestionText(q)}</strong>
@@ -404,8 +406,8 @@ function Listening() {
               let color = "#000";
 
               if (submitted && isCorrect) {
-                bg = "#28a745";
-                border = "1px solid #1e7e34";
+                bg = "#58cc6a";
+                border = "1px solid #48b457";
                 color = "#fff";
               } else if (
                 submitted &&
@@ -416,8 +418,8 @@ function Listening() {
                 border = "1px solid #b21f2d";
                 color = "#fff";
               } else if (isSelected) {
-                bg = "#4A90E2";
-                border = "1px solid #2f6fc2";
+                bg = "#6c4de6";
+                border = "1px solid #583bc4";
                 color = "#fff";
               }
 
@@ -474,9 +476,9 @@ function Listening() {
               onClick={() => navigate(`/listening/${level}/${nextLessonId}`)}
               style={{
                 padding: "10px 16px",
-                border: "none",
-                borderRadius: 8,
-                background: "#4A90E2",
+                border: "1px solid #583bc4",
+                borderRadius: 10,
+                background: "#6c4de6",
                 color: "#fff",
                 fontWeight: "bold",
                 cursor: "pointer",

@@ -216,12 +216,14 @@ function GrammarUnitPage() {
   };
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto" }}>
-      <h2>{content?.title || "Lesson"}</h2>
-      <p>{content?.explanation || ""}</p>
+    <div style={pageStyle}>
+      <div style={heroCardStyle}>
+        <h2 style={{ marginTop: 0 }}>{content?.title || "Lesson"}</h2>
+        <p style={{ color: "#5c6370", marginBottom: 0 }}>{content?.explanation || ""}</p>
+      </div>
 
       {questions.map((q) => (
-        <div key={q.id} style={{ marginBottom: 24 }}>
+        <div key={q.id} style={questionCardStyle}>
           <strong>{q.question}</strong>
 
           <div style={{ marginTop: 10 }}>
@@ -252,17 +254,17 @@ function GrammarUnitPage() {
       ))}
 
       {!submitted && questions.length > 0 && (
-        <button onClick={handleSubmit}>Check Answers</button>
+        <button onClick={handleSubmit} style={primaryBtnStyle}>Check Answers</button>
       )}
 
       <div style={{ marginTop: 12 }}>
-        <button onClick={handleAIFeedback} disabled={!submitted}>
+        <button onClick={handleAIFeedback} disabled={!submitted} style={secondaryBtnStyle}>
           🤖 AI Lesson Feedback
         </button>
       </div>
 
       {submitted && passed && (
-        <button onClick={handleNextUnit}>Next Unit →</button>
+        <button onClick={handleNextUnit} style={{ ...primaryBtnStyle, marginTop: 10 }}>Next Unit →</button>
       )}
 
       <AIResponseModal
@@ -274,5 +276,48 @@ function GrammarUnitPage() {
     </div>
   );
 }
+
+const pageStyle = {
+  maxWidth: 820,
+  margin: "0 auto",
+};
+
+const heroCardStyle = {
+  background: "#fff",
+  border: "1px solid #ece8fb",
+  borderRadius: 16,
+  boxShadow: "0 8px 20px rgba(45,37,89,0.08)",
+  padding: 20,
+  marginBottom: 16,
+};
+
+const questionCardStyle = {
+  marginBottom: 14,
+  background: "#fff",
+  border: "1px solid #ece8fb",
+  borderRadius: 14,
+  padding: 16,
+  boxShadow: "0 4px 12px rgba(45,37,89,0.06)",
+};
+
+const primaryBtnStyle = {
+  background: "#6c4de6",
+  border: "1px solid #583bc4",
+  color: "#fff",
+  borderRadius: 10,
+  padding: "10px 16px",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+
+const secondaryBtnStyle = {
+  background: "#f3efff",
+  border: "1px solid #d8cbff",
+  color: "#3f2e95",
+  borderRadius: 10,
+  padding: "10px 16px",
+  fontWeight: 700,
+  cursor: "pointer",
+};
 
 export default GrammarUnitPage;

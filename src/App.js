@@ -523,20 +523,23 @@ function App() {
 const headerStyle = {
   backgroundColor: "#ffffff",
   padding: 15,
-  borderBottom: "1px solid #e2d7ee",
+  borderBottom: "1px solid #e7e0fb",
+  position: "sticky",
+  top: 0,
+  zIndex: 20,
 };
 
 const footerStyle = {
   padding: 15,
   textAlign: "center",
-  borderTop: "1px solid #eee",
+  borderTop: "1px solid #ece8fb",
   fontSize: 14,
-  backgroundColor: "#fafafa",
+  backgroundColor: "#faf8ff",
 };
 
 const footerLink = {
   textDecoration: "none",
-  color: "#4A2F6E",
+  color: "#583bc4",
   fontWeight: "bold",
 };
 
@@ -547,8 +550,8 @@ const entryStyle = {
   justifyContent: "center",
   alignItems: "center",
   textAlign: "center",
-  color: "#212529",
-  background: "#f8f9fb",
+  color: "#1f2430",
+  background: "radial-gradient(circle at top, #f2edff 0%, #f8f7fc 45%, #f8f7fc 100%)",
 };
 
 const primaryBtn = {

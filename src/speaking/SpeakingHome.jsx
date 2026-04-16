@@ -16,7 +16,7 @@ function ProgressBar({ completed, total }) {
       <div
         style={{
           height: "8px",
-          backgroundColor: "#eee",
+          backgroundColor: "#ede7ff",
           borderRadius: "4px",
           overflow: "hidden",
         }}
@@ -25,12 +25,12 @@ function ProgressBar({ completed, total }) {
           style={{
             width: `${percent}%`,
             height: "100%",
-            backgroundColor: "#4A90E2",
+            background: "linear-gradient(90deg, #6c4de6, #58cc6a)",
             transition: "width 0.3s ease",
           }}
         />
       </div>
-      <small style={{ color: "#555" }}>
+      <small style={{ color: "#5c6370" }}>
         {percent}% completed
       </small>
     </div>
@@ -54,7 +54,7 @@ function SpeakingHome() {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "680px", margin: "0 auto" }}>
       <h2>🎤 Speaking Practice</h2>
 
       <p style={{ marginTop: "10px", lineHeight: "1.6" }}>
@@ -125,9 +125,10 @@ function SpeakingHome() {
 const cardStyle = {
   backgroundColor: "#fff",
   padding: "20px",
-  borderRadius: "12px",
-  marginBottom: "20px",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  borderRadius: "14px",
+  marginBottom: "14px",
+  border: "1px solid #ece8fb",
+  boxShadow: "0 6px 16px rgba(45,37,89,0.08)",
 };
 
 const progressText = {
@@ -138,16 +139,17 @@ const progressText = {
 const lockedText = {
   marginTop: "10px",
   fontWeight: "bold",
-  color: "#999",
+  color: "#7b8190",
 };
 
 const btnStyle = {
   padding: "12px 16px",
-  borderRadius: "8px",
-  border: "none",
+  borderRadius: "10px",
+  border: "1px solid #583bc4",
   cursor: "pointer",
   fontWeight: "bold",
-  backgroundColor: "#e5e9ff",
+  backgroundColor: "#6c4de6",
+  color: "#fff",
 };
 
 export default SpeakingHome;

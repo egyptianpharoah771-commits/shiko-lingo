@@ -8,19 +8,24 @@ function SkillCard({ icon, title, description, path }) {
       onClick={() => navigate(path)}
       style={{
         cursor: "pointer",
-        border: "1px solid #e5e5e5",
-        borderRadius: 14,
+        border: "1px solid #ece8fb",
+        borderRadius: 16,
         padding: 24,
         background: "#fff",
         transition: "all 0.2s ease",
+        boxShadow: "0 4px 12px rgba(45,37,89,0.06)",
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "translateY(-3px)";
-        e.currentTarget.style.boxShadow = "0 6px 14px rgba(0,0,0,0.08)";
+        e.currentTarget.style.boxShadow = "0 10px 22px rgba(45,37,89,0.12)";
+        e.currentTarget.style.borderColor = "#d8cbff";
+        e.currentTarget.style.background = "#fcfbff";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "none";
-        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(45,37,89,0.06)";
+        e.currentTarget.style.borderColor = "#ece8fb";
+        e.currentTarget.style.background = "#fff";
       }}
     >
       <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
@@ -44,11 +49,11 @@ function SkillCard({ icon, title, description, path }) {
 
 function LearnPage() {
   return (
-    <div>
+    <div style={{ maxWidth: 980, margin: "0 auto" }}>
       <h1 style={{ marginBottom: 10 }}>Learn English</h1>
 
       <p style={{ marginBottom: 30, color: "#666" }}>
-        Choose a skill to start learning.
+        Pick a skill and keep your progress moving every day.
       </p>
 
       <div

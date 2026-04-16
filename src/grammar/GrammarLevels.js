@@ -32,9 +32,9 @@ function GrammarLevels() {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "680px", margin: "0 auto" }}>
       <h2>📘 Grammar</h2>
-      <p style={{ color: "#666" }}>
+      <p style={{ color: "#5c6370" }}>
         Select your grammar level
       </p>
 
@@ -45,12 +45,16 @@ function GrammarLevels() {
           <div
             key={level}
             style={{
-              marginBottom: "14px",
-              padding: "14px",
-              borderRadius: "10px",
+              marginBottom: "12px",
+              padding: "16px",
+              borderRadius: "12px",
               backgroundColor: unlocked
-                ? "#e5e9ff"
-                : "#eee",
+                ? "#f3efff"
+                : "#f1f3f6",
+              border: unlocked
+                ? "1px solid #d8cbff"
+                : "1px solid #e1e5ea",
+              boxShadow: "0 4px 12px rgba(45,37,89,0.06)",
               opacity: unlocked ? 1 : 0.6,
             }}
           >

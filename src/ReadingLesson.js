@@ -416,7 +416,7 @@ if (cache[definition]) {
 
       <h2 style={{ marginBottom: 20 }}>{lesson.title}</h2>
 
-      <button onClick={handleAIFeedback} disabled={!submitted}>
+      <button onClick={handleAIFeedback} disabled={!submitted} style={aiBtnStyle(submitted)}>
         🤖 AI Lesson Feedback
       </button>
 
@@ -428,8 +428,8 @@ if (cache[definition]) {
             padding: "10px 12px",
             borderRadius: 10,
             background: "#eef6ff",
-            border: "1px solid #cfe2ff",
-            color: "#0b3d91",
+            border: "1px solid #d8cbff",
+            color: "#3f2e95",
             fontSize: 14,
             lineHeight: 1.5,
           }}
@@ -449,7 +449,7 @@ if (cache[definition]) {
               marginLeft: 10,
               border: "none",
               background: "transparent",
-              color: "#0b3d91",
+              color: "#6c4de6",
               textDecoration: "underline",
               cursor: "pointer",
               fontWeight: 600,
@@ -466,8 +466,9 @@ if (cache[definition]) {
     margin: "40px auto",
     padding: "52px 46px",
     background: "#ffffff",
+    border: "1px solid #ece8fb",
     borderRadius: 18,
-    boxShadow: "0 12px 42px rgba(0,0,0,0.06)",
+    boxShadow: "0 12px 32px rgba(45,37,89,0.08)",
     fontFamily: "Times New Roman, serif",
 fontSize: 16,
 lineHeight: 1.8,
@@ -554,7 +555,7 @@ fontWeight: isActive ? "600" : "normal",
         const isMCQ = Array.isArray(q.options);
 
         return (
-          <div key={i} style={{ marginBottom: 20 }}>
+          <div key={i} style={questionCardStyle}>
             <strong>{getQuestionText(q)}</strong>
 
             {isMCQ &&
@@ -665,6 +666,7 @@ fontWeight: isActive ? "600" : "normal",
           <div
             style={{
               background: "#fff",
+              border: "1px solid #ece8fb",
               padding: 28,
               borderRadius: 16,
               width: 420,
@@ -732,6 +734,26 @@ fontWeight: isActive ? "600" : "normal",
     </div>
   );
 }
+
+const aiBtnStyle = (enabled) => ({
+  marginBottom: 12,
+  background: enabled ? "#6c4de6" : "#a7adba",
+  color: "#fff",
+  border: enabled ? "1px solid #583bc4" : "1px solid #9aa1ae",
+  borderRadius: 10,
+  padding: "10px 16px",
+  fontWeight: 700,
+  cursor: enabled ? "pointer" : "not-allowed",
+});
+
+const questionCardStyle = {
+  marginBottom: 14,
+  background: "#fff",
+  border: "1px solid #ece8fb",
+  borderRadius: 12,
+  padding: 14,
+  boxShadow: "0 6px 16px rgba(45,37,89,0.06)",
+};
 
 export default ReadingLesson;
 

@@ -22,7 +22,7 @@ function ProgressBar({ completed, total }) {
       <div
         style={{
           height: "6px",
-          backgroundColor: "#eee",
+          backgroundColor: "#ede7ff",
           borderRadius: "4px",
           overflow: "hidden",
         }}
@@ -31,12 +31,12 @@ function ProgressBar({ completed, total }) {
           style={{
             width: `${percent}%`,
             height: "100%",
-            backgroundColor: "#4A90E2",
+            background: "linear-gradient(90deg, #6c4de6, #58cc6a)",
             transition: "width 0.3s ease",
           }}
         />
       </div>
-      <small style={{ color: "#555" }}>
+      <small style={{ color: "#5c6370" }}>
         {percent}% completed
       </small>
     </div>
@@ -113,7 +113,7 @@ function WritingLevel() {
   };
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "960px", margin: "0 auto" }}>
       <h3>✍️ Writing – Level {level}</h3>
 
       <ProgressBar
@@ -125,8 +125,8 @@ function WritingLevel() {
       {levelCompleted && (
         <div
           style={{
-            backgroundColor: "#e8f5e9",
-            border: "1px solid #c8e6c9",
+            backgroundColor: "#f3fdf4",
+            border: "1px solid #b9eec2",
             borderRadius: "10px",
             padding: "16px",
             marginBottom: "20px",
@@ -163,9 +163,9 @@ function WritingLevel() {
       {/* ===== Lessons Grid ===== */}
       <div
         style={{
-          display: "flex",
-          gap: "15px",
-          flexWrap: "wrap",
+          display: "grid",
+          gap: "12px",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
         }}
       >
         {lessons.map((lesson, index) => {
@@ -179,14 +179,19 @@ function WritingLevel() {
             <div
               key={lesson}
               style={{
-                width: "180px",
                 padding: "12px",
-                borderRadius: "10px",
+                borderRadius: "12px",
                 backgroundColor: isCompleted
-                  ? "#d4edda"
+                  ? "#eefbf0"
                   : unlocked
-                  ? "#e5e9ff"
-                  : "#eee",
+                  ? "#f3efff"
+                  : "#f1f3f6",
+                border: isCompleted
+                  ? "1px solid #b9eec2"
+                  : unlocked
+                  ? "1px solid #d8cbff"
+                  : "1px solid #e1e5ea",
+                boxShadow: "0 4px 12px rgba(45,37,89,0.06)",
                 opacity: unlocked ? 1 : 0.6,
               }}
             >

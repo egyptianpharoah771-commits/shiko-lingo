@@ -69,13 +69,13 @@ function ListeningLevel() {
   }, [level]);
 
   if (!canAccess) return <LockedFeature title={`Listening Level ${level}`} />;
-  if (loading) return <p style={{textAlign: "center", padding: "40px"}}>Loading Lessons...</p>;
+  if (loading) return <p style={{ textAlign: "center", padding: "40px" }}>Loading Lessons...</p>;
 
   const completedLessons = JSON.parse(localStorage.getItem(STORAGE_KEYS.LISTENING_COMPLETED)) || [];
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "20px" }}>
-      <h2 style={{marginBottom: "20px"}}>🎧 Level {level} Lessons</h2>
+    <div style={{ maxWidth: "760px", margin: "0 auto", padding: "20px" }}>
+      <h2 style={{ marginBottom: "20px" }}>🎧 Level {level} Lessons</h2>
 
       {lessons.length === 0 && <p>No lessons found.</p>}
 
@@ -89,7 +89,7 @@ function ListeningLevel() {
               <h4 style={{margin: "0 0 5px"}}>
                 Lesson {index + 1}: {lesson.title}
               </h4>
-              <p style={{margin: 0, color: "#666", fontSize: "0.9rem"}}>
+              <p style={{ margin: 0, color: "#5c6370", fontSize: "0.9rem" }}>
                 {lesson.description}
               </p>
             </div>
@@ -112,22 +112,23 @@ const cardStyle = {
   backgroundColor: "#fff",
   padding: "20px",
   borderRadius: "15px",
-  marginBottom: "15px",
+  marginBottom: "12px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+  border: "1px solid #ece8fb",
+  boxShadow: "0 6px 16px rgba(45,37,89,0.08)",
 };
 
 const btnStyle = (done) => ({
-  backgroundColor: done ? "#6ab04c" : "#4A90E2",
+  backgroundColor: done ? "#58cc6a" : "#6c4de6",
   color: "white",
-  border: "none",
+  border: done ? "1px solid #48b457" : "1px solid #583bc4",
   padding: "10px 20px",
-  borderRadius: "8px",
+  borderRadius: "10px",
   fontWeight: "bold",
   cursor: "pointer",
-  marginLeft: "10px"
+  marginLeft: "10px",
 });
 
 export default ListeningLevel;

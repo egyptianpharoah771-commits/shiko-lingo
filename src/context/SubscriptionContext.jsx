@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./AuthContext";
 
 const SubscriptionContext = createContext(null);
+const DEV_MODE = process.env.NODE_ENV === "development";
 
 export const SubscriptionProvider = ({ children }) => {
   const { user, loading: authLoading } = useAuth();
@@ -27,11 +28,10 @@ export const SubscriptionProvider = ({ children }) => {
       if (authLoading) return;
 
       /* =========================
-         🔓 DEV BYPASS
-         Any browser that is NOT Pi Browser
-         gets full access for testing
+         🔓 DEV BYPASS ONLY
+         Never auto-unlock in production.
       ========================= */
-      if (!isPiBrowser) {
+      if (DEV_MODE && !isPiBrowser) {
         if (mounted) {
           setSubscription({
             uid: "dev-user",
@@ -46,7 +46,7 @@ export const SubscriptionProvider = ({ children }) => {
 
       /* =========================
          Production logic
-         (Pi Browser only)
+         (Pi and non-Pi users must have real subscription)
       ========================= */
       if (!user?.id) {
         if (mounted) {

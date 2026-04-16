@@ -262,7 +262,7 @@ export default function VocabularyUnitPage() {
                     border: "none",
                     background: "transparent",
                     cursor: "pointer",
-                    color: "#4A90E2",
+                    color: "#6c4de6",
                     fontWeight: 600,
                   }}
                   title="Pronounce example"
@@ -277,7 +277,16 @@ export default function VocabularyUnitPage() {
 
       {/* Question */}
       {question && (
-        <div style={{ marginTop: 30 }}>
+        <div
+          style={{
+            marginTop: 24,
+            background: "#fff",
+            border: "1px solid #ece8fb",
+            borderRadius: 16,
+            boxShadow: "0 8px 20px rgba(45,37,89,0.08)",
+            padding: 16,
+          }}
+        >
           <div className="vocab-question-text">
             {question.question}
           </div>
@@ -325,7 +334,7 @@ export default function VocabularyUnitPage() {
             <button
               className="vocab-btn primary"
               onClick={handleAIFeedback}
-              style={{ marginLeft: 8 }}
+              style={{ marginTop: 10 }}
             >
               🤖 AI Unit Feedback
             </button>

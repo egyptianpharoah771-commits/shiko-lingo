@@ -112,76 +112,86 @@ export default function CoachPage() {
   return (
     <div
       style={{
-        maxWidth: 600,
+        maxWidth: 680,
         margin: "0 auto",
-        textAlign: "center",
-        color: "#212529",
+        color: "#1f2430",
         minHeight: 200,
       }}
     >
-      <h2>🧠 Your AI Coach</h2>
-
-      <h3>{coach.message}</h3>
-
-      <p>Accuracy: {coach.accuracy}%</p>
-      <p>Weak Words: {coach.weakCount}</p>
-
-      <button
+      <div
         style={{
-          padding: "12px 20px",
-          marginTop: "20px",
-          background: "#4A90E2",
-          color: "#fff",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer"
+          background: "#fff",
+          border: "1px solid #ece8fb",
+          borderRadius: 16,
+          boxShadow: "0 8px 20px rgba(45,37,89,0.08)",
+          padding: 22,
+          textAlign: "center",
         }}
-        onClick={handleAction}
       >
-        {coach.action}
-      </button>
+        <h2 style={{ marginTop: 0 }}>🧠 Your AI Coach</h2>
+        <h3>{coach.message}</h3>
 
-      <div style={{ marginTop: 20 }}>
-        <p style={{ marginBottom: 10 }}>Choose your training level:</p>
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-          {LEVELS.map((item) => (
+        <p>Accuracy: {coach.accuracy}%</p>
+        <p>Weak Words: {coach.weakCount}</p>
+
+        <button
+          style={{
+            padding: "12px 20px",
+            marginTop: "20px",
+            background: "#6c4de6",
+            color: "#fff",
+            border: "1px solid #583bc4",
+            borderRadius: "10px",
+            cursor: "pointer",
+          }}
+          onClick={handleAction}
+        >
+          {coach.action}
+        </button>
+
+        <div style={{ marginTop: 20 }}>
+          <p style={{ marginBottom: 10, color: "#5c6370" }}>Choose your training level:</p>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            {LEVELS.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => navigate(`/coach/session/${item}`)}
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid #d8cbff",
+                  borderRadius: 999,
+                  background: "#f3efff",
+                  color: "#3f2e95",
+                  cursor: "pointer",
+                }}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {coach.mode === "vocab" && (
+          <p style={{ marginTop: 20, fontSize: 14, color: "#6c757d" }}>
             <button
-              key={item}
               type="button"
-              onClick={() => navigate(`/coach/session/${item}`)}
+              onClick={() => navigate("/coach/session/A1")}
               style={{
-                padding: "8px 12px",
-                border: "1px solid #d8d8d8",
-                borderRadius: 8,
-                background: "#fff",
+                background: "none",
+                border: "none",
+                color: "#6c4de6",
                 cursor: "pointer",
+                textDecoration: "underline",
+                fontSize: "inherit",
+                padding: 0,
               }}
             >
-              {item}
+              Try a Coach session anyway (A1)
             </button>
-          ))}
-        </div>
+          </p>
+        )}
       </div>
-
-      {coach.mode === "vocab" && (
-        <p style={{ marginTop: 20, fontSize: 14, color: "#6c757d" }}>
-          <button
-            type="button"
-            onClick={() => navigate("/coach/session/A1")}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#4A90E2",
-              cursor: "pointer",
-              textDecoration: "underline",
-              fontSize: "inherit",
-              padding: 0,
-            }}
-          >
-            Try a Coach session anyway (A1)
-          </button>
-        </p>
-      )}
     </div>
   );
 }
