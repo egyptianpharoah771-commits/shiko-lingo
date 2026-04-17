@@ -61,9 +61,18 @@ export default async function handler(req) {
 
     if (!piRes.ok) {
       console.error("PI APPROVE API ERROR:", piRes.status, data);
+      const piMessage =
+        data?.message || data?.error || data?.error_message ||
+        (typeof data === "string" ? data : JSON.stringify(data));
       return new Response(
-        JSON.stringify({ success: false, error: "PI_APPROVE_FAILED", status: piRes.status, details: data }),
-        { status: piRes.status, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: false,
+          error: "PI_APPROVE_FAILED",
+          pi_status: piRes.status,
+          pi_message: piMessage,
+          details: data,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
       );
     }
 

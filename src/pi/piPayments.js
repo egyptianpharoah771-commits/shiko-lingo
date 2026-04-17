@@ -50,12 +50,15 @@ async function postApproveWithRetry(paymentId) {
       }
 
       if (!res.ok || !parsed?.success) {
+        const detail =
+          parsed?.pi_message ||
+          parsed?.message ||
+          parsed?.error ||
+          raw.slice(0, 300);
+        const piStatus = parsed?.pi_status ? ` (Pi HTTP ${parsed.pi_status})` : "";
         return {
           ok: false,
-          err: new Error(
-            "Approve failed: " +
-              (parsed?.message || parsed?.error || raw.slice(0, 300))
-          ),
+          err: new Error(`Approve failed${piStatus}: ${detail}`),
         };
       }
 
