@@ -54,9 +54,13 @@ export function isPiSDKLoaded() {
 
 /**
  * Pi Browser with SDK ready — use for Pi.authenticate, Pi.init, payments.
+ * On production domain: if window.Pi is defined, we trust we're in a Pi shell
+ * (Pi SDK only works when served from a registered Pi app domain).
  */
 export function isPiAppContext() {
-  return isPiProductShell() && isPiSDKLoaded();
+  if (!isPiSDKLoaded()) return false;
+  if (isPiProductShell()) return true;
+  return isProductionDomain();
 }
 
 /** True when running on the production domain (not localhost). */
