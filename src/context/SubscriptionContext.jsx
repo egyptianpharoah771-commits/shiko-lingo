@@ -60,65 +60,23 @@ export const SubscriptionProvider = ({ children }) => {
       try {
         if (mounted) setLoading(true);
 
-        /* Step 1: resolve pi_uid → profile UUID */
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("pi_uid", user.id)
+        /* Use SECURITY DEFINER RPC to bypass RLS — Pi users have no Supabase auth session */
+        const { data, error } = await supabase
+          .rpc("get_subscription_by_pi_uid", { p_pi_uid: user.id })
           .maybeSingle();
-
-        if (!mounted) return;
-
-        if (profileError) {
-          console.error("Profile fetch error:", profileError);
-          setSubscription(null);
-          setIsActive(false);
-          setLoading(false);
-          return;
-        }
-
-        if (!profile?.id) {
-          /* No profile yet — user hasn't paid */
-          setSubscription(null);
-          setIsActive(false);
-          setLoading(false);
-          return;
-        }
-
-        /* Step 2: fetch subscription by profile UUID (user_id column) */
-        const query = supabase
-          .from("subscriptions")
-          .select("*")
-          .eq("user_id", profile.id)
-          .order("expires_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        const timeoutMs = 15000;
-        const { data, error } = await Promise.race([
-          query,
-          new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Subscription request timed out")),
-              timeoutMs
-            )
-          ),
-        ]);
 
         if (!mounted) return;
 
         if (error) {
-          console.error("Subscription fetch error:", error);
+          console.error("Subscription RPC error:", error);
           setSubscription(null);
           setIsActive(false);
           return;
         }
 
         if (data) {
-          const now = new Date();
-          const expires = new Date(data.expires_at);
           setSubscription(data);
-          setIsActive(expires > now);
+          setIsActive(data.is_active === true);
         } else {
           setSubscription(null);
           setIsActive(false);
