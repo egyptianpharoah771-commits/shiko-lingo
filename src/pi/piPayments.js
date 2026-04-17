@@ -13,7 +13,7 @@ async function postApproveWithRetry(paymentId) {
   const url = `${apiOrigin()}${PI_SERVER_PATH}`;
   let lastNetworkErr = null;
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -21,7 +21,7 @@ async function postApproveWithRetry(paymentId) {
         body: JSON.stringify({ step: "approve", paymentId }),
         signal:
           typeof AbortSignal !== "undefined" && AbortSignal.timeout
-            ? AbortSignal.timeout(20000)
+            ? AbortSignal.timeout(12000)
             : undefined,
       });
 

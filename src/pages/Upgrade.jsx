@@ -1,11 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { createPiPayment } from "../pi/piPayments";
 import { isPiAppContext } from "../lib/initPi";
 
+/** Pre-warm pi-server so cold start doesn't eat into Pi's 37-second payment timer. */
+function usePrewarmPiServer() {
+  const done = useRef(false);
+  useEffect(() => {
+    if (done.current) return;
+    done.current = true;
+    fetch("/api/pi-server", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ step: "ping" }),
+    }).catch(() => {});
+  }, []);
+}
+
 function Upgrade() {
+  usePrewarmPiServer();
+
   const { user, loginWithPi } = useAuth();
   const { isActive } = useSubscription();
   const navigate = useNavigate();

@@ -1,8 +1,9 @@
 /**
  * Single serverless entry for Pi approve + complete (one cold pool on Vercel).
  * Client: POST { step: "approve", paymentId } | { step: "complete", paymentId, txid }
+ *
+ * Supabase is loaded lazily (only for "complete") to keep cold-start fast for "approve".
  */
-import { createClient } from "@supabase/supabase-js";
 
 const PI_API_BASE = "https://api.minepi.com/v2";
 
@@ -16,11 +17,12 @@ function piHeaders() {
 }
 
 let supabaseSingleton = null;
-function getSupabase() {
+async function getSupabase() {
   if (supabaseSingleton) return supabaseSingleton;
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return null;
   }
+  const { createClient } = await import("@supabase/supabase-js");
   supabaseSingleton = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -117,7 +119,7 @@ async function handleComplete(res, paymentId, txid) {
     });
   }
 
-  const supabase = getSupabase();
+  const supabase = await getSupabase();
   if (!supabase) {
     return res.status(500).json({
       success: false,
@@ -214,6 +216,11 @@ export default async function handler(req, res) {
   const body = typeof req.body === "object" && req.body !== null ? req.body : {};
   const step = body.step || body.intent;
 
+  /* Pre-warm ping — client fires this when page loads to avoid cold-start during payment */
+  if (step === "ping") {
+    return res.status(200).json({ ok: true, warm: true });
+  }
+
   if (step === "approve") {
     return handleApprove(res, body.paymentId);
   }
@@ -224,6 +231,6 @@ export default async function handler(req, res) {
   return res.status(400).json({
     success: false,
     error: "INVALID_STEP",
-    message: 'Expected body.step "approve" or "complete".',
+    message: 'Expected body.step "approve", "complete", or "ping".',
   });
 }
