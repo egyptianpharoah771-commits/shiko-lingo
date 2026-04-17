@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -85,6 +85,24 @@ function GrammarUnitWrapper() {
 
   return (
     <GrammarUnitPage key={`${level}-${unit}-${location.key}`} />
+  );
+}
+
+function HeaderBrandLogo() {
+  const [src, setSrc] = useState("/shiko-logo.png");
+  return (
+    <img
+      src={src}
+      alt=""
+      width={36}
+      height={36}
+      className="app-header-logo"
+      loading="eager"
+      decoding="async"
+      onError={() => {
+        if (src !== "/logo192.png") setSrc("/logo192.png");
+      }}
+    />
   );
 }
 
@@ -175,7 +193,10 @@ function AppLayout({ children }) {
       {!hideLayout && (
         <>
           <header style={headerStyle}>
-            <strong style={{ fontSize: 20 }}>Shiko Lingo</strong>
+            <div className="app-header-brand">
+              <HeaderBrandLogo />
+              <strong className="app-header-title">Shiko Lingo</strong>
+            </div>
           </header>
 
           <nav className="navbar">
@@ -522,7 +543,7 @@ function App() {
 
 const headerStyle = {
   backgroundColor: "#ffffff",
-  padding: 15,
+  padding: "12px 16px",
   borderBottom: "1px solid #e7e0fb",
   position: "sticky",
   top: 0,
