@@ -175,6 +175,17 @@ async function handleComplete(res, paymentId, txid) {
       });
     }
 
+    /* Ensure a profile row exists for this uid.
+       Pi gives each app a different uid per user (mainnet uid ≠ testnet uid),
+       so we auto-create the profile if it doesn't exist yet. */
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .upsert({ pi_uid: userUid }, { onConflict: "pi_uid", ignoreDuplicates: true });
+    if (profileError) {
+      console.warn("PROFILE UPSERT WARN:", profileError);
+      /* Non-fatal: the RPC will raise USER_NOT_FOUND if profile still missing */
+    }
+
     const { error: rpcError } = await supabase.rpc("process_payment", {
       p_payment_id: paymentId,
       p_uid: userUid,
@@ -186,6 +197,8 @@ async function handleComplete(res, paymentId, txid) {
       return res.status(500).json({
         success: false,
         error: "RPC_PROCESS_FAILED",
+        rpc_message: rpcError?.message || String(rpcError),
+        rpc_code: rpcError?.code,
       });
     }
 

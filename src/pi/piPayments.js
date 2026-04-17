@@ -171,11 +171,14 @@ export async function createPiPayment({ amount, memo, uid }) {
               }
 
               if (!res.ok || !data?.success) {
+                const detail =
+                  data?.rpc_message ||
+                  data?.message ||
+                  data?.error ||
+                  raw.slice(0, 300);
+                const code = data?.rpc_code ? ` [${data.rpc_code}]` : "";
                 return safeReject(
-                  new Error(
-                    "Complete failed: " +
-                      (data?.message || data?.error || raw.slice(0, 300))
-                  )
+                  new Error(`Complete failed${code}: ${detail}`)
                 );
               }
 
