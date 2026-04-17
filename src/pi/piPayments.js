@@ -7,16 +7,22 @@ function apiOrigin() {
   return window.location.origin;
 }
 
+const PI_SERVER_PATH = "/api/pi-server";
+
 async function postApproveWithRetry(paymentId) {
-  const url = `${apiOrigin()}/api/pi/approve`;
+  const url = `${apiOrigin()}${PI_SERVER_PATH}`;
   let lastNetworkErr = null;
 
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentId }),
+        body: JSON.stringify({ step: "approve", paymentId }),
+        signal:
+          typeof AbortSignal !== "undefined" && AbortSignal.timeout
+            ? AbortSignal.timeout(20000)
+            : undefined,
       });
 
       const raw = await res.text();
@@ -36,8 +42,8 @@ async function postApproveWithRetry(paymentId) {
       const retryable =
         res.status === 502 || res.status === 503 || res.status === 504;
 
-      if ((!res.ok || !parsed?.success) && retryable && attempt === 0) {
-        await new Promise((r) => setTimeout(r, 450));
+      if ((!res.ok || !parsed?.success) && retryable && attempt < 2) {
+        await new Promise((r) => setTimeout(r, 400 + attempt * 500));
         continue;
       }
 
@@ -54,8 +60,8 @@ async function postApproveWithRetry(paymentId) {
       return { ok: true };
     } catch (e) {
       lastNetworkErr = e;
-      if (attempt === 0) {
-        await new Promise((r) => setTimeout(r, 450));
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, 400 + attempt * 500));
         continue;
       }
     }
@@ -65,7 +71,9 @@ async function postApproveWithRetry(paymentId) {
     ok: false,
     err:
       lastNetworkErr ||
-      new Error("Approve failed: could not reach your server (/api/pi/approve)."),
+      new Error(
+        `Approve failed: could not reach your server (${PI_SERVER_PATH}).`
+      ),
   };
 }
 
@@ -130,14 +138,18 @@ export async function createPiPayment({ amount, memo, uid }) {
           ========================= */
           onReadyForServerCompletion: async (paymentId, txid) => {
             try {
-              const res = await fetch(`${apiOrigin()}/api/pi/complete`, {
+              const res = await fetch(`${apiOrigin()}${PI_SERVER_PATH}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                  step: "complete",
                   paymentId,
                   txid,
-                  uid,
                 }),
+                signal:
+                  typeof AbortSignal !== "undefined" && AbortSignal.timeout
+                    ? AbortSignal.timeout(25000)
+                    : undefined,
               });
 
               const raw = await res.text();
