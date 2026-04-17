@@ -3,7 +3,7 @@
  * ------------------------------------------
  * Minimal, deterministic, defensive.
  *
- * - No incomplete payment handlers
+ * - Pi.authenticate includes required incomplete-payment callback when using payments scope
  * - No side effects
  * - No external calls
  * - No race conditions
@@ -34,7 +34,12 @@ export async function authenticateWithPi() {
     /* ==============================
        3️⃣ Minimal authenticate call
     ============================== */
-    const auth = await window.Pi.authenticate(scopes);
+    const auth = await window.Pi.authenticate(scopes, (incompletePayment) => {
+      console.warn(
+        "[Shiko Lingo] Incomplete Pi payment:",
+        incompletePayment?.identifier
+      );
+    });
 
     if (!auth || !auth.user || !auth.user.uid) {
       throw new Error("Invalid Pi authentication response");

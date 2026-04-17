@@ -1,4 +1,5 @@
-const PI_API_BASE = "https://api.minepi.com";
+/* Keep in sync with api/pi/complete.js (Platform API v2). */
+const PI_API_BASE = "https://api.minepi.com/v2";
 
 function piHeaders() {
   return {
@@ -10,7 +11,7 @@ function piHeaders() {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "METHOD_NOT_ALLOWED" });
+    return res.status(405).json({ success: false, error: "METHOD_NOT_ALLOWED" });
   }
 
   if (!process.env.PI_API_KEY) {
@@ -25,17 +26,21 @@ export default async function handler(req, res) {
   const { paymentId } = req.body || {};
 
   if (!paymentId) {
-    return res.status(400).json({ error: "PAYMENT_ID_REQUIRED" });
+    return res.status(400).json({
+      success: false,
+      error: "PAYMENT_ID_REQUIRED",
+    });
   }
 
   try {
     console.log("Approving Pi payment:", paymentId);
 
     const response = await fetch(
-      `${PI_API_BASE}/v2/payments/${paymentId}/approve`,
+      `${PI_API_BASE}/payments/${paymentId}/approve`,
       {
         method: "POST",
         headers: piHeaders(),
+        body: "{}",
       }
     );
 

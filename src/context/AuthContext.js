@@ -122,7 +122,16 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
 
-      const auth = await window.Pi.authenticate(["username", "payments"]);
+      /* Pi SDK: second arg required when using `payments` scope (incomplete U2A handling). */
+      const auth = await window.Pi.authenticate(
+        ["username", "payments"],
+        (incompletePayment) => {
+          console.warn(
+            "[Shiko Lingo] Incomplete Pi payment from a prior session:",
+            incompletePayment?.identifier
+          );
+        }
+      );
 
       if (!auth?.user?.uid) {
         throw new Error("Invalid Pi authentication response");
