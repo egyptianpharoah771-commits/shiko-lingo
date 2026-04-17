@@ -39,10 +39,10 @@ export async function authenticateWithPi() {
       if (!pid) return;
       console.warn("[Shiko Lingo] Incomplete Pi payment found (piAuth):", pid);
       try {
-        await fetch("/api/pi-server", {
+        await fetch("/api/pi-approve", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ step: "approve", paymentId: pid }),
+          body: JSON.stringify({ paymentId: pid }),
         });
       } catch {
         /* best-effort */

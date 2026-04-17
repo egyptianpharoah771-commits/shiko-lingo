@@ -8,26 +8,11 @@ function apiOrigin() {
 }
 
 const PI_SERVER_PATH = "/api/pi-server";
-
-/**
- * Fire a no-op ping to keep the serverless function warm.
- * Called immediately before Pi.createPayment so the function
- * is already running when onReadyForServerApproval fires.
- */
-function warmPiServer() {
-  try {
-    fetch(`${apiOrigin()}${PI_SERVER_PATH}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ step: "ping" }),
-    }).catch(() => {});
-  } catch {
-    /* ignore */
-  }
-}
+const PI_APPROVE_PATH = "/api/pi-approve";
 
 async function postApproveWithRetry(paymentId) {
-  const url = `${apiOrigin()}${PI_SERVER_PATH}`;
+  /* Use the Edge Function endpoint (zero cold start) for the time-critical approve step */
+  const url = `${apiOrigin()}${PI_APPROVE_PATH}`;
   let lastNetworkErr = null;
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -35,7 +20,7 @@ async function postApproveWithRetry(paymentId) {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ step: "approve", paymentId }),
+        body: JSON.stringify({ paymentId }),
         signal:
           typeof AbortSignal !== "undefined" && AbortSignal.timeout
             ? AbortSignal.timeout(12000)
@@ -125,10 +110,6 @@ export async function createPiPayment({ amount, memo, uid }) {
       settled = true;
       reject(error instanceof Error ? error : new Error(String(error)));
     };
-
-    /* Warm up the serverless function NOW — Pi's dialog takes 2-5 s to show,
-       giving the function enough time to start before the 37-second timer begins. */
-    warmPiServer();
 
     try {
       window.Pi.createPayment(
