@@ -122,15 +122,32 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
 
-      /* Pi SDK: second arg required when using `payments` scope (incomplete U2A handling). */
+      /* Pi SDK: second arg required when using `payments` scope.
+         onIncompletePaymentFound: called when a prior payment was started but
+         not completed. We must attempt to complete or cancel it, otherwise Pi
+         will block new payments from being created. */
+      const handleIncompletePayment = async (incompletePayment) => {
+        const pid = incompletePayment?.identifier;
+        if (!pid) return;
+        console.warn("[Shiko Lingo] Incomplete Pi payment found, resuming:", pid);
+        try {
+          const res = await fetch("/api/pi-server", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ step: "approve", paymentId: pid }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!data?.success) {
+            console.warn("[Shiko Lingo] Could not resume incomplete payment:", data);
+          }
+        } catch (err) {
+          console.warn("[Shiko Lingo] Incomplete payment resume failed:", err);
+        }
+      };
+
       const auth = await window.Pi.authenticate(
         ["username", "payments"],
-        (incompletePayment) => {
-          console.warn(
-            "[Shiko Lingo] Incomplete Pi payment from a prior session:",
-            incompletePayment?.identifier
-          );
-        }
+        handleIncompletePayment
       );
 
       if (!auth?.user?.uid) {

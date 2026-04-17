@@ -34,11 +34,19 @@ export async function authenticateWithPi() {
     /* ==============================
        3️⃣ Minimal authenticate call
     ============================== */
-    const auth = await window.Pi.authenticate(scopes, (incompletePayment) => {
-      console.warn(
-        "[Shiko Lingo] Incomplete Pi payment:",
-        incompletePayment?.identifier
-      );
+    const auth = await window.Pi.authenticate(scopes, async (incompletePayment) => {
+      const pid = incompletePayment?.identifier;
+      if (!pid) return;
+      console.warn("[Shiko Lingo] Incomplete Pi payment found (piAuth):", pid);
+      try {
+        await fetch("/api/pi-server", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ step: "approve", paymentId: pid }),
+        });
+      } catch {
+        /* best-effort */
+      }
     });
 
     if (!auth || !auth.user || !auth.user.uid) {
