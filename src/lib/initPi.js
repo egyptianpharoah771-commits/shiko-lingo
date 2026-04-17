@@ -32,7 +32,10 @@ export function isPiEmbeddedTrusted() {
       ref.includes("minepi.com") ||
       ref.includes("develop.pi") ||
       ref.includes("socialchain.app") ||
-      ref.includes("pi-apps")
+      ref.includes("pi-apps") ||
+      ref.includes("pinet.com") ||
+      ref.includes("wallet.pi") ||
+      ref === "" /* some Pi shells send no referrer */
     );
   } catch {
     return false;
@@ -56,13 +59,23 @@ export function isPiAppContext() {
   return isPiProductShell() && isPiSDKLoaded();
 }
 
+/** True when running on the production domain (not localhost). */
+function isProductionDomain() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  return host !== "localhost" && host !== "127.0.0.1";
+}
+
 /**
  * Wait for / inject Pi SDK once (safe for iframe checklist flows).
+ * On production, we always attempt to load — Pi Browser variants and PiNet
+ * iframes may not pass the user-agent or referrer checks reliably.
  */
 export function ensurePiSdkReady() {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (typeof window.Pi !== "undefined") return Promise.resolve(true);
-  if (!isPiProductShell()) return Promise.resolve(false);
+  /* On production domain always attempt to load; on localhost require Pi shell. */
+  if (!isPiProductShell() && !isProductionDomain()) return Promise.resolve(false);
 
   const existing = document.querySelector(
     'script[src*="sdk.minepi.com/pi-sdk"], script[src*="minepi.com/pi-sdk"]'
