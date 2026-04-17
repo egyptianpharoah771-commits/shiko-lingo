@@ -60,10 +60,36 @@ export const SubscriptionProvider = ({ children }) => {
       try {
         if (mounted) setLoading(true);
 
+        /* Step 1: resolve pi_uid → profile UUID */
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("pi_uid", user.id)
+          .maybeSingle();
+
+        if (!mounted) return;
+
+        if (profileError) {
+          console.error("Profile fetch error:", profileError);
+          setSubscription(null);
+          setIsActive(false);
+          setLoading(false);
+          return;
+        }
+
+        if (!profile?.id) {
+          /* No profile yet — user hasn't paid */
+          setSubscription(null);
+          setIsActive(false);
+          setLoading(false);
+          return;
+        }
+
+        /* Step 2: fetch subscription by profile UUID (user_id column) */
         const query = supabase
           .from("subscriptions")
           .select("*")
-          .eq("uid", user.id)
+          .eq("user_id", profile.id)
           .order("expires_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -91,7 +117,6 @@ export const SubscriptionProvider = ({ children }) => {
         if (data) {
           const now = new Date();
           const expires = new Date(data.expires_at);
-
           setSubscription(data);
           setIsActive(expires > now);
         } else {
