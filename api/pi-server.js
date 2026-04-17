@@ -178,13 +178,10 @@ async function handleComplete(res, paymentId, txid) {
     /* Ensure a profile row exists for this uid.
        Pi gives each app a different uid per user (mainnet uid ≠ testnet uid),
        so we auto-create the profile if it doesn't exist yet.
-       We must supply id (uuid) because the column has no default. */
+       profiles.id now has gen_random_uuid() as default — no need to supply it. */
     const { error: profileError } = await supabase
       .from("profiles")
-      .upsert(
-        { id: crypto.randomUUID(), pi_uid: userUid },
-        { onConflict: "pi_uid", ignoreDuplicates: true }
-      );
+      .upsert({ pi_uid: userUid }, { onConflict: "pi_uid", ignoreDuplicates: true });
     if (profileError) {
       console.error("PROFILE UPSERT ERROR:", profileError);
       return res.status(500).json({
