@@ -8,7 +8,8 @@ import { supabase } from "../lib/supabaseClient";
 
 /* ===== Mini Progress ===== */
 function MiniProgress({ label, value = 0, total = 0 }) {
-  const percent = total === 0 ? 0 : Math.round((value / total) * 100);
+  const rawPercent = total === 0 ? 0 : Math.round((value / total) * 100);
+  const percent = Math.min(100, Math.max(0, rawPercent));
 
   return (
     <div style={skillItem}>
@@ -18,7 +19,14 @@ function MiniProgress({ label, value = 0, total = 0 }) {
           {value} / {total}
         </small>
       </div>
-      <div style={{ height: 6, background: "#eee", borderRadius: 4 }}>
+      <div
+        style={{
+          height: 6,
+          background: "#eee",
+          borderRadius: 4,
+          overflow: "hidden",
+        }}
+      >
         <div
           style={{
             width: `${percent}%`,

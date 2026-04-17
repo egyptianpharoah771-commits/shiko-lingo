@@ -17,8 +17,9 @@ import STORAGE_KEYS from "./utils/storageKeys";
 
 /* ===== Progress Bar ===== */
 function ProgressBar({ completed, total }) {
-  const percent =
+  const rawPercent =
     total === 0 ? 0 : Math.round((completed / total) * 100);
+  const percent = Math.min(100, Math.max(0, rawPercent));
 
   return (
     <div style={{ margin: "12px 0 20px" }}>
