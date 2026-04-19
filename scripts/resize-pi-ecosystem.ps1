@@ -1,5 +1,5 @@
 <#
-  Resize images for Pi Developer Portal → Ecosystem assets.
+  Resize images for Pi Developer Portal -> Ecosystem assets.
 
   Requirements: Windows PowerShell + .NET (default on Windows 10).
 
@@ -7,10 +7,10 @@
     .\scripts\resize-pi-ecosystem.ps1 -IntroPath ".\ecosystem-source\my-logo.png" -PreviewPath ".\ecosystem-source\my-screenshot.png"
 
   Output (creates folder ecosystem-output):
-    pi-intro-400.jpg       — square, min 400×400 (exact 400×400), ≤ ~950KB target
-    pi-preview-750x1500.jpg — portrait min 750×1500 (exact 750×1500), ≤ ~950KB target
+    pi-intro-400.jpg        - square 400x400 (exact), aim under 1MB
+    pi-preview-750x1500.jpg - portrait 750x1500 (exact), aim under 1MB
 
-  If output > 1MB, lower JPEG quality in the script ($jpegQuality).
+  If output > 1MB, lower JPEG quality: -JpegQuality 78
 #>
 
 param(
@@ -87,7 +87,8 @@ try {
 
   foreach ($p in @($introOut, $previewOut)) {
     $len = (Get-Item $p).Length
-    Write-Host ("Size: {0:N2} MB — {1}" -f ($len / 1MB), (Split-Path $p -Leaf))
+    $name = Split-Path $p -Leaf
+    Write-Host ("Size: {0:N2} MB - {1}" -f ($len / 1MB), $name)
     if ($len -gt 1MB) {
       Write-Warning "File exceeds 1MB. Re-run with lower quality, e.g. -JpegQuality 78"
     }
