@@ -128,12 +128,44 @@ export default function VocabularyUnitPage() {
     const text = String(exampleText || "").trim();
     if (!text) return;
 
-    if (!window?.speechSynthesis) return;
+    /* Long URLs can fail; TTS proxy is enough for a sentence. */
+    const safeText = text.length > 450 ? `${text.slice(0, 450)}…` : text;
 
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = "en-US";
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utter);
+    const trySpeechSynth = () => {
+      if (!window?.speechSynthesis) return false;
+      try {
+        const utter = new SpeechSynthesisUtterance(safeText);
+        utter.lang = "en-US";
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    const isLocal =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1");
+
+    /* Pi Browser / many WebViews: no Web Speech API — use server TTS proxy (same as Reading). */
+    if (isLocal) {
+      if (!trySpeechSynth()) {
+        const audio = new Audio(
+          `/api/tts?text=${encodeURIComponent(safeText)}`
+        );
+        audio.play().catch(() => {});
+      }
+      return;
+    }
+
+    const audio = new Audio(
+      `/api/tts?text=${encodeURIComponent(safeText)}`
+    );
+    audio.play().catch(() => {
+      trySpeechSynth();
+    });
   };
 
   /* ===== Logic ===== */
