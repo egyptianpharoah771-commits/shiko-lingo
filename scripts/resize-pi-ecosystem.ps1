@@ -1,5 +1,8 @@
 <#
-  Pi Ecosystem image resize (intro 400x400, preview 750x1500). ASCII only.
+  Pi Ecosystem image resize (intro 400x400, preview for Pi portal). ASCII only.
+
+  Pi asks previews "at least 750x1500". Default preview output is 800x1600 (same 1:2 ratio)
+  so validators do not fail on edge cases. Override with -PreviewWidth/-PreviewHeight.
 
   Give at least one of: -IntroPath, -PreviewPath (can give both).
 
@@ -22,6 +25,8 @@ param(
   [string]$PreviewPath = "",
   [string]$IntroOutFile = "pi-intro-400.jpg",
   [string]$PreviewOutFile = "pi-preview-750x1500.jpg",
+  [int]$PreviewWidth = 800,
+  [int]$PreviewHeight = 1600,
   [int]$JpegQuality = 88
 )
 
@@ -55,6 +60,11 @@ function Save-Jpeg([System.Drawing.Image]$img, [string]$outPath, [int]$quality) 
 
 function Resize-Cover([System.Drawing.Image]$src, [int]$w, [int]$h) {
   $bmp = New-Object System.Drawing.Bitmap $w, $h
+  try {
+    $bmp.SetResolution(96.0, 96.0)
+  } catch {
+    /* older .NET: ignore */
+  }
   $g = [System.Drawing.Graphics]::FromImage($bmp)
   $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
   $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
@@ -94,10 +104,19 @@ try {
   }
 
   if ($doPreview) {
+    if ($PreviewWidth -lt 750 -or $PreviewHeight -lt 1500) {
+      throw "Preview size must be at least 750x1500 (got ${PreviewWidth}x${PreviewHeight})."
+    }
     $previewSrc = New-BitmapFromFile $PreviewPath
-    $previewBmp = Resize-Cover $previewSrc 750 1500
+    $previewBmp = Resize-Cover $previewSrc $PreviewWidth $PreviewHeight
     Save-Jpeg $previewBmp $previewOut $JpegQuality
     Write-Host "OK: $previewOut"
+    $verify = New-Object System.Drawing.Bitmap $previewOut
+    try {
+      Write-Host ("Verified pixels: {0} x {1}" -f $verify.Width, $verify.Height)
+    } finally {
+      $verify.Dispose()
+    }
   }
 
   $reportPaths = @()
