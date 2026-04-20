@@ -235,10 +235,16 @@ export default function CoachSessionPage() {
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {(current.options || []).map((opt, i) => {
           let bg = "#f3f3f3";
+          let textColor = "#111";
 
           if (showAnswer) {
-            if (opt === current.correctAnswer) bg = "#4CAF50";
-            else if (opt === selected) bg = "#E53935";
+            if (opt === current.correctAnswer) {
+              bg = "#4CAF50";
+              textColor = "#fff";
+            } else if (opt === selected) {
+              bg = "#E53935";
+              textColor = "#fff";
+            }
           }
 
           return (
@@ -251,6 +257,7 @@ export default function CoachSessionPage() {
                 borderRadius: "8px",
                 cursor: "pointer",
                 background: bg,
+                color: textColor,
               }}
             >
               {opt}
