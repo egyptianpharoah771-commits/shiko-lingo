@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { isInsidePiProductFlow } from "../lib/initPi";
+import { hasPiOAuthClientId, startPiOAuthSignIn } from "../pi/piOAuth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -131,6 +132,35 @@ export default function Login() {
           <p style={{ fontSize: 13, color: "#777", marginTop: 8 }}>
             Please open <strong>Shiko Lingo</strong> from Pi Browser to sign in with Pi.
           </p>
+
+          {hasPiOAuthClientId() && (
+            <button
+              type="button"
+              disabled={piBusy}
+              style={{
+                marginTop: 20,
+                padding: "12px 24px",
+                fontWeight: 600,
+                cursor: piBusy ? "wait" : "pointer",
+                background: "#4A90E2",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+              }}
+              onClick={() => {
+                setMessage("");
+                setPiBusy(true);
+                try {
+                  startPiOAuthSignIn();
+                } catch (e) {
+                  setMessage(e?.message || "Pi sign-in is not ready.");
+                  setPiBusy(false);
+                }
+              }}
+            >
+              {piBusy ? "Connecting…" : "Sign in with Pi"}
+            </button>
+          )}
 
           {message && <p style={{ marginTop: 15 }}>{message}</p>}
         </>

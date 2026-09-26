@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { supabase } from "../lib/supabaseClient";
 import {
   ensurePiSdkReady,
@@ -64,7 +70,18 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        // 2️⃣ Outside Pi → Supabase session
+        // 2️⃣ Pi Sign-in (OAuth) session saved in this browser
+        const storedPi = localStorage.getItem("shiko_pi_user");
+        if (storedPi) {
+          try {
+            setUser(JSON.parse(storedPi));
+            return;
+          } catch {
+            localStorage.removeItem("shiko_pi_user");
+          }
+        }
+
+        // 3️⃣ Outside Pi → Supabase session
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -173,14 +190,46 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const completePiOAuthLogin = useCallback(async (accessToken) => {
+    if (DEV_MODE) {
+      const devUser = {
+        id: "dev-user-001",
+        email: "dev@shikolingo.local",
+        provider: "dev",
+      };
+      setUser(devUser);
+      return devUser;
+    }
+
+    const res = await fetch("/api/pi-oauth-me", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessToken }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data?.uid) {
+      throw new Error(data?.error || "Could not verify Pi sign-in.");
+    }
+
+    const piUser = {
+      id: data.uid,
+      username: data.username,
+      provider: "pi",
+    };
+    localStorage.setItem("shiko_pi_user", JSON.stringify(piUser));
+    setUser(piUser);
+    return piUser;
+  }, []);
+
   const logout = async () => {
     if (DEV_MODE) {
       setUser(null);
       return;
     }
 
+    localStorage.removeItem("shiko_pi_user");
+
     if (isPiProductShell()) {
-      localStorage.removeItem("shiko_pi_user");
       setUser(null);
       return;
     }
@@ -195,6 +244,7 @@ export function AuthProvider({ children }) {
         user,
         loading,
         loginWithPi,
+        completePiOAuthLogin,
         logout,
         isPiBrowser,
       }}

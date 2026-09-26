@@ -21,6 +21,7 @@ import Upgrade from "./pages/Upgrade";
 import AssessmentPage from "./assessment/AssessmentPage";
 import LearnPage from "./pages/LearnPage";
 import Login from "./pages/Login";
+import PiSignInCallback from "./pages/PiSignInCallback";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import AdminAnnouncements from "./pages/AdminAnnouncements";
@@ -267,6 +268,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Entry />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signin/callback" element={<PiSignInCallback />} />
             <Route path="/assessment" element={<AssessmentPage />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
