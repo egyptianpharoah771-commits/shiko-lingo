@@ -14,7 +14,7 @@ export default function PiSignInCallback() {
     (async () => {
       try {
         const accessToken = readPiOAuthCallback();
-        history.replaceState(null, "", window.location.pathname);
+        window.history.replaceState(null, "", window.location.pathname);
         await completePiOAuthLogin(accessToken);
         if (!cancelled) navigate("/dashboard", { replace: true });
       } catch (err) {
