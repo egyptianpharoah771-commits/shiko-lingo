@@ -17,6 +17,15 @@
   ],
   "rewrites": [
     {
+      "source": "/validation-key.txt",
+      "has": [{ "type": "host", "value": "test.shikolingo.site" }],
+      "destination": "/validation-key-testnet.txt"
+    },
+    {
+      "source": "/validation-key.txt",
+      "destination": "/validation-key-mainnet.txt"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
