@@ -5,6 +5,7 @@ import STORAGE_KEYS from "../utils/storageKeys";
 import { markLessonCompleted } from "../utils/progressStorage";
 
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
+import useLessonAd from "../hooks/useLessonAd";
 import LockedFeature from "../components/LockedFeature";
 
 import { askAITutor } from "../utils/aiClient";
@@ -32,6 +33,7 @@ function Listening() {
     skill: "Listening",
     level,
   });
+  const showLessonAd = useLessonAd();
 
   const [lesson, setLesson] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -287,6 +289,7 @@ function Listening() {
       STORAGE_KEYS.LISTENING_COMPLETED,
       `${level}-${lessonId}`
     );
+    showLessonAd();
   };
 
   const currentNormalizedId = normalizeLessonId(lessonId);

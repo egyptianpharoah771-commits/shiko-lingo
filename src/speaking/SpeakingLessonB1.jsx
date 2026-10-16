@@ -10,6 +10,7 @@ import {
 
 // 🔐 Feature Gating + Identity
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
+import useLessonAd from "../hooks/useLessonAd";
 import LockedFeature from "../components/LockedFeature";
 
 // 🤖 AI
@@ -39,6 +40,7 @@ function SpeakingLessonB1() {
       skill: "Speaking",
       level: "B1",
     });
+  const showLessonAd = useLessonAd();
 
   const audioKey = `speaking-answer-B1-lesson${lessonNumber}`;
 
@@ -226,6 +228,7 @@ function SpeakingLessonB1() {
     );
 
     setSubmitted(true);
+    showLessonAd();
   };
 
   /* ===== Ask AI Tutor ===== */

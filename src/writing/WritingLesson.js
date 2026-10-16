@@ -10,6 +10,7 @@ import {
 
 // 🔐 Feature Gating + Identity
 import { useFeatureAccess } from "../hooks/useFeatureAccess";
+import useLessonAd from "../hooks/useLessonAd";
 import LockedFeature from "../components/LockedFeature";
 
 // 🤖 AI
@@ -35,6 +36,7 @@ function WritingLesson() {
       skill: "Writing",
       level,
     });
+  const showLessonAd = useLessonAd();
 
   const answerKey = `writing-answer-${level}-lesson${lessonNumber}`;
 
@@ -90,6 +92,7 @@ function WritingLesson() {
     );
 
     setSubmitted(true);
+    showLessonAd();
   };
 
   /* ===== Ask AI Tutor ===== */
